@@ -22,4 +22,3 @@ To build
 ```bash
 cargo +beta build
 ```
->>>>>>> Beginnings of dapr client
