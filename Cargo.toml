@@ -1,0 +1,15 @@
+[package]
+name = "dapr"
+version = "0.1.0"
+authors = ["dapr.io"]
+edition = "2018"
+
+[dependencies]
+tonic = "0.1.0-alpha.4"
+prost = "0.5"
+bytes = "0.4"
+prost-types = "0.5"
+
+[build-dependencies]
+tonic-build = "0.1.0-alpha.4"
+
