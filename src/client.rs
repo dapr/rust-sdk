@@ -15,7 +15,7 @@ impl Client {
         app_id: I,
         method_name: M,
         data: Option<Any>,
-    ) -> Result<InvokeServiceResponseEnvelope, Error>
+    ) -> Result<InvokeServiceResponse, Error>
     where
         I: Into<String>,
         M: Into<String>,
@@ -38,4 +38,5 @@ mod internal {
     tonic::include_proto!("dapr");
 }
 
-pub use internal::InvokeServiceResponseEnvelope;
+/// A response from invoking a service
+pub type InvokeServiceResponse = internal::InvokeServiceResponseEnvelope;
