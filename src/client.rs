@@ -1,12 +1,17 @@
 use crate::error::Error;
 use prost_types::Any;
+use std::fmt;
 
 pub struct Client(internal::client::DaprClient<tonic::transport::Channel>);
 
 impl Client {
     /// Connect to a Dapr enabled app.
-    pub fn connect(addr: String) -> Result<Self, Error> {
-        Ok(Client(internal::client::DaprClient::connect(addr)?))
+    pub async fn connect(addr: String) -> Result<Self, Error> {
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        std::thread::spawn(|| {
+            tx.send(internal::client::DaprClient::connect(addr).map(Client)).unwrap();
+        });
+        Ok(rx.await.unwrap()?)
     }
 
     /// Invoke a method in a Dapr enabled app.
@@ -33,6 +38,13 @@ impl Client {
         Ok(res.into_inner())
     }
 }
+
+impl fmt::Debug for Client {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Client")
+    }
+}
+
 
 mod internal {
     tonic::include_proto!("dapr");
