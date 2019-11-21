@@ -5,12 +5,11 @@ authors = ["dapr.io"]
 edition = "2018"
 
 [dependencies]
-tonic = "0.1.0-alpha.4"
+tonic = "0.1.0-alpha.5"
 prost = "0.5"
 bytes = "0.4"
 prost-types = "0.5"
-tokio = "0.2.0-alpha.6"
 async-trait = "0.1.17"
 
 [build-dependencies]
-tonic-build = "0.1.0-alpha.4"
+tonic-build = "0.1.0-alpha.5"
