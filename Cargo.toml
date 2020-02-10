@@ -1,15 +1,15 @@
 [package]
 name = "dapr"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["dapr.io"]
 edition = "2018"
 
 [dependencies]
-tonic = "0.1.0-alpha.5"
-prost = "0.5"
-bytes = "0.4"
-prost-types = "0.5"
-async-trait = "0.1.17"
+tonic = "0.1.1"
+prost = "0.6.1"
+bytes = "0.5.4"
+prost-types = "0.6.1"
+async-trait = "0.1.24"
 
 [build-dependencies]
-tonic-build = "0.1.0-alpha.5"
+tonic-build = "0.1.1"
