@@ -64,12 +64,13 @@ impl <T: DaprInterface> Client<T> {
 
 
     /// Get the state for a specific key.
-    pub async fn get_state<S>(&mut self, key: S) -> Result<GetStateResponse, Error>
+    pub async fn get_state<S>(&mut self, storeName: S, key: S) -> Result<GetStateResponse, Error>
     where
         S: Into<String>,
     {
         self.0
             .get_state(GetStateRequest {
+                storeName: storeName.into(),
                 key: key.into(),
                 ..Default::default()
             })
@@ -78,25 +79,27 @@ impl <T: DaprInterface> Client<T> {
 
 
     /// Save an array of state objects.
-    pub async fn save_state<I, K>(&mut self, requests: I) -> Result<(), Error>
+    pub async fn save_state<I, K>(&mut self, storeName: K, requests: I) -> Result<(), Error>
     where
         I: IntoIterator<Item = (K, Option<Any>)>,
         K: Into<String>,
     {
         self.0
             .save_state(SaveStateRequest {
+                storeName: storeName.into(),
                 requests: requests.into_iter().map(|pair| pair.into()).collect(),
             })
             .await
     }
 
     /// Delete the state for a specific key.
-    pub async fn delete_state<S>(&mut self, key: S) -> Result<(), Error>
+    pub async fn delete_state<S>(&mut self, storeName: S, key: S) -> Result<(), Error>
     where
         S: Into<String>,
     {
         self.0
             .delete_state(DeleteStateRequest {
+                storeName: storeName.into(),
                 key: key.into(),
                 ..Default::default()
             })
