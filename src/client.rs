@@ -64,13 +64,13 @@ impl <T: DaprInterface> Client<T> {
 
 
     /// Get the state for a specific key.
-    pub async fn get_state<S>(&mut self, storeName: S, key: S) -> Result<GetStateResponse, Error>
+    pub async fn get_state<S>(&mut self, store_name: S, key: S) -> Result<GetStateResponse, Error>
     where
         S: Into<String>,
     {
         self.0
             .get_state(GetStateRequest {
-                storeName: storeName.into(),
+                store_name: store_name.into(),
                 key: key.into(),
                 ..Default::default()
             })
@@ -79,27 +79,27 @@ impl <T: DaprInterface> Client<T> {
 
 
     /// Save an array of state objects.
-    pub async fn save_state<I, K>(&mut self, storeName: K, requests: I) -> Result<(), Error>
+    pub async fn save_state<I, K>(&mut self, store_name: K, requests: I) -> Result<(), Error>
     where
         I: IntoIterator<Item = (K, Option<Any>)>,
         K: Into<String>,
     {
         self.0
             .save_state(SaveStateRequest {
-                storeName: storeName.into(),
+                store_name: store_name.into(),
                 requests: requests.into_iter().map(|pair| pair.into()).collect(),
             })
             .await
     }
 
     /// Delete the state for a specific key.
-    pub async fn delete_state<S>(&mut self, storeName: S, key: S) -> Result<(), Error>
+    pub async fn delete_state<S>(&mut self, store_name: S, key: S) -> Result<(), Error>
     where
         S: Into<String>,
     {
         self.0
             .delete_state(DeleteStateRequest {
-                storeName: storeName.into(),
+                store_name: store_name.into(),
                 key: key.into(),
                 ..Default::default()
             })
@@ -120,9 +120,9 @@ pub trait DaprInterface: std::marker::Sized {
 
 
 #[async_trait]
-impl DaprInterface for internal::client::DaprClient<tonic::transport::Channel> {
+impl DaprInterface for internal::dapr_client::DaprClient<tonic::transport::Channel> {
     async fn connect(addr: String) -> Result<Self, Error> {
-        Ok(internal::client::DaprClient::connect(addr).await?)
+        Ok(internal::dapr_client::DaprClient::connect(addr).await?)
     }
 
     async fn invoke_service(&mut self, request: InvokeServiceRequest) -> Result<InvokeServiceResponse, Error> {
@@ -179,7 +179,7 @@ pub type SaveStateRequest = internal::SaveStateEnvelope;
 pub type DeleteStateRequest = internal::DeleteStateEnvelope;
 
 /// A tonic based gRPC client
-pub type TonicClient = internal::client::DaprClient<tonic::transport::Channel>;
+pub type TonicClient = internal::dapr_client::DaprClient<tonic::transport::Channel>;
 
 impl<K> From<(K, Option<Any>)> for internal::StateRequest
 where
