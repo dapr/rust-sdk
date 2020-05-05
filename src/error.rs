@@ -19,7 +19,7 @@ impl std::convert::From<tonic::transport::Error> for Error {
 }
 
 impl std::convert::From<tonic::Status> for Error {
-    fn from(error: tonic::Status) -> Self {
+    fn from(_error: tonic::Status) -> Self {
         Error::GrpcError(GrpcError {})
     }
 }

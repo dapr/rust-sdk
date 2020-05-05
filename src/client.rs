@@ -150,8 +150,19 @@ impl DaprInterface for internal::dapr_client::DaprClient<tonic::transport::Chann
     }
 }
 
-mod internal {
-    tonic::include_proto!("dapr");
+pub mod dapr {
+    pub mod proto {
+        pub mod common {
+            pub mod v1 {
+                tonic::include_proto!("dapr.proto.common.v1");
+            }
+        }
+        pub mod dapr {
+            pub mod v1 {
+                tonic::include_proto!("dapr.proto.dapr.v1");
+            }
+        }
+    }
 }
 
 /// A request from invoking a service
