@@ -1,3 +1,6 @@
+use ::dapr;
+use ::tokio;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the Dapr port and create a connection
