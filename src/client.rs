@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use crate::error::Error;
 use prost_types::Any;
-use std::collections::HashMap;
 
 pub struct Client<T>(T);
 
@@ -15,24 +14,30 @@ impl <T: DaprInterface> Client<T> {
     pub async fn invoke_service<I, M>(
         &mut self,
         app_id: I,
-        message: M,
+        method_name: M,
+        data: Option<Any>,
     ) -> Result<InvokeServiceResponse, Error>
     where
         I: Into<String>,
-        M: Into<(I, Option<Any>)>,
+        M: Into<String>,
     {
         self
             .0
             .invoke_service(InvokeServiceRequest {
                 id: app_id.into(),
-                message: message.into(),
+                message: common_v1::InvokeRequest{
+                    method: method_name.into(),
+                    data,
+                    ..Default::default()
+                }.into(),
+                ..Default::default()
             })
             .await
 
     }
 
     /// Invoke an Dapr output binding.
-    pub async fn invoke_binding<S>(&mut self, name: S, data: Option<Any>, metadata: Option<HashMap<String, String>>) -> Result<(), Error>
+    pub async fn invoke_binding<S>(&mut self, name: S, data: Option<Any>) -> Result<(), Error>
     where
         S: Into<String>,
     {
@@ -40,7 +45,7 @@ impl <T: DaprInterface> Client<T> {
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
                 data,
-                metadata: metadata.unwrap_or_default()
+                ..Default::default()
             })
             .await
     }
@@ -61,7 +66,7 @@ impl <T: DaprInterface> Client<T> {
     }
 
     /// Get the secret for a specific key.
-    pub async fn get_secret<S>(&mut self, store_name: S, key: S, metadata: Option<HashMap<String, String>>) -> Result<GetSecretResponse, Error>
+    pub async fn get_secret<S>(&mut self, store_name: S, key: S) -> Result<GetSecretResponse, Error>
     where
         S: Into<String>,
     {
@@ -69,14 +74,14 @@ impl <T: DaprInterface> Client<T> {
             .get_secret(GetSecretRequest {
                 store_name: store_name.into(),
                 key: key.into(),
-                metadata: metadata.unwrap_or_default()
+                ..Default::default()
             })
             .await
     }
 
 
     /// Get the state for a specific key.
-    pub async fn get_state<S>(&mut self, store_name: S, key: S, consistency: Option<String>) -> Result<GetStateResponse, Error>
+    pub async fn get_state<S>(&mut self, store_name: S, key: S) -> Result<GetStateResponse, Error>
     where
         S: Into<String>,
     {
@@ -84,7 +89,7 @@ impl <T: DaprInterface> Client<T> {
             .get_state(GetStateRequest {
                 store_name: store_name.into(),
                 key: key.into(),
-                consistency: consistency.unwrap_or_default()
+                ..Default::default()
             })
             .await
     }
@@ -232,14 +237,14 @@ where
     }
 }
 
-impl<I> From<(I, Option<Any>)> for common_v1::InvokeRequest
-where
-    I: Into<String>,
-{
-    fn from((method, data): (I, Option<Any>)) -> Self {
-        common_v1::InvokeRequest {
-            method: method.into(),
-            data: data.unwrap_or_default()
-        }
-    }
-}
+// impl<I> From<(I, Option<Any>)> for common_v1::InvokeRequest
+// where
+//     I: Into<String>,
+// {
+//     fn from((method, data): (I, Option<Any>)) -> Self {
+//         common_v1::InvokeRequest {
+//             method: method.into(),
+//             data: data.unwrap_or_default()
+//         }
+//     }
+// }
