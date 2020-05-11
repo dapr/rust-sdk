@@ -236,15 +236,3 @@ where
         }
     }
 }
-
-// impl<I> From<(I, Option<Any>)> for common_v1::InvokeRequest
-// where
-//     I: Into<String>,
-// {
-//     fn from((method, data): (I, Option<Any>)) -> Self {
-//         common_v1::InvokeRequest {
-//             method: method.into(),
-//             data: data.unwrap_or_default()
-//         }
-//     }
-// }
