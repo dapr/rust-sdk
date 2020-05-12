@@ -15,7 +15,21 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 ## Usage
 
-TBD
+A client can be created as follows:
+
+```
+extern crate async_trait;
+extern crate dapr;
+
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Get the Dapr port and create a connection
+    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
+    let addr = format!("https://127.0.0.1:{}", port);
+
+    // Create the client
+    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
+
+```
 
 ## Building
 
@@ -24,3 +38,5 @@ To build
 ```bash
 cargo build
 ```
+
+>Note: The proto buf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the proto buf client.

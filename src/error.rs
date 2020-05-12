@@ -13,13 +13,13 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 
 impl std::convert::From<tonic::transport::Error> for Error {
-    fn from(error: tonic::transport::Error) -> Self {
+    fn from(_error: tonic::transport::Error) -> Self {
         Error::TransportError
     }
 }
 
 impl std::convert::From<tonic::Status> for Error {
-    fn from(error: tonic::Status) -> Self {
+    fn from(_error: tonic::Status) -> Self {
         Error::GrpcError(GrpcError {})
     }
 }
