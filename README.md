@@ -31,8 +31,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```
 
->Note: As of now we can not run dapr with cargo in a single command so the `DAPR_GRPC_PORT` environment variable won't be exported. Use daprd to specify grpc port using --grpc-app-port option and use it's value for port in client.
-
 ## Building
 
 To build
@@ -41,4 +39,4 @@ To build
 cargo build
 ```
 
->Note: The proto buf client generation is built into `cargo build` process so updating the proto files under `/dapr/` is enough to update the proto buf client.
+>Note: The proto buf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the proto buf client.
