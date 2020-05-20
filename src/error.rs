@@ -1,25 +1,29 @@
+use std::{convert::From, fmt, fmt::Display};
+
+use tonic::{transport::Error as TonicError, Status as TonicStatus};
+
 #[derive(Debug)]
 pub enum Error {
     TransportError,
     GrpcError(GrpcError),
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
 impl std::error::Error for Error {}
 
-impl std::convert::From<tonic::transport::Error> for Error {
-    fn from(_error: tonic::transport::Error) -> Self {
+impl From<TonicError> for Error {
+    fn from(_error: TonicError) -> Self {
         Error::TransportError
     }
 }
 
-impl std::convert::From<tonic::Status> for Error {
-    fn from(_error: tonic::Status) -> Self {
+impl From<TonicStatus> for Error {
+    fn from(_error: TonicStatus) -> Self {
         Error::GrpcError(GrpcError {})
     }
 }
@@ -27,8 +31,8 @@ impl std::convert::From<tonic::Status> for Error {
 #[derive(Debug)]
 pub struct GrpcError {}
 
-impl std::fmt::Display for GrpcError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for GrpcError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }

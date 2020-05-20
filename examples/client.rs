@@ -1,14 +1,10 @@
-
 extern crate async_trait;
 extern crate dapr;
 use prost_types::Any;
 
-
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
-    // TODO: Handle this issue in the sdk 
+    // TODO: Handle this issue in the sdk
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
     std::thread::sleep(std::time::Duration::new(2, 0));
 
@@ -18,11 +14,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
-    
+
     let key = String::from("hello");
-    let val = Some( Any{
+    let val = Some(Any {
         type_url: String::from("string"),
-        value: String::from("world").as_bytes().to_vec()});
+        value: String::from("world").as_bytes().to_vec(),
+    });
 
     let store_name = String::from("statestore");
     let _res = client.save_state(store_name, vec![(key, val)]).await?;
@@ -30,7 +27,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Successfully saved!");
 
     let get_response = client.get_state("statestore", "hello").await?;
-    println!("Value is {:?}", String::from_utf8_lossy(&get_response.data.unwrap().value));
+    println!(
+        "Value is {:?}",
+        String::from_utf8_lossy(&get_response.data.unwrap().value)
+    );
 
     Ok(())
 }

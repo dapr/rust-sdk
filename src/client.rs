@@ -1,10 +1,10 @@
-use async_trait::async_trait;
 use crate::error::Error;
+use async_trait::async_trait;
 use prost_types::Any;
 
 pub struct Client<T>(T);
 
-impl <T: DaprInterface> Client<T> {
+impl<T: DaprInterface> Client<T> {
     /// Connect to a Dapr enabled app.
     pub async fn connect(addr: String) -> Result<Self, Error> {
         Ok(Client(T::connect(addr).await?))
@@ -21,19 +21,18 @@ impl <T: DaprInterface> Client<T> {
         I: Into<String>,
         M: Into<String>,
     {
-        self
-            .0
+        self.0
             .invoke_service(InvokeServiceRequest {
                 id: app_id.into(),
-                message: common_v1::InvokeRequest{
+                message: common_v1::InvokeRequest {
                     method: method_name.into(),
                     data,
                     ..Default::default()
-                }.into(),
+                }
+                .into(),
                 ..Default::default()
             })
             .await
-
     }
 
     /// Invoke an Dapr output binding.
@@ -60,7 +59,7 @@ impl <T: DaprInterface> Client<T> {
         self.0
             .publish_event(PublishEventRequest {
                 topic: topic.into(),
-                data
+                data,
             })
             .await
     }
@@ -79,7 +78,6 @@ impl <T: DaprInterface> Client<T> {
             .await
     }
 
-
     /// Get the state for a specific key.
     pub async fn get_state<S>(&mut self, store_name: S, key: S) -> Result<GetStateResponse, Error>
     where
@@ -93,7 +91,6 @@ impl <T: DaprInterface> Client<T> {
             })
             .await
     }
-
 
     /// Save an array of state objects.
     pub async fn save_state<I, K>(&mut self, store_name: K, requests: I) -> Result<(), Error>
@@ -128,7 +125,10 @@ impl <T: DaprInterface> Client<T> {
 pub trait DaprInterface: std::marker::Sized {
     async fn connect(addr: String) -> Result<Self, Error>;
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error>;
-    async fn invoke_service(&mut self, request: InvokeServiceRequest) -> Result<InvokeServiceResponse, Error>;
+    async fn invoke_service(
+        &mut self,
+        request: InvokeServiceRequest,
+    ) -> Result<InvokeServiceResponse, Error>;
     async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<(), Error>;
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
@@ -136,39 +136,62 @@ pub trait DaprInterface: std::marker::Sized {
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
 }
 
-
 #[async_trait]
 impl DaprInterface for dapr_v1::dapr_client::DaprClient<tonic::transport::Channel> {
     async fn connect(addr: String) -> Result<Self, Error> {
         Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
     }
 
-    async fn invoke_service(&mut self, request: InvokeServiceRequest) -> Result<InvokeServiceResponse, Error> {
-        Ok(self.invoke_service(tonic::Request::new(request)).await?.into_inner())
+    async fn invoke_service(
+        &mut self,
+        request: InvokeServiceRequest,
+    ) -> Result<InvokeServiceResponse, Error> {
+        Ok(self
+            .invoke_service(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<(), Error> {
-        Ok(self.invoke_binding(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .invoke_binding(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        Ok(self.publish_event(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .publish_event(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
-    
+
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
-        Ok(self.get_secret(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .get_secret(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
-        Ok(self.get_state(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .get_state(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        Ok(self.save_state(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .save_state(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
-        Ok(self.delete_state(tonic::Request::new(request)).await?.into_inner())
+        Ok(self
+            .delete_state(tonic::Request::new(request))
+            .await?
+            .into_inner())
     }
 }
 
@@ -189,7 +212,6 @@ pub mod dapr {
 
 use dapr::proto::common::v1 as common_v1;
 use dapr::proto::dapr::v1 as dapr_v1;
-
 
 /// A request from invoking a service
 pub type InvokeServiceRequest = dapr_v1::InvokeServiceRequest;
@@ -231,7 +253,7 @@ where
     fn from((key, value): (K, Option<Any>)) -> Self {
         dapr_v1::StateRequest {
             key: key.into(),
-            value: value,
+            value,
             ..Default::default()
         }
     }
