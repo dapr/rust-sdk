@@ -1,6 +1,8 @@
+use {async_trait::async_trait, prost_types::Any};
+
+use {dapr::proto::common::v1 as common_v1, dapr::proto::runtime::v1 as dapr_v1};
+
 use crate::error::Error;
-use async_trait::async_trait;
-use prost_types::Any;
 
 pub struct Client<T>(T);
 
@@ -36,14 +38,15 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Invoke an Dapr output binding.
-    pub async fn invoke_binding<S>(&mut self, name: S, data: Option<Any>) -> Result<(), Error>
+    pub async fn invoke_binding<S, I>(&mut self, name: S, data: I) -> Result<(), Error>
     where
         S: Into<String>,
+        I: IntoIterator<Item = (S, Option<Any>)>,
     {
         self.0
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
-                data,
+                data: data.into(),
                 ..Default::default()
             })
             .await
@@ -52,14 +55,15 @@ impl<T: DaprInterface> Client<T> {
     /// Publish a payload to multiple consumers who are listening on a topic.
     ///
     /// Dapr guarantees at least once semantics for this endpoint.
-    pub async fn publish_event<S>(&mut self, topic: S, data: Option<Any>) -> Result<(), Error>
+    pub async fn publish_event<S, I>(&mut self, topic: S, data: I) -> Result<(), Error>
     where
         S: Into<String>,
+        I: IntoIterator<Item = (S, Option<Any>)>,
     {
         self.0
             .publish_event(PublishEventRequest {
                 topic: topic.into(),
-                data,
+                data: data.into(),
             })
             .await
     }
@@ -93,7 +97,7 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Save an array of state objects.
-    pub async fn save_state<I, K>(&mut self, store_name: K, requests: I) -> Result<(), Error>
+    pub async fn save_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
     where
         I: IntoIterator<Item = (K, Option<Any>)>,
         K: Into<String>,
@@ -101,7 +105,7 @@ impl<T: DaprInterface> Client<T> {
         self.0
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
-                requests: requests.into_iter().map(|pair| pair.into()).collect(),
+                states: states.into_iter().map(|pair| pair.into()).collect(),
             })
             .await
     }
@@ -202,16 +206,13 @@ pub mod dapr {
                 tonic::include_proto!("dapr.proto.common.v1");
             }
         }
-        pub mod dapr {
+        pub mod runtime {
             pub mod v1 {
-                tonic::include_proto!("dapr.proto.dapr.v1");
+                tonic::include_proto!("dapr.proto.runtime.v1");
             }
         }
     }
 }
-
-use dapr::proto::common::v1 as common_v1;
-use dapr::proto::dapr::v1 as dapr_v1;
 
 /// A request from invoking a service
 pub type InvokeServiceRequest = dapr_v1::InvokeServiceRequest;
@@ -220,38 +221,38 @@ pub type InvokeServiceRequest = dapr_v1::InvokeServiceRequest;
 pub type InvokeServiceResponse = common_v1::InvokeResponse;
 
 /// A request from invoking a binding
-pub type InvokeBindingRequest = dapr_v1::InvokeBindingEnvelope;
+pub type InvokeBindingRequest = dapr_v1::InvokeBindingRequest;
 
 /// A request for publishing event
-pub type PublishEventRequest = dapr_v1::PublishEventEnvelope;
+pub type PublishEventRequest = dapr_v1::PublishEventRequest;
 
 /// A request for getting state
-pub type GetStateRequest = dapr_v1::GetStateEnvelope;
+pub type GetStateRequest = dapr_v1::GetStateRequest;
 
 /// A response from getting state
-pub type GetStateResponse = dapr_v1::GetStateResponseEnvelope;
+pub type GetStateResponse = dapr_v1::GetStateResponse;
 
 /// A request for saving state
-pub type SaveStateRequest = dapr_v1::SaveStateEnvelope;
+pub type SaveStateRequest = dapr_v1::SaveStateRequest;
 
 /// A request for deleting state
-pub type DeleteStateRequest = dapr_v1::DeleteStateEnvelope;
+pub type DeleteStateRequest = dapr_v1::DeleteStateRequest;
 
 /// A request for getting secret
-pub type GetSecretRequest = dapr_v1::GetSecretEnvelope;
+pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 
 /// A response from getting secret
-pub type GetSecretResponse = dapr_v1::GetSecretResponseEnvelope;
+pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<tonic::transport::Channel>;
 
-impl<K> From<(K, Option<Any>)> for dapr_v1::StateRequest
+impl<K> From<(K, Option<Any>)> for common_v1::StateItem
 where
     K: Into<String>,
 {
     fn from((key, value): (K, Option<Any>)) -> Self {
-        dapr_v1::StateRequest {
+        common_v1::StateItem {
             key: key.into(),
             value,
             ..Default::default()
