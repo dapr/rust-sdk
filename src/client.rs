@@ -1,6 +1,9 @@
-use {async_trait::async_trait, prost_types::Any};
+use std::marker::Sized;
 
-use {dapr::proto::common::v1 as common_v1, dapr::proto::runtime::v1 as dapr_v1};
+use async_trait::async_trait;
+use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use prost_types::Any;
+use tonic::{transport::Channel as TonicChannel, Request};
 
 use crate::error::Error;
 
@@ -38,15 +41,14 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Invoke an Dapr output binding.
-    pub async fn invoke_binding<S, I>(&mut self, name: S, data: I) -> Result<(), Error>
+    pub async fn invoke_binding<S>(&mut self, name: S, data: Vec<u8>) -> Result<(), Error>
     where
         S: Into<String>,
-        I: IntoIterator<Item = (S, Option<Any>)>,
     {
         self.0
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
-                data: data.into(),
+                data: data,
                 ..Default::default()
             })
             .await
@@ -55,15 +57,14 @@ impl<T: DaprInterface> Client<T> {
     /// Publish a payload to multiple consumers who are listening on a topic.
     ///
     /// Dapr guarantees at least once semantics for this endpoint.
-    pub async fn publish_event<S, I>(&mut self, topic: S, data: I) -> Result<(), Error>
+    pub async fn publish_event<S>(&mut self, topic: S, data: Vec<u8>) -> Result<(), Error>
     where
         S: Into<String>,
-        I: IntoIterator<Item = (S, Option<Any>)>,
     {
         self.0
             .publish_event(PublishEventRequest {
                 topic: topic.into(),
-                data: data.into(),
+                data: data,
             })
             .await
     }
@@ -99,9 +100,10 @@ impl<T: DaprInterface> Client<T> {
     /// Save an array of state objects.
     pub async fn save_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
     where
-        I: IntoIterator<Item = (K, Option<Any>)>,
+        I: IntoIterator<Item = (K, Vec<u8>)>,
         K: Into<String>,
     {
+        println!("In here");
         self.0
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
@@ -126,7 +128,7 @@ impl<T: DaprInterface> Client<T> {
 }
 
 #[async_trait]
-pub trait DaprInterface: std::marker::Sized {
+pub trait DaprInterface: Sized {
     async fn connect(addr: String) -> Result<Self, Error>;
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error>;
     async fn invoke_service(
@@ -141,7 +143,7 @@ pub trait DaprInterface: std::marker::Sized {
 }
 
 #[async_trait]
-impl DaprInterface for dapr_v1::dapr_client::DaprClient<tonic::transport::Channel> {
+impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn connect(addr: String) -> Result<Self, Error> {
         Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
     }
@@ -151,51 +153,40 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<tonic::transport::Channe
         request: InvokeServiceRequest,
     ) -> Result<InvokeServiceResponse, Error> {
         Ok(self
-            .invoke_service(tonic::Request::new(request))
+            .invoke_service(Request::new(request))
             .await?
             .into_inner())
     }
 
     async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<(), Error> {
         Ok(self
-            .invoke_binding(tonic::Request::new(request))
+            .invoke_binding(Request::new(request))
             .await?
             .into_inner())
     }
 
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
         Ok(self
-            .publish_event(tonic::Request::new(request))
+            .publish_event(Request::new(request))
             .await?
             .into_inner())
     }
 
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
-        Ok(self
-            .get_secret(tonic::Request::new(request))
-            .await?
-            .into_inner())
+        Ok(self.get_secret(Request::new(request)).await?.into_inner())
     }
 
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
-        Ok(self
-            .get_state(tonic::Request::new(request))
-            .await?
-            .into_inner())
+        Ok(self.get_state(Request::new(request)).await?.into_inner())
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        Ok(self
-            .save_state(tonic::Request::new(request))
-            .await?
-            .into_inner())
+        print!("{:?}", &request);
+        Ok(self.save_state(Request::new(request)).await?.into_inner())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
-        Ok(self
-            .delete_state(tonic::Request::new(request))
-            .await?
-            .into_inner())
+        Ok(self.delete_state(Request::new(request)).await?.into_inner())
     }
 }
 
@@ -247,11 +238,11 @@ pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<tonic::transport::Channel>;
 
-impl<K> From<(K, Option<Any>)> for common_v1::StateItem
+impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
     K: Into<String>,
 {
-    fn from((key, value): (K, Option<Any>)) -> Self {
+    fn from((key, value): (K, Vec<u8>)) -> Self {
         common_v1::StateItem {
             key: key.into(),
             value,

@@ -24,12 +24,14 @@ impl From<TonicError> for Error {
 
 impl From<TonicStatus> for Error {
     fn from(_error: TonicStatus) -> Self {
-        Error::GrpcError(GrpcError {})
+        Error::GrpcError(GrpcError { status: _error })
     }
 }
 
 #[derive(Debug)]
-pub struct GrpcError {}
+pub struct GrpcError {
+    status: TonicStatus,
+}
 
 impl Display for GrpcError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

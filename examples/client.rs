@@ -16,10 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
     let key = String::from("hello");
-    let val = Some(Any {
-        type_url: String::from("string"),
-        value: String::from("world").as_bytes().to_vec(),
-    });
+
+    let val = String::from("world").as_bytes().to_vec();
 
     let store_name = String::from("statestore");
     let _res = client.save_state(store_name, vec![(key, val)]).await?;
@@ -27,10 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Successfully saved!");
 
     let get_response = client.get_state("statestore", "hello").await?;
-    println!(
-        "Value is {:?}",
-        String::from_utf8_lossy(&get_response.data.unwrap().value)
-    );
+    println!("Value is {:?}", String::from_utf8_lossy(&get_response.data));
 
     Ok(())
 }
