@@ -24,13 +24,13 @@ impl From<TonicError> for Error {
 
 impl From<TonicStatus> for Error {
     fn from(_error: TonicStatus) -> Self {
-        Error::GrpcError(GrpcError { status: _error })
+        Error::GrpcError(GrpcError { error: _error })
     }
 }
 
 #[derive(Debug)]
 pub struct GrpcError {
-    status: TonicStatus,
+    error: TonicStatus,
 }
 
 impl Display for GrpcError {

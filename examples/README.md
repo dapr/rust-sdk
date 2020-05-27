@@ -19,5 +19,6 @@ If everything went well you should see the following output along with dapr logs
 ```
 Successfully saved!
 Value is "world"
+Deleted value: []
 ```
 

@@ -1,6 +1,5 @@
 extern crate async_trait;
 extern crate dapr;
-use prost_types::Any;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -20,12 +19,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let val = String::from("world").as_bytes().to_vec();
 
     let store_name = String::from("statestore");
-    let _res = client.save_state(store_name, vec![(key, val)]).await?;
+
+    // save key-value pair in the state store
+    client.save_state(store_name, vec![(key, val)]).await?;
 
     println!("Successfully saved!");
 
     let get_response = client.get_state("statestore", "hello").await?;
     println!("Value is {:?}", String::from_utf8_lossy(&get_response.data));
+
+    // delete a value from the state store
+    client.delete_state("statestore", "hello").await?;
+
+    // validate if the value was successfully deleted
+    let del_result = client.get_state("statestore", "hello").await?;
+
+    // should print "[]" upon successful delete
+    println!("Deleted value: {:?}", del_result.data);
 
     Ok(())
 }

@@ -11,11 +11,21 @@ pub struct Client<T>(T);
 
 impl<T: DaprInterface> Client<T> {
     /// Connect to a Dapr enabled app.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Address of gRPC server to connect to.
     pub async fn connect(addr: String) -> Result<Self, Error> {
         Ok(Client(T::connect(addr).await?))
     }
 
     /// Invoke a method in a Dapr enabled app.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_id` - Id of the application running.
+    /// * `method_name` - Name of the method to invoke.
+    /// * `data` - Required. Bytes value or data required to invoke service.
     pub async fn invoke_service<I, M>(
         &mut self,
         app_id: I,
@@ -35,12 +45,16 @@ impl<T: DaprInterface> Client<T> {
                     ..Default::default()
                 }
                 .into(),
-                ..Default::default()
             })
             .await
     }
 
     /// Invoke an Dapr output binding.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - The name of the output binding to invoke.
+    /// * `data` - The data which will be sent to the output binding.
     pub async fn invoke_binding<S>(&mut self, name: S, data: Vec<u8>) -> Result<(), Error>
     where
         S: Into<String>,
@@ -48,7 +62,7 @@ impl<T: DaprInterface> Client<T> {
         self.0
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
-                data: data,
+                data,
                 ..Default::default()
             })
             .await
@@ -57,6 +71,11 @@ impl<T: DaprInterface> Client<T> {
     /// Publish a payload to multiple consumers who are listening on a topic.
     ///
     /// Dapr guarantees at least once semantics for this endpoint.
+    ///
+    /// # Arguments
+    ///
+    /// * `topic` - Pubsub topic.
+    /// * `data` - The data which will be published to topic.
     pub async fn publish_event<S>(&mut self, topic: S, data: Vec<u8>) -> Result<(), Error>
     where
         S: Into<String>,
@@ -64,12 +83,17 @@ impl<T: DaprInterface> Client<T> {
         self.0
             .publish_event(PublishEventRequest {
                 topic: topic.into(),
-                data: data,
+                data,
             })
             .await
     }
 
     /// Get the secret for a specific key.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of secret store.
+    /// * `key` - The name of secret key.
     pub async fn get_secret<S>(&mut self, store_name: S, key: S) -> Result<GetSecretResponse, Error>
     where
         S: Into<String>,
@@ -84,6 +108,11 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Get the state for a specific key.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `key` - The key of the desired state.
     pub async fn get_state<S>(&mut self, store_name: S, key: S) -> Result<GetStateResponse, Error>
     where
         S: Into<String>,
@@ -98,12 +127,16 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Save an array of state objects.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `states` - The array of the state key values.
     pub async fn save_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
     where
         I: IntoIterator<Item = (K, Vec<u8>)>,
         K: Into<String>,
     {
-        println!("In here");
         self.0
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
@@ -113,6 +146,11 @@ impl<T: DaprInterface> Client<T> {
     }
 
     /// Delete the state for a specific key.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `key` - The key of the desired state.
     pub async fn delete_state<S>(&mut self, store_name: S, key: S) -> Result<(), Error>
     where
         S: Into<String>,
@@ -181,7 +219,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        print!("{:?}", &request);
         Ok(self.save_state(Request::new(request)).await?.into_inner())
     }
 
