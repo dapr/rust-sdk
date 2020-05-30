@@ -55,7 +55,7 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `name` - The name of the output binding to invoke.
     /// * `data` - The data which will be sent to the output binding.
-    pub async fn invoke_binding<S>(&mut self, name: S, data: Vec<u8>) -> Result<(), Error>
+    pub async fn invoke_binding<S>(&mut self, name: S, data: Vec<u8>) -> Result<InvokeBindingResponse, Error>
     where
         S: Into<String>,
     {
@@ -173,7 +173,7 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: InvokeServiceRequest,
     ) -> Result<InvokeServiceResponse, Error>;
-    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<(), Error>;
+    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<InvokeBindingResponse, Error>;
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
@@ -196,7 +196,7 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .into_inner())
     }
 
-    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<(), Error> {
+    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<InvokeBindingResponse, Error> {
         Ok(self
             .invoke_binding(Request::new(request))
             .await?
@@ -250,6 +250,9 @@ pub type InvokeServiceResponse = common_v1::InvokeResponse;
 
 /// A request from invoking a binding
 pub type InvokeBindingRequest = dapr_v1::InvokeBindingRequest;
+
+/// A reponse from invoking a binding
+pub type InvokeBindingResponse = dapr_v1::InvokeBindingResponse;
 
 /// A request for publishing event
 pub type PublishEventRequest = dapr_v1::PublishEventRequest;
