@@ -17,10 +17,7 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 A client can be created as follows:
 
-```
-extern crate async_trait;
-extern crate dapr;
-
+```rust
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the Dapr port and create a connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
@@ -28,7 +25,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
-
 ```
 
 ## Building
