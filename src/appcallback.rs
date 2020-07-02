@@ -3,13 +3,22 @@ use std::marker::Sized;
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
-use tonic::{transport::Channel as TonicChannel, Request};
+use tonic::{transport::Server as TonicChannel, Request};
 
 use crate::dapr::*;
 use crate::error::Error;
 
+pub struct Server<T>(T);
+
+impl<T: AppCallbackServer> Server<T> {
+    pub async fn serve(addr: String) -> Result<Self, Error> {
+        Ok(Server(T::serve(addr).await?))
+    }
+}
+
 #[async_trait]
 pub trait AppCallbackServer: Sized {
+    async fn serve(addr: String) -> Result<Self, Error>;
     async fn on_invoke(&mut self, request: InvokeRequest) -> Result<InvokeResponse, Error>;
     async fn list_topic_subscriptions(&mut self) -> Result<ListTopicSubscriptionsResponse, Error>;
     async fn on_topic_event(&mut self, request: TopicEventRequest) -> Result<(), Error>;
