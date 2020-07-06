@@ -1,13 +1,10 @@
-extern crate async_trait;
-extern crate dapr;
+use std::collections::HashMap;
 
 use tonic::{transport::Server, Request, Response, Status};
 
 use dapr::dapr::dapr::proto::common::v1::*;
 use dapr::dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer};
 use dapr::dapr::dapr::proto::runtime::v1::*;
-
-use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct AppCallbackService {}
@@ -25,14 +22,16 @@ impl AppCallback for AppCallbackService {
         &self,
         request: Request<()>,
     ) -> Result<Response<ListTopicSubscriptionsResponse>, Status> {
-    	let topic_subscription = TopicSubscription{
-    		topic: "A".to_string(),
-    		metadata: HashMap::new(),
-    	};
+        let topic = "A".to_string();
 
-    	let list_sub = ListTopicSubscriptionsResponse {
-    		subscriptions: vec![topic_subscription],
-    	};
+        let topic_subscription = TopicSubscription {
+            topic,
+            metadata: HashMap::new(),
+        };
+
+        let list_sub = ListTopicSubscriptionsResponse {
+            subscriptions: vec![topic_subscription],
+        };
 
         Ok(Response::new(list_sub))
     }
@@ -41,7 +40,9 @@ impl AppCallback for AppCallbackService {
         &self,
         request: Request<TopicEventRequest>,
     ) -> Result<Response<()>, Status> {
-        println!("{:?}", request);
+        let data = &request.into_inner().data;
+        let message = String::from_utf8_lossy(&data);
+        println!("Message: {}", &message);
         Ok(Response::new(()))
     }
 
@@ -62,15 +63,16 @@ impl AppCallback for AppCallbackService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let addr = "[::]:50051".parse().unwrap();
+    let addr = "[::]:50051".parse().unwrap();
 
-	let callbackservice = AppCallbackService::default();
+    let callbackservice = AppCallbackService::default();
 
-	println!("Call back service listening on: {}", addr);
+    println!("Call back service listening on: {}", addr);
 
-	Server::builder()
-	.add_service(AppCallbackServer::new(callbackservice))
-	.serve(addr).await?;
+    Server::builder()
+        .add_service(AppCallbackServer::new(callbackservice))
+        .serve(addr)
+        .await?;
 
     Ok(())
 }

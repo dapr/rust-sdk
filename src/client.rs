@@ -1,5 +1,3 @@
-use std::marker::Sized;
-
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
@@ -272,7 +270,7 @@ pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 
 /// A tonic based gRPC client
-pub type TonicClient = dapr_v1::dapr_client::DaprClient<tonic::transport::Channel>;
+pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
