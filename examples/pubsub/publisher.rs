@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client.publish_event(&topic, message).await?;
 
         // sleep for 2 secs to simulate delay b/w two events
-        thread::sleep(Duration::from_secs(2));
+        tokio::time::delay_for(Duration::from_secs(2)).await;
     }
 
     Ok(())
