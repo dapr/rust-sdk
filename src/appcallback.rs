@@ -1,93 +1,38 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use prost_types::Any;
-use tonic::{transport::Server as CallBackServer, Request};
 
 use crate::dapr::*;
-use crate::error::Error;
 
-pub struct Server<T>(T);
-
-impl<T: AppCallbackInterface> Server<T> {
-    pub async fn on_invoke(
-        &mut self,
-        method: String,
-        data: Option<Any>,
-    ) -> Result<InvokeResponse, Error> {
-        Ok(self
-            .0
-            .on_invoke(
-                InvokeRequest {
-                    method,
-                    ..Default::default()
-                }
-                .into(),
-            )
-            .await?)
-    }
-
-    pub async fn list_topic_subscriptions(
-        &mut self,
-        topic: String,
-    ) -> Result<ListTopicSubscriptionsResponse, Error> {
-        Ok(self.0.list_topic_subscriptions().await?)
-    }
-
-    pub async fn on_topic_event(&mut self, request: TopicEventRequest) -> Result<(), Error> {
-        Ok(self.0.on_topic_event(request).await?)
-    }
-
-    pub async fn list_input_bindings(&mut self) -> Result<ListInputBindingsResponse, Error> {
-        Ok(self.0.list_input_bindings().await?)
-    }
-
-    pub async fn on_binding_event(
-        &mut self,
-        request: BindingEventRequest,
-    ) -> Result<BindingEventResponse, Error> {
-        Ok(self.0.on_binding_event(request).await?)
-    }
-}
-
-#[async_trait]
-pub trait AppCallbackInterface: Sized {
-    async fn on_invoke(&mut self, request: InvokeRequest) -> Result<InvokeResponse, Error>;
-    async fn list_topic_subscriptions(&mut self) -> Result<ListTopicSubscriptionsResponse, Error>;
-    async fn on_topic_event(&mut self, request: TopicEventRequest) -> Result<(), Error>;
-    async fn list_input_bindings(&mut self) -> Result<ListInputBindingsResponse, Error>;
-    async fn on_binding_event(
-        &mut self,
-        request: BindingEventRequest,
-    ) -> Result<BindingEventResponse, Error>;
-}
-
+/// InvokeRequest is the message to invoke a method with the data.
 pub type InvokeRequest = common_v1::InvokeRequest;
 
+/// InvokeResponse is the response message inclduing data and its content type
+/// from app callback.
 pub type InvokeResponse = common_v1::InvokeResponse;
 
+/// ListTopicSubscriptionsResponse is the message including the list of the subscribing topics.
 pub type ListTopicSubscriptionsResponse = dapr_v1::ListTopicSubscriptionsResponse;
 
+/// TopicSubscription represents a topic and it's metadata (session id etc.)
 pub type TopicSubscription = dapr_v1::TopicSubscription;
 
+/// TopicEventRequest message is compatiable with CloudEvent spec v1.0.
 pub type TopicEventRequest = dapr_v1::TopicEventRequest;
 
+/// ListInputBindingsResponse is the message including the list of input bindings.
 pub type ListInputBindingsResponse = dapr_v1::ListInputBindingsResponse;
 
+/// BindingEventRequest represents input bindings event.
 pub type BindingEventRequest = dapr_v1::BindingEventRequest;
 
+/// BindingEventResponse includes operations to save state or
+/// send data to output bindings optionally.
 pub type BindingEventResponse = dapr_v1::BindingEventResponse;
 
-pub type HttpExtension = common_v1::HttpExtension;
-
-// pub type AppCallbackServer =
-//     dapr_v1::app_callback_server::AppCallbackServer<tonic::transport::Channel>;
-
-// pub type AppCallback = dapr_v1::app_callback_server::AppCallback;
-
 impl ListTopicSubscriptionsResponse {
-    fn topic(topic: String) -> Self {
+    /// Create `ListTopicSubscriptionsResponse` with a topic.
+    pub fn topic(topic: String) -> Self {
         let topic_subscription = TopicSubscription::new(topic, None);
 
         Self {
@@ -97,7 +42,8 @@ impl ListTopicSubscriptionsResponse {
 }
 
 impl TopicSubscription {
-    fn new(topic: String, metadata: Option<HashMap<String, String>>) -> Self {
+    /// Create a new `TopicSubscription` for a give topic.
+    pub fn new(topic: String, metadata: Option<HashMap<String, String>>) -> Self {
         let mut topic_subscription = TopicSubscription {
             topic,
             ..Default::default()

@@ -9,6 +9,11 @@ This is a simple example that demonstrates Dapr's pub/sub capabilities. To imple
 
 ## Running
 
+> Before you run the example make sure local redis state store is running by executing:
+> ```
+> docker ps
+> ```
+
 To run this example:
 
 1. Start Subscriber (expose gRPC server receiver on port 50051):

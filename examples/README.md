@@ -15,5 +15,4 @@ To add new examples, `Cargo.toml` would have to be updated as follows:
 [[example]]
 name = "example-name"
 path = "examples/example-name/example.rs"
-
 ```
