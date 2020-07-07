@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let key = String::from("hello");
 
-    let val = String::from("world").as_bytes().to_vec();
+    let val = String::from("world").into_bytes();
 
     let store_name = String::from("statestore");
 

@@ -17,9 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let topic = "A".to_string();
 
     for count in 0..100 {
-        let message = format!("{} => hello from rust!", &count)
-            .as_bytes()
-            .to_vec();
+        let message = format!("{} => hello from rust!", &count).into_bytes();
 
         client.publish_event(&topic, message).await?;
 
