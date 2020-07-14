@@ -16,3 +16,15 @@ tonic-build = "0.2"
 
 [dev-dependencies]
 tokio = {version = "0.2", features = ["full"] }
+
+[[example]]
+name = "client"
+path = "examples/client/client.rs"
+
+[[example]]
+name = "publisher"
+path = "examples/pubsub/publisher.rs"
+
+[[example]]
+name = "subscriber"
+path = "examples/pubsub/subscriber.rs"

@@ -1,10 +1,9 @@
-use std::marker::Sized;
-
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
 use tonic::{transport::Channel as TonicChannel, Request};
 
+use crate::dapr::*;
 use crate::error::Error;
 
 pub struct Client<T>(T);
@@ -55,7 +54,11 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `name` - The name of the output binding to invoke.
     /// * `data` - The data which will be sent to the output binding.
-    pub async fn invoke_binding<S>(&mut self, name: S, data: Vec<u8>) -> Result<InvokeBindingResponse, Error>
+    pub async fn invoke_binding<S>(
+        &mut self,
+        name: S,
+        data: Vec<u8>,
+    ) -> Result<InvokeBindingResponse, Error>
     where
         S: Into<String>,
     {
@@ -173,7 +176,10 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: InvokeServiceRequest,
     ) -> Result<InvokeServiceResponse, Error>;
-    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<InvokeBindingResponse, Error>;
+    async fn invoke_binding(
+        &mut self,
+        request: InvokeBindingRequest,
+    ) -> Result<InvokeBindingResponse, Error>;
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
@@ -196,7 +202,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .into_inner())
     }
 
-    async fn invoke_binding(&mut self, request: InvokeBindingRequest) -> Result<InvokeBindingResponse, Error> {
+    async fn invoke_binding(
+        &mut self,
+        request: InvokeBindingRequest,
+    ) -> Result<InvokeBindingResponse, Error> {
         Ok(self
             .invoke_binding(Request::new(request))
             .await?
@@ -224,21 +233,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
         Ok(self.delete_state(Request::new(request)).await?.into_inner())
-    }
-}
-
-pub mod dapr {
-    pub mod proto {
-        pub mod common {
-            pub mod v1 {
-                tonic::include_proto!("dapr.proto.common.v1");
-            }
-        }
-        pub mod runtime {
-            pub mod v1 {
-                tonic::include_proto!("dapr.proto.runtime.v1");
-            }
-        }
     }
 }
 
@@ -276,7 +270,7 @@ pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 
 /// A tonic based gRPC client
-pub type TonicClient = dapr_v1::dapr_client::DaprClient<tonic::transport::Channel>;
+pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
