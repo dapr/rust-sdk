@@ -1,24 +1,18 @@
-Before you run the example make sure local redis state store is running by executing:
-```
-docker ps
-```
+# Dapr Rust SDK - Examples
 
-1. To run the example we need to first build the examples using the following command:
+These examples demonstrates how to use Dapr rust sdk.
 
-```
-cargo build --examples
-```
+* [client](./client)
+  * Simple dapr client example that saves, gets, and deletes state from the state stores
+* [pubsub](./pubsub)
+  * Publishes and subscribes to events
 
-2. Run the example with dapr using the following command:
+## Adding new examples
 
-```
-dapr run --app-id=rustapp --grpc-port 3500 cargo run -- --example client
-```
+To add new examples, `Cargo.toml` would have to be updated as follows:
 
-If everything went well you should see the following output along with dapr logs:
+```rust
+[[example]]
+name = "example-name"
+path = "examples/example-name/example.rs"
 ```
-Successfully saved!
-Value is "world"
-Deleted value: []
-```
-
