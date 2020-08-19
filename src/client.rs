@@ -77,14 +77,16 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// # Arguments
     ///
+    /// * `pubsub_name` - Name of the pubsub component
     /// * `topic` - Pubsub topic.
     /// * `data` - The data which will be published to topic.
-    pub async fn publish_event<S>(&mut self, topic: S, data: Vec<u8>) -> Result<(), Error>
+    pub async fn publish_event<S>(&mut self, pubsub_name: S, topic: S, data: Vec<u8>) -> Result<(), Error>
     where
         S: Into<String>,
     {
         self.0
             .publish_event(PublishEventRequest {
+                pubsub_name: pubsub_name.into(),
                 topic: topic.into(),
                 data,
             })
