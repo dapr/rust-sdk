@@ -20,6 +20,9 @@ pub type TopicSubscription = dapr_v1::TopicSubscription;
 /// TopicEventRequest message is compatiable with CloudEvent spec v1.0.
 pub type TopicEventRequest = dapr_v1::TopicEventRequest;
 
+/// TopicEventResponse is response from app on published message
+pub type TopicEventResponse = dapr_v1::TopicEventResponse;
+
 /// ListInputBindingsResponse is the message including the list of input bindings.
 pub type ListInputBindingsResponse = dapr_v1::ListInputBindingsResponse;
 
@@ -32,8 +35,8 @@ pub type BindingEventResponse = dapr_v1::BindingEventResponse;
 
 impl ListTopicSubscriptionsResponse {
     /// Create `ListTopicSubscriptionsResponse` with a topic.
-    pub fn topic(topic: String) -> Self {
-        let topic_subscription = TopicSubscription::new(topic, None);
+    pub fn topic(pubsub_name: String, topic: String) -> Self {
+        let topic_subscription = TopicSubscription::new(pubsub_name, topic, None);
 
         Self {
             subscriptions: vec![topic_subscription],
@@ -43,8 +46,9 @@ impl ListTopicSubscriptionsResponse {
 
 impl TopicSubscription {
     /// Create a new `TopicSubscription` for a give topic.
-    pub fn new(topic: String, metadata: Option<HashMap<String, String>>) -> Self {
+    pub fn new(pubsub_name: String, topic: String, metadata: Option<HashMap<String, String>>) -> Self {
         let mut topic_subscription = TopicSubscription {
+            pubsub_name,
             topic,
             ..Default::default()
         };
