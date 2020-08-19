@@ -13,13 +13,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
+    // name of the pubsub component
+    let pubsub_name = "pubsub".to_string();
+
     // topic to publish message to
     let topic = "A".to_string();
 
     for count in 0..100 {
         let message = format!("{} => hello from rust!", &count).into_bytes();
 
-        client.publish_event(&topic, message).await?;
+        client.publish_event(&pubsub_name, &topic, message).await?;
 
         // sleep for 2 secs to simulate delay b/w two events
         tokio::time::delay_for(Duration::from_secs(2)).await;

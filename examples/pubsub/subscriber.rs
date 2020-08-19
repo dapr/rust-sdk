@@ -28,8 +28,9 @@ impl AppCallback for AppCallbackService {
         _request: Request<()>,
     ) -> Result<Response<ListTopicSubscriptionsResponse>, Status> {
         let topic = "A".to_string();
+        let pubsub_name = "pubsub".to_string();
 
-        let list_subscriptions = ListTopicSubscriptionsResponse::topic(topic);
+        let list_subscriptions = ListTopicSubscriptionsResponse::topic(pubsub_name, topic);
 
         Ok(Response::new(list_subscriptions))
     }
@@ -38,14 +39,14 @@ impl AppCallback for AppCallbackService {
     async fn on_topic_event(
         &self,
         request: Request<TopicEventRequest>,
-    ) -> Result<Response<()>, Status> {
+    ) -> Result<Response<TopicEventResponse>, Status> {
         let data = &request.into_inner().data;
 
         let message = String::from_utf8_lossy(&data);
 
         println!("Message: {}", &message);
 
-        Ok(Response::new(()))
+        Ok(Response::new(TopicEventResponse::default()))
     }
 
     /// Lists all input bindings subscribed by this app.
