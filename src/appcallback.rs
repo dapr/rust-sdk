@@ -46,7 +46,11 @@ impl ListTopicSubscriptionsResponse {
 
 impl TopicSubscription {
     /// Create a new `TopicSubscription` for a give topic.
-    pub fn new(pubsub_name: String, topic: String, metadata: Option<HashMap<String, String>>) -> Self {
+    pub fn new(
+        pubsub_name: String,
+        topic: String,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Self {
         let mut topic_subscription = TopicSubscription {
             pubsub_name,
             topic,

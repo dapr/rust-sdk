@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
@@ -80,7 +82,12 @@ impl<T: DaprInterface> Client<T> {
     /// * `pubsub_name` - Name of the pubsub component
     /// * `topic` - Pubsub topic.
     /// * `data` - The data which will be published to topic.
-    pub async fn publish_event<S>(&mut self, pubsub_name: S, topic: S, data: Vec<u8>) -> Result<(), Error>
+    pub async fn publish_event<S>(
+        &mut self,
+        pubsub_name: S,
+        topic: S,
+        data: Vec<u8>,
+    ) -> Result<(), Error>
     where
         S: Into<String>,
     {
@@ -118,14 +125,25 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `store_name` - The name of state store.
     /// * `key` - The key of the desired state.
-    pub async fn get_state<S>(&mut self, store_name: S, key: S) -> Result<GetStateResponse, Error>
+    pub async fn get_state<S>(
+        &mut self,
+        store_name: S,
+        key: S,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<GetStateResponse, Error>
     where
         S: Into<String>,
     {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
         self.0
             .get_state(GetStateRequest {
                 store_name: store_name.into(),
                 key: key.into(),
+                metadata: mdata,
                 ..Default::default()
             })
             .await
@@ -156,14 +174,25 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `store_name` - The name of state store.
     /// * `key` - The key of the desired state.
-    pub async fn delete_state<S>(&mut self, store_name: S, key: S) -> Result<(), Error>
+    pub async fn delete_state<S>(
+        &mut self,
+        store_name: S,
+        key: S,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<(), Error>
     where
         S: Into<String>,
     {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
         self.0
             .delete_state(DeleteStateRequest {
                 store_name: store_name.into(),
                 key: key.into(),
+                metadata: mdata,
                 ..Default::default()
             })
             .await
