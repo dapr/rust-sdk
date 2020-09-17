@@ -22,14 +22,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Successfully saved!");
 
-    let get_response = client.get_state("statestore", "hello").await?;
+    let get_response = client.get_state("statestore", "hello", None).await?;
     println!("Value is {:?}", String::from_utf8_lossy(&get_response.data));
 
     // delete a value from the state store
-    client.delete_state("statestore", "hello").await?;
+    client.delete_state("statestore", "hello", None).await?;
 
     // validate if the value was successfully deleted
-    let del_result = client.get_state("statestore", "hello").await?;
+    let del_result = client.get_state("statestore", "hello", None).await?;
 
     // should print "[]" upon successful delete
     println!("Deleted value: {:?}", del_result.data);
