@@ -1,10 +1,6 @@
-name: Build and publish dapr rust-sdk
+name: dapr-rust-sdk
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
