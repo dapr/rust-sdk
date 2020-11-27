@@ -1,9 +1,11 @@
 [package]
-name = "github-actions-test-package"
+name = "dapr"
 version = "1.0.0"
 authors = ["dapr.io"]
 edition = "2018"
 license-file = "LICENSE"
+repository = "https://github.com/dapr/rust-sdk"
+description = "Rust SDK for dapr"
 readme = "README.md"
 keywords = ["microservices", "dapr"]
 
