@@ -1,6 +1,6 @@
 [package]
 name = "dapr"
-version = "1.0.0"
+version = "0.0.9"
 authors = ["dapr.io"]
 edition = "2018"
 license-file = "LICENSE"
