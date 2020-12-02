@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: cargo build
     - name: Build examples
-      run: cargo build --exampless
+      run: cargo build --examples
     - name: Run Tests
       run: cargo test --all-targets
    
