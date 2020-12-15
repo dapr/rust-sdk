@@ -86,16 +86,24 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         pubsub_name: S,
         topic: S,
+        data_content_type: S,
         data: Vec<u8>,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<(), Error>
     where
         S: Into<String>,
     {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
         self.0
             .publish_event(PublishEventRequest {
                 pubsub_name: pubsub_name.into(),
                 topic: topic.into(),
+                data_content_type: data_content_type.into(),
                 data,
+                metadata: mdata,
             })
             .await
     }
