@@ -30,7 +30,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // message
         let message = format!("{} => hello from rust!", &count).into_bytes();
 
-        client.publish_event(&pubsub_name, &topic, &data_content_type, message, Some(metadata)).await?;
+        client
+            .publish_event(
+                &pubsub_name,
+                &topic,
+                &data_content_type,
+                message,
+                Some(metadata),
+            )
+            .await?;
 
         // sleep for 2 secs to simulate delay b/w two events
         tokio::time::delay_for(Duration::from_secs(2)).await;
