@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut metadata = HashMap::<String, String>::new();
         metadata.insert("count".to_string(), count.to_string());
 
-	// message
+        // message
         let message = format!("{} => hello from rust!", &count).into_bytes();
 
         client.publish_event(&pubsub_name, &topic, &data_content_type, message, Some(metadata)).await?;
