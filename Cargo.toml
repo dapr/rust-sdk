@@ -1,8 +1,14 @@
 [package]
 name = "dapr"
-version = "0.2.0"
+version = "0.2.0-alpha.0"
 authors = ["dapr.io"]
 edition = "2018"
+license-file = "LICENSE"
+repository = "https://github.com/dapr/rust-sdk"
+description = "Rust SDK for dapr"
+readme = "README.md"
+keywords = ["microservices", "dapr"]
+
 
 [dependencies]
 tonic = "0.2"

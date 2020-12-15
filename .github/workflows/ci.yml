@@ -1,0 +1,54 @@
+name: dapr-rust-sdk
+
+on:
+  push:
+    branches:
+      - master
+      - release-*
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
+      - release-*
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+
+jobs:
+  lint:
+    name: Lint 
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: cargo fmt
+      run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
+    - name: cargo clippy
+      run: cargo clippy -- -W warnings
+
+
+  build:
+    name: Build 
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build
+    - name: Build examples
+      run: cargo build --examples
+    - name: Run Tests
+      run: cargo test --all-targets
+   
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: startswith(github.ref, 'refs/tags/v')
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: cargo publish
+      run: cargo publish --token ${{ env.CARGO_TOKEN }}
