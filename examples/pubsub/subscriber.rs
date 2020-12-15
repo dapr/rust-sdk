@@ -40,11 +40,13 @@ impl AppCallback for AppCallbackService {
         &self,
         request: Request<TopicEventRequest>,
     ) -> Result<Response<TopicEventResponse>, Status> {
-        let data = &request.into_inner().data;
+        let r = request.into_inner();
+        let data = &r.data;
+        let data_content_type = &r.data_content_type;
 
         let message = String::from_utf8_lossy(&data);
-
         println!("Message: {}", &message);
+        println!("Content-Type: {}", &data_content_type);
 
         Ok(Response::new(TopicEventResponse::default()))
     }
