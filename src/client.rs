@@ -176,6 +176,25 @@ impl<T: DaprInterface> Client<T> {
             .await
     }
 
+    /// Delete an array of state objects.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `states` - The array of the state key values.
+    pub async fn delete_bulk_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
+    where
+        I: IntoIterator<Item = (K, Vec<u8>)>,
+        K: Into<String>,
+    {
+        self.0
+            .delete_bulk_state(DeleteBulkStateRequest {
+                store_name: store_name.into(),
+                states: states.into_iter().map(|pair| pair.into()).collect(),
+            })
+            .await
+    }
+
     /// Delete the state for a specific key.
     ///
     /// # Arguments
@@ -205,6 +224,31 @@ impl<T: DaprInterface> Client<T> {
             })
             .await
     }
+
+    /// Set sidecar Metadata
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The metadata key
+    /// * `value` - The metadata value
+    pub async fn set_metadata<S>(&mut self, key: S, value: S) -> Result<(), Error>
+    where
+        S: Into<String>,
+    {
+        self.0
+            .set_metadata(SetMetadataRequest {
+                key: key.into(),
+                value: value.into(),
+                ..Default::default()
+            })
+            .await
+    }
+
+    /// Set sidecar Metadata
+    ///
+    pub async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
+        self.0.get_metadata().await
+    }
 }
 
 #[async_trait]
@@ -223,6 +267,9 @@ pub trait DaprInterface: Sized {
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
+    async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
+    async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
+    async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error>;
 }
 
 #[async_trait]
@@ -273,6 +320,21 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
         Ok(self.delete_state(Request::new(request)).await?.into_inner())
     }
+
+    async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error> {
+        Ok(self
+            .delete_bulk_state(Request::new(request))
+            .await?
+            .into_inner())
+    }
+
+    async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error> {
+        Ok(self.set_metadata(Request::new(request)).await?.into_inner())
+    }
+
+    async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
+        Ok(self.get_metadata(Request::new(())).await?.into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -302,11 +364,20 @@ pub type SaveStateRequest = dapr_v1::SaveStateRequest;
 /// A request for deleting state
 pub type DeleteStateRequest = dapr_v1::DeleteStateRequest;
 
+/// A request for deleting bulk state
+pub type DeleteBulkStateRequest = dapr_v1::DeleteBulkStateRequest;
+
 /// A request for getting secret
 pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 
 /// A response from getting secret
 pub type GetSecretResponse = dapr_v1::GetSecretResponse;
+
+/// A response from getting metadata
+pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
+
+/// A request for setting metadata
+pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
