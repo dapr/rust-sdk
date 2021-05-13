@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await?;
 
         // sleep for 2 secs to simulate delay b/w two events
-        tokio::time::delay_for(Duration::from_secs(2)).await;
+        tokio::time::sleep(Duration::from_secs(2)).await;
     }
 
     Ok(())
