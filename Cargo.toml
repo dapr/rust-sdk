@@ -1,6 +1,6 @@
 [package]
 name = "dapr"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["dapr.io"]
 edition = "2018"
 license-file = "LICENSE"
@@ -11,14 +11,14 @@ keywords = ["microservices", "dapr"]
 
 
 [dependencies]
-tonic = "0.4"
-prost = "0.7"
+tonic = "0.5"
+prost = "0.8"
 bytes = "1"
-prost-types = "0.7"
+prost-types = "0.8"
 async-trait = "0.1"
 
 [build-dependencies]
-tonic-build = "0.4"
+tonic-build = "0.5"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
