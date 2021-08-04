@@ -17,7 +17,11 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `addr` - Address of gRPC server to connect to.
     pub async fn connect(addr: String) -> Result<Self, Error> {
-        Ok(Client(T::connect(addr).await?))
+        // Get the Dapr port to create a connection
+        let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
+        let address = format!("{}:{}", addr, port);
+
+        Ok(Client(T::connect(address).await?))
     }
 
     /// Invoke a method in a Dapr enabled app.
