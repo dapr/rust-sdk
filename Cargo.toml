@@ -34,3 +34,11 @@ path = "examples/pubsub/publisher.rs"
 [[example]]
 name = "subscriber"
 path = "examples/pubsub/subscriber.rs"
+
+[[example]]
+name = "output-bindings"
+path = "examples/bindings/output.rs"
+
+[[example]]
+name = "input-bindings"
+path = "examples/bindings/input.rs"
