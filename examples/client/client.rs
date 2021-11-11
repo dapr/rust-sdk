@@ -1,3 +1,16 @@
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+struct InnerState {
+    name: String
+}
+#[derive(Serialize, Deserialize, Debug)]
+struct InternalState {
+    foo: f64,
+    bar: String,    
+    inner: InnerState
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
@@ -11,20 +24,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
+    
     let key = String::from("hello");
 
-    let val = String::from("world").into_bytes();
+    let data = InternalState {
+        foo: 12.0,
+        bar: "thomas".into(), 
+        inner: InnerState { name: "inner_name".into()}
+    };
+
 
     let store_name = String::from("statestore");
 
     // save key-value pair in the state store
-    client.save_state(store_name, vec![(key, val)]).await?;
+    client.save_state(store_name, vec![(key, serde_json::to_string(&data).unwrap().into_bytes())]).await?;
 
     println!("Successfully saved!");
 
     let get_response = client.get_state("statestore", "hello", None).await?;
-    println!("Value is {:?}", String::from_utf8_lossy(&get_response.data));
+    let received_string = String::from_utf8_lossy(&get_response.data);
+    println!("Value is {:?}", received_string);
 
+    println!("Parsed as {:?}", serde_json::from_str::<InternalState>(&received_string).unwrap());
     // delete a value from the state store
     client.delete_state("statestore", "hello", None).await?;
 

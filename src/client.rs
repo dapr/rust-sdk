@@ -379,6 +379,14 @@ pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
 /// A request for setting metadata
 pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
 
+/// A request for invoking a method on an actor
+pub type InvokeActorRequest = dapr_v1::InvokeActorRequest;
+
+///A response from invoking a method on an actor
+pub type InvokeActorResponse = dapr_v1::InvokeActorResponse;
+
+
+
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
