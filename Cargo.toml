@@ -9,25 +9,26 @@ description = "Rust SDK for dapr"
 readme = "README.md"
 keywords = ["microservices", "dapr"]
 
-[profile.dev]
-incremental = false    
-
 [dependencies]
 tonic = "0.5"
 prost = "0.8"
 bytes = "1"
 prost-types = "0.8"
 async-trait = "0.1"
-serde = { version = "1.0" } 
+serde = "1.0"
+serde_json = { version = "1.0", optional = true }
+axum = { version = "0.3.2", optional = true }
+axum-debug = { version = "0.1.0", optional = true }
+
+[features]
+actors = ["serde_json", "axum", "axum-debug", "serde/derive"]
+
 
 [build-dependencies]
 tonic-build = "0.5"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-axum = "0.3.2"
 
 [[example]]
 name = "client"
@@ -44,3 +45,4 @@ path = "examples/pubsub/subscriber.rs"
 [[example]]
 name = "actor"
 path = "examples/actor/actor.rs"
+required-features = ["actors"]
