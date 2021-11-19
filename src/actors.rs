@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
+use crate::error::Error;
 
 pub type BoxedActor = Arc<Box<dyn Actor + Sync + Send>>;
 pub type Callback = fn() -> BoxedActor;
@@ -13,6 +14,13 @@ pub trait Actor {
     where
         Self: Sized;
 }
+
+pub trait ActorManager {
+    fn registered_actors(&self) -> String;
+    fn invoke(&self, actor_type: &str, _actor_id: &str, method: &str) -> Result<String, Error>;
+    fn register(&mut self, name: &str, callback: Callback);
+}
+
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,11 +44,6 @@ impl ActorConfig {
     }
 }
 
-pub trait ActorManager {
-    fn registered_actors(&self) -> String;
-    fn invoke(&self, actor_type: &str, _actor_id: &str, method: &str) -> Option<String>;
-    fn register(&mut self, name: &str, callback: Callback);
-}
 
 pub struct ActorManagerImpl {
     pub registered_types: Arc<RwLock<HashMap<String, Callback>>>,
@@ -56,9 +59,6 @@ impl ActorManagerImpl {
     }
 }
 
-unsafe impl Send for ActorManagerImpl {}
-unsafe impl Sync for ActorManagerImpl {}
-
 impl ActorManager for ActorManagerImpl {
     fn registered_actors(&self) -> String {
         let types_map = self.registered_types.read().unwrap();
@@ -67,14 +67,14 @@ impl ActorManager for ActorManagerImpl {
         let result = serde_json::to_string(&config).unwrap();
         result
     }
-    fn invoke(&self, actor_type: &str, actor_id: &str, method: &str) -> Option<String> {
+    fn invoke(&self, actor_type: &str, actor_id: &str, method: &str) -> Result<String, Error> {
         let actor_type = actor_type.to_lowercase();
         let maybe_actor = { self.activated_actors.read().unwrap().get(actor_id).cloned() };
         let actor = match maybe_actor {
             Some(actor) => actor.clone(),
             None => {
-                let type_map = self.registered_types.read().unwrap();
-                let creator = type_map.get(&actor_type).unwrap();
+                let type_map = self.registered_types.read()?;
+                let creator = type_map.get(&actor_type).ok_or(crate::error::Error::ActorErrorType::NoSuchMethod)?;
                 let actor = creator();
                 {
                     self.activated_actors
@@ -86,7 +86,7 @@ impl ActorManager for ActorManagerImpl {
             }
         };
 
-        Some(actor.invoke(method, ""))
+        Ok(actor.invoke(method, ""))
     }
 
     fn register(&mut self, name: &str, callback: Callback) {

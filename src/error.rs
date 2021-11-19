@@ -1,4 +1,4 @@
-use std::{convert::From, fmt, fmt::Display};
+use std::{convert::From, fmt, fmt::Display, sync::PoisonError};
 
 use tonic::{transport::Error as TonicError, Status as TonicStatus};
 
@@ -6,6 +6,7 @@ use tonic::{transport::Error as TonicError, Status as TonicStatus};
 pub enum Error {
     TransportError,
     GrpcError(GrpcError),
+    ActorError(ActorError)
 }
 
 impl Display for Error {
@@ -36,5 +37,34 @@ pub struct GrpcError {
 impl Display for GrpcError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+#[derive(Debug)]
+pub enum ActorErrorType { 
+    NoSuchMethod,
+    MethodInvocation
+}
+
+#[derive(Debug)]
+pub struct ActorError {
+    internal_error: ActorErrorType
+}    
+
+impl Display for ActorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl From<ActorErrorType> for Error {
+    fn from(error: ActorErrorType) -> Self {
+        Error::ActorError(ActorError { internal_error: error })
+    }
+}
+
+impl From<PoisonError<T>> for Error {
+    fn from(error: PoisonError<T>) -> Error {
+        Error::ActorError(ActorError { internal_error: error })
     }
 }

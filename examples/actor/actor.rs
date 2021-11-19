@@ -61,14 +61,14 @@ async fn main() {
 
     println!("trying to say something");
     match manager.invoke("HelloActor", "1", "say_hi") {
-        Some(response) => println!("Say Hi: {}", response),
-        None => eprint!("Could not invoke actor ☹️"),
+        Ok(response) => println!("Say Hi: {}", response),
+        Err(err) => eprint!("Could not invoke actor ☹️ {:?}", err),
     }
 
     println!("trying to say something again");
     match manager.invoke("HelloActor", "2", "say_ho") {
-        Some(response) => println!("Say ho: {}", response),
-        None => eprint!("Could not invoke actor ☹️"),
+        Ok(response) => println!("Say ho: {}", response),
+        Err(err) => eprint!("Could not invoke actor ☹️ {:?}", err),
     }
 
     let manager: DynActorManager = Arc::new(manager);
