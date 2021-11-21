@@ -5,5 +5,6 @@ pub mod error;
 
 #[cfg(feature = "actors")]
 pub mod actors;
+mod daprduration;
 
 pub use client::Client;
