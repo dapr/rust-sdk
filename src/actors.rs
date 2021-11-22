@@ -1,17 +1,34 @@
-use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
+
+use axum::body::Body;
+use axum::extract::{Extension, Path};
+use axum::handler::Handler;
+use axum::http::{Request, Response, StatusCode};
+use axum::response::IntoResponse;
+use axum::routing::get;
+use axum::{AddExtensionLayer, Router};
+use axum_debug::debug_handler;
+use serde::Serialize;
+
+use crate::daprduration::DaprDuration;
+use crate::error::{ActorErrorType, Error};
 
 pub type BoxedActor = Arc<Box<dyn Actor + Sync + Send>>;
 pub type Callback = fn() -> BoxedActor;
 pub type DynActorManager = Arc<dyn ActorManager + Send + Sync>;
 
 pub trait Actor {
-    fn invoke(&self, method: &str, args: &str) -> String;
+    fn invoke(&self, method: &str, args: &str) -> Result<String, Error>;
     fn register(manager: &mut dyn ActorManager)
     where
         Self: Sized;
+}
+
+pub trait ActorManager {
+    fn registered_actors(&self) -> String;
+    fn invoke(&self, actor_type: &str, _actor_id: &str, method: &str) -> Result<String, Error>;
+    fn register(&mut self, name: &str, callback: Callback);
 }
 
 #[derive(Debug, Serialize)]
@@ -36,12 +53,6 @@ impl ActorConfig {
     }
 }
 
-pub trait ActorManager {
-    fn registered_actors(&self) -> String;
-    fn invoke(&self, actor_type: &str, _actor_id: &str, method: &str) -> Option<String>;
-    fn register(&mut self, name: &str, callback: Callback);
-}
-
 pub struct ActorManagerImpl {
     pub registered_types: Arc<RwLock<HashMap<String, Callback>>>,
     pub activated_actors: Arc<RwLock<HashMap<String, BoxedActor>>>,
@@ -56,9 +67,6 @@ impl ActorManagerImpl {
     }
 }
 
-unsafe impl Send for ActorManagerImpl {}
-unsafe impl Sync for ActorManagerImpl {}
-
 impl ActorManager for ActorManagerImpl {
     fn registered_actors(&self) -> String {
         let types_map = self.registered_types.read().unwrap();
@@ -67,14 +75,16 @@ impl ActorManager for ActorManagerImpl {
         let result = serde_json::to_string(&config).unwrap();
         result
     }
-    fn invoke(&self, actor_type: &str, actor_id: &str, method: &str) -> Option<String> {
+    fn invoke(&self, actor_type: &str, actor_id: &str, method: &str) -> Result<String, Error> {
         let actor_type = actor_type.to_lowercase();
         let maybe_actor = { self.activated_actors.read().unwrap().get(actor_id).cloned() };
         let actor = match maybe_actor {
             Some(actor) => actor.clone(),
             None => {
-                let type_map = self.registered_types.read().unwrap();
-                let creator = type_map.get(&actor_type).unwrap();
+                let type_map = self.registered_types.read()?;
+                let creator = type_map
+                    .get(&actor_type)
+                    .ok_or(ActorErrorType::NoSuchActorType)?;
                 let actor = creator();
                 {
                     self.activated_actors
@@ -86,7 +96,7 @@ impl ActorManager for ActorManagerImpl {
             }
         };
 
-        Some(actor.invoke(method, ""))
+        actor.invoke(method, "")
     }
 
     fn register(&mut self, name: &str, callback: Callback) {
@@ -95,65 +105,63 @@ impl ActorManager for ActorManagerImpl {
     }
 }
 
-#[derive(Debug)]
-pub struct DaprDuration {
-    duration: Duration,
-}
+impl IntoResponse for crate::error::Error {
+    type Body = Body;
+    type BodyError = <Self::Body as axum::body::HttpBody>::Error;
 
-impl DaprDuration {
-    pub fn from(duration: Duration) -> Self {
-        Self { duration }
-    }
-}
-
-impl Serialize for DaprDuration {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        // write in format expected by Dapr, it only accepts h, m, s, ms, us(micro), ns
-        let dapr_time_str = match self.duration.as_millis() {
-            0 => "0s".to_string(),
-            millis => {
-                const ONE_HOUR: u128 = 1000 * 3600;
-                const ONE_MIN: u128 = 1000 * 60;
-                const ONE_SEC: u128 = 1000;
-                let hours = millis / ONE_HOUR;
-                let mins = (millis % ONE_HOUR) / ONE_MIN;
-                let seconds = (millis % ONE_MIN) / ONE_SEC;
-                let millis = millis % ONE_SEC;
-
-                format!("{}h{}m{}s{}ms", hours, mins, seconds, millis)
-            }
+    fn into_response(self) -> Response<Self::Body> {
+        let (body, status_code) = match self {
+            Error::ActorError(_internal) => (
+                Body::from("something went wrong"),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            _ => (
+                Body::from("something else went wrong"),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
         };
 
-        serializer.serialize_str(&dapr_time_str)
+        Response::builder().status(status_code).body(body).unwrap()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn works_with_content() {
-        let hours = 45;
-        let minutes = 32;
-        let seconds = 23;
-        let millis = 234;
-        let duration = DaprDuration::from(std::time::Duration::from_secs_f64(
-            hours as f64 * 3600f64
-                + minutes as f64 * 60f64
-                + seconds as f64
-                + millis as f64 / 1000.0,
-        ));
-        let expected = format!("\"{}h {}m {}s {}ms\"", hours, minutes, seconds, millis);
-        assert_eq!(expected, serde_json::to_string(&duration).unwrap());
-    }
+#[debug_handler]
+async fn invoke_method(
+    Path((actor_type, actor_id, method_name)): Path<(String, String, String)>,
+    Extension(actor_manager): Extension<DynActorManager>,
+) -> Result<String, Error> {
+    actor_manager.invoke(&actor_type, &actor_id, &method_name)
+}
 
-    #[test]
-    fn works_with_empty_duration() {
-        let duration = DaprDuration::from(std::time::Duration::from_secs(0));
-        let expected = format!("\"0s\"");
-        assert_eq!(expected, serde_json::to_string(&duration).unwrap());
-    }
+#[debug_handler]
+async fn get_registered_actors(Extension(actor_manager): Extension<DynActorManager>) -> String {
+    actor_manager.registered_actors()
+}
+
+pub async fn serve<M>(manager: M, url: &str) -> Result<(), Error>
+where
+    M: ActorManager + Sync + Send + 'static,
+{
+    let manager: DynActorManager = Arc::new(manager);
+
+    let app = Router::new()
+        .route("/", get(|| async { "hello world" }))
+        .route("/dapr/config", get(get_registered_actors))
+        .route("/healthz", get(|| async { StatusCode::OK }))
+        .route(
+            "/actors/:actor_type/:actor_id/method/:method_name",
+            get(invoke_method).put(invoke_method).post(invoke_method),
+        )
+        .layer(AddExtensionLayer::new(manager.clone()));
+    let app = app.fallback(handler_404.into_service());
+    // run it with hyper on localhost:3000
+    axum::Server::bind(&url.parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .map_err(|_e| Error::from(ActorErrorType::HttpError))
+}
+
+async fn handler_404(request: Request<Body>) -> impl IntoResponse {
+    println!("404-ing!! {:?}", request);
+    (StatusCode::NOT_FOUND, "nothing to see here")
 }
