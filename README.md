@@ -2,12 +2,12 @@
 
 [![Crates.io][crates-badge]][crates-url]
 [![Build Status][actions-badge]][actions-url]
-[![License: MIT][mit-badge]][mit-url]
+[![License: Apache 2.0][apache-badge]][apache-url]
 
 [crates-badge]: https://img.shields.io/crates/v/dapr.svg
 [crates-url]: https://crates.io/crates/dapr
-[mit-badge]: https://img.shields.io/badge/License-MIT-yellow.svg
-[mit-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
+[apache-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
+[apache-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
 [actions-badge]: https://github.com/dapr/rust-sdk/workflows/dapr-rust-sdk/badge.svg
 [actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
 
