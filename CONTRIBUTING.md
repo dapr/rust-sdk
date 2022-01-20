@@ -8,8 +8,8 @@ whether you need to provide signoff for your commit. Please follow the instructi
 requests cannot be merged until the author(s) have provided signoff to fulfill the DCO requirement.
 You may find more information on the DCO requirements [below](#developer-certificate-of-origin-signing-your-work).
 
-This project has adopted the [Contributor Covenant Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md).
 
+This project has adopted the [Contributor Covenant Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md).
 Contributions come in many forms: submitting issues, writing code, participating in discussions and community calls.
 
 This document provides the guidelines for how to contribute to the Dapr project.
@@ -159,5 +159,4 @@ git rebase upstream/master
 This will replay the changes you have made in your branch on top of the upstream `master` branch. The same principle applies to other branches in the original repository as well.
 
 ## Code of Conduct
-
 This project has adopted the [Contributor Covenant Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md)
