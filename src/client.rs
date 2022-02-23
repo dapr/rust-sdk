@@ -57,6 +57,9 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `app_id` - Id of the application running.
     /// * `method_name` - Name of the method to invoke.
+    /// * `http_method` - Http method to use in invoke.
+    /// * `content_type` - Content type to use in invoke.
+    /// * `queries` - Queries to pass in invoke.
     /// * `data` - Required. Bytes value or data required to invoke service.
     pub async fn invoke_service_http<I, M, C, H, QS>(
         &mut self,
