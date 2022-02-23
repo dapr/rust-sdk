@@ -28,7 +28,37 @@ impl<T: DaprInterface> Client<T> {
     /// * `app_id` - Id of the application running.
     /// * `method_name` - Name of the method to invoke.
     /// * `data` - Required. Bytes value or data required to invoke service.
-    pub async fn invoke_service<I, M, C, H, QS>(
+    pub async fn invoke_service<I, M>(
+        &mut self,
+        app_id: I,
+        method_name: M,
+        data: Option<Any>,
+    ) -> Result<InvokeServiceResponse, Error>
+    where
+        I: Into<String>,
+        M: Into<String>,
+    {
+        self.0
+            .invoke_service(InvokeServiceRequest {
+                id: app_id.into(),
+                message: common_v1::InvokeRequest {
+                    method: method_name.into(),
+                    data,
+                    ..Default::default()
+                }
+                .into(),
+            })
+            .await
+    }
+
+    /// Invoke a method in a Dapr enabled app using HTTP.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_id` - Id of the application running.
+    /// * `method_name` - Name of the method to invoke.
+    /// * `data` - Required. Bytes value or data required to invoke service.
+    pub async fn invoke_service_http<I, M, C, H, QS>(
         &mut self,
         app_id: I,
         method_name: M,
