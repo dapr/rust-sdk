@@ -5,6 +5,7 @@ use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
 use tonic::{transport::Channel as TonicChannel, Request};
 
+use crate::dapr::dapr::proto::common::v1::{http_extension, HttpExtension};
 use crate::dapr::*;
 use crate::error::Error;
 
@@ -27,23 +28,34 @@ impl<T: DaprInterface> Client<T> {
     /// * `app_id` - Id of the application running.
     /// * `method_name` - Name of the method to invoke.
     /// * `data` - Required. Bytes value or data required to invoke service.
-    pub async fn invoke_service<I, M>(
+    pub async fn invoke_service<I, M, C, H, QS>(
         &mut self,
         app_id: I,
         method_name: M,
+        http_method: H,
+        content_type: C,
+        queries: QS,
         data: Option<Any>,
     ) -> Result<InvokeServiceResponse, Error>
     where
         I: Into<String>,
         M: Into<String>,
+        C: Into<String>,
+        H: Into<HttpMethod>,
+        // NOTE: Maybe we want a type-safe method to pass this via Iterator<Item=(String,String)> instead?
+        QS: Into<String>,
     {
         self.0
             .invoke_service(InvokeServiceRequest {
                 id: app_id.into(),
                 message: common_v1::InvokeRequest {
                     method: method_name.into(),
+                    http_extension: Some(HttpExtension {
+                        verb: http_method.into() as i32,
+                        querystring: queries.into(),
+                    }),
+                    content_type: content_type.into(),
                     data,
-                    ..Default::default()
                 }
                 .into(),
             })
@@ -381,6 +393,37 @@ pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
+
+/// A HTTP method in invoke request
+pub enum HttpMethod {
+    None,
+    Get,
+    Head,
+    Post,
+    Put,
+    Delete,
+    Connect,
+    Options,
+    Trace,
+    Patch,
+}
+
+impl From<HttpMethod> for http_extension::Verb {
+    fn from(v: HttpMethod) -> Self {
+        match v {
+            HttpMethod::None => http_extension::Verb::None,
+            HttpMethod::Get => http_extension::Verb::Get,
+            HttpMethod::Head => http_extension::Verb::Head,
+            HttpMethod::Post => http_extension::Verb::Post,
+            HttpMethod::Put => http_extension::Verb::Put,
+            HttpMethod::Delete => http_extension::Verb::Delete,
+            HttpMethod::Connect => http_extension::Verb::Connect,
+            HttpMethod::Options => http_extension::Verb::Options,
+            HttpMethod::Trace => http_extension::Verb::Trace,
+            HttpMethod::Patch => http_extension::Verb::Patch,
+        }
+    }
+}
 
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
