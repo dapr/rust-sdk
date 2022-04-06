@@ -56,3 +56,12 @@ cargo build
 ```
 
 >Note: The proto buf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the proto buf client.
+
+## To refresh .proto files from upstream dapr
+
+1. Just need to run update-protos.sh, which will basically fetch latest proto updates.
+2. By default, it picks from master proto. To specify a particular release/version, please specify with a -v flag
+
+```bash
+./update-protos.sh -v v1.7.0-rc.2
+```
