@@ -18,6 +18,7 @@ APPCALLBACK="appcallback"
 COMMON="common"
 DAPR="dapr"
 RUNTIME="runtime"
+RUNTIME_RELEASE_TAG="master"
 
 # Path to store output
 PROTO_PATH="dapr/proto"
@@ -36,13 +37,33 @@ checkHttpRequestCLI() {
     fi
 }
 
+setRuntimeReleaseTag() {
+    local OPTIND
+    while getopts ":v:" opt; do
+        case $opt in
+            v)
+                echo "Passed Runtime Release Tag is: $OPTARG" >&2
+                RUNTIME_RELEASE_TAG=$OPTARG
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                exit 1
+                ;;
+            :)
+                echo "Option -$OPTARG requires an argument." >&2
+                exit 1
+                ;;
+        esac
+    done
+}
+
 downloadFile() {
     FOLDER_NAME=$1
     FILE_NAME=$2
     FILE_PATH="${PROTO_PATH}/${FOLDER_NAME}/v1"
 
     # URL for proto file
-    PROTO_URL="https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/${FOLDER_NAME}/v1/${FILE_NAME}.proto"
+    PROTO_URL="https://raw.githubusercontent.com/dapr/dapr/${RUNTIME_RELEASE_TAG}/dapr/proto/${FOLDER_NAME}/v1/${FILE_NAME}.proto"
 
     mkdir -p "${FILE_PATH}"
 
@@ -74,6 +95,7 @@ fail_trap() {
 trap "fail_trap" EXIT
 
 checkHttpRequestCLI
+setRuntimeReleaseTag "$@"
 downloadFile $COMMON $COMMON
 downloadFile $RUNTIME $DAPR
 downloadFile $RUNTIME $APPCALLBACK
