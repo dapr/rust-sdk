@@ -239,7 +239,6 @@ impl<T: DaprInterface> Client<T> {
             .set_metadata(SetMetadataRequest {
                 key: key.into(),
                 value: value.into(),
-                ..Default::default()
             })
             .await
     }
@@ -299,10 +298,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        Ok(self
-            .publish_event(Request::new(request))
+        self.publish_event(Request::new(request))
             .await?
-            .into_inner())
+            .into_inner();
+        Ok(())
     }
 
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
@@ -314,22 +313,25 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        Ok(self.save_state(Request::new(request)).await?.into_inner())
+        self.save_state(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
-        Ok(self.delete_state(Request::new(request)).await?.into_inner())
+        self.delete_state(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error> {
-        Ok(self
-            .delete_bulk_state(Request::new(request))
+        self.delete_bulk_state(Request::new(request))
             .await?
-            .into_inner())
+            .into_inner();
+        Ok(())
     }
 
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error> {
-        Ok(self.set_metadata(Request::new(request)).await?.into_inner())
+        self.set_metadata(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {

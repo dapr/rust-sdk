@@ -35,6 +35,6 @@ pub struct GrpcError {
 
 impl Display for GrpcError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{:?}", self.status)
     }
 }
