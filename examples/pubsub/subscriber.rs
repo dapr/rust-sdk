@@ -2,7 +2,7 @@ use tonic::{transport::Server, Request, Response, Status};
 
 use dapr::{
     appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
+    proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
 };
 
 #[derive(Default)]
@@ -44,7 +44,7 @@ impl AppCallback for AppCallbackService {
         let data = &r.data;
         let data_content_type = &r.data_content_type;
 
-        let message = String::from_utf8_lossy(&data);
+        let message = String::from_utf8_lossy(data);
         println!("Message: {}", &message);
         println!("Content-Type: {}", &data_content_type);
 
