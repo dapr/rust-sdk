@@ -3,6 +3,7 @@
 [![Crates.io][crates-badge]][crates-url]
 [![Build Status][actions-badge]][actions-url]
 [![License: Apache 2.0][apache-badge]][apache-url]
+[![FOSSA Status][fossa-badge]][fossa-url]
 
 [crates-badge]: https://img.shields.io/crates/v/dapr.svg
 [crates-url]: https://crates.io/crates/dapr
@@ -10,6 +11,8 @@
 [apache-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
 [actions-badge]: https://github.com/dapr/rust-sdk/workflows/dapr-rust-sdk/badge.svg
 [actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
+[fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
+[fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
 
 ⚠ Work in Progress ⚠
 
