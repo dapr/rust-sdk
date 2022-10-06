@@ -23,5 +23,5 @@ dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run
 
 2. Start Publisher:
 ```bash
-dapr run --app-id python-publisher --app-protocol grpc cargo run -- --example publisher
+dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example publisher
 ```
