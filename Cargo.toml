@@ -2,7 +2,7 @@
 name = "dapr"
 version = "0.10.0"
 authors = ["dapr.io"]
-edition = "2018"
+edition = "2021"
 license-file = "LICENSE"
 repository = "https://github.com/dapr/rust-sdk"
 description = "Rust SDK for dapr"
@@ -11,14 +11,14 @@ keywords = ["microservices", "dapr"]
 
 
 [dependencies]
-tonic = "0.5"
-prost = "0.8"
+tonic = "0.8"
+prost = "0.11"
 bytes = "1"
-prost-types = "0.8"
+prost-types = "0.11"
 async-trait = "0.1"
 
 [build-dependencies]
-tonic-build = "0.5"
+tonic-build = "0.8"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
