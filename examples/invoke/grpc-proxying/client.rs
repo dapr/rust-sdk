@@ -1,0 +1,31 @@
+use hello_world::{HelloRequest, greeter_client::GreeterClient};
+
+use tonic::metadata::MetadataValue;
+
+pub mod hello_world {
+    tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>>{
+    // Get the Dapr port for gRPC connection
+    let port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
+    let address = format!("https://127.0.0.1:{}", port);
+
+    let mut client = GreeterClient::connect(address).await?;
+
+    let request = HelloRequest {
+        name: "Test".to_string(),
+    };
+    let mut request = tonic::Request::new(request);
+    request
+        .metadata_mut()
+        .append("dapr-app-id", MetadataValue::from_static("invoke-grpc-server"));
+
+    let response = client.say_hello(request).await.unwrap();
+    let hello_reply = response.into_inner();
+
+    println!("Response: {:#?}", hello_reply);
+
+    Ok(())
+}
