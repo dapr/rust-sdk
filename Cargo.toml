@@ -16,6 +16,17 @@ prost = "0.8"
 bytes = "1"
 prost-types = "0.8"
 async-trait = "0.1"
+serde = {version = "1.0.152", features = ["derive"], optional = true}
+serde_json = {version = "1.0.91", optional = true }
+proc_macros = {path = "./proc-macros", optional = true}
+
+[workspace]
+members = ["proc-macros"]
+
+[features]
+serde = ["dep:serde", "dep:serde_json"]
+proc-macros = ["dep:proc_macros"]
+full = ["serde", "proc-macros"]
 
 [build-dependencies]
 tonic-build = "0.5"

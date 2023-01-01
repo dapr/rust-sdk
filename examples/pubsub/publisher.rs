@@ -1,5 +1,16 @@
 use std::{collections::HashMap, thread, time::Duration};
 
+use dapr::serde::{Serialize, Deserialize};
+
+use dapr::serde_json;
+
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Order {
+    pub order_number: i32,
+    pub order_details: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
@@ -23,12 +34,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let topic = "A".to_string();
 
     for count in 0..100 {
+
+        let order = Order {
+            order_number: count,
+            order_details: format!("Count is {}", count),
+        };
         // message metadata
         let mut metadata = HashMap::<String, String>::new();
         metadata.insert("count".to_string(), count.to_string());
 
         // message
-        let message = format!("{} => hello from rust!", &count).into_bytes();
+        let message = serde_json::to_string(&order).unwrap().into_bytes();
 
         client
             .publish_event(

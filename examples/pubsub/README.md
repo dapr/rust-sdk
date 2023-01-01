@@ -18,10 +18,10 @@ To run this example:
 
 1. Start Subscriber (expose gRPC server receiver on port 50051):
 ```bash
-dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run -- --example subscriber
+dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run -- --example subscriber --features full
 ```
 
 2. Start Publisher:
 ```bash
-dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example publisher
+dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example publisher --features full
 ```
