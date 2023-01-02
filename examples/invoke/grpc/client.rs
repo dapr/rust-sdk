@@ -8,7 +8,7 @@ pub mod hello_world {
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> { 
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the Dapr port for gRPC connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
     let address = format!("https://127.0.0.1:{}", port);

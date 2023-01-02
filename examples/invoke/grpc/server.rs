@@ -16,7 +16,10 @@ pub struct AppCallbackService {}
 #[tonic::async_trait]
 impl AppCallback for AppCallbackService {
     /// Invokes service method with InvokeRequest.
-    async fn on_invoke(&self, request: Request<InvokeRequest>) -> Result<Response<InvokeResponse>, Status> {
+    async fn on_invoke(
+        &self,
+        request: Request<InvokeRequest>,
+    ) -> Result<Response<InvokeResponse>, Status> {
         let r = request.into_inner();
 
         let method = &r.method;
@@ -71,7 +74,10 @@ impl AppCallback for AppCallbackService {
     }
 
     /// Lists all input bindings subscribed by this app.
-    async fn list_input_bindings(&self, _request: Request<()>) -> Result<Response<ListInputBindingsResponse>, Status> {
+    async fn list_input_bindings(
+        &self,
+        _request: Request<()>,
+    ) -> Result<Response<ListInputBindingsResponse>, Status> {
         Ok(Response::new(ListInputBindingsResponse::default()))
     }
 
@@ -85,7 +91,7 @@ impl AppCallback for AppCallbackService {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {   
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server_address = "[::]:50052".parse().unwrap();
 
     let callback_service = AppCallbackService {};

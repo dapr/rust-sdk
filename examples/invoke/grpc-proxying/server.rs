@@ -1,6 +1,6 @@
-use tonic::{transport::Server, Request, Response, Status};
 use crate::hello_world::greeter_server::{Greeter, GreeterServer};
 use crate::hello_world::{HelloReply, HelloRequest};
+use tonic::{transport::Server, Request, Response, Status};
 
 pub mod hello_world {
     tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
@@ -18,15 +18,17 @@ impl Greeter for GreeterService {
         let req = request.into_inner();
 
         let name = req.name;
- 
-        let response = HelloReply { message: format!("Hello {name}!") };
+
+        let response = HelloReply {
+            message: format!("Hello {name}!"),
+        };
 
         Ok(Response::new(response))
     }
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {   
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server_address = "[::]:50052".parse().unwrap();
 
     let greeter_service = GreeterService::default();
