@@ -15,6 +15,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+  PROTOC_VERSION: '3.21.12'
 
 jobs:
   lint:
@@ -24,6 +25,8 @@ jobs:
     steps:
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
@@ -38,6 +41,8 @@ jobs:
     steps:
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build
@@ -55,6 +60,8 @@ jobs:
     steps:
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
     - name: cargo publish
       run: cargo publish --token ${{ env.CARGO_TOKEN }}
