@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
     - uses: actions/checkout@v2
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
@@ -34,6 +36,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build
@@ -49,6 +53,8 @@ jobs:
     if: startswith(github.ref, 'refs/tags/v')
 
     steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
     - uses: actions/checkout@v2
     - name: cargo publish
       run: cargo publish --token ${{ env.CARGO_TOKEN }}
