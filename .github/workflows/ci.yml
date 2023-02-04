@@ -15,7 +15,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
-  PROTOC_VERSION: '3.21.12'
+  PROTOC_VERSION: '3.x'
 
 jobs:
   lint:
