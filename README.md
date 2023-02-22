@@ -29,7 +29,7 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 ```toml
 [dependencies]
-dapr = "0.10.0"
+dapr = "0.11.0"
 ```
 
 A client can be created as follows:
@@ -66,5 +66,5 @@ cargo build
 2. By default, it picks from master proto. To specify a particular release/version, please specify with a -v flag
 
 ```bash
-./update-protos.sh -v v1.7.0-rc.2
+./update-protos.sh -v v1.10.1
 ```
