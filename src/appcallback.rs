@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 
-// use crate::dapr::*;
+use crate::dapr::*;
 
 /// InvokeRequest is the message to invoke a method with the data.
 pub type InvokeRequest = common_v1::InvokeRequest;

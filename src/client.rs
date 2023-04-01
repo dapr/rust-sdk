@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 
-use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use async_trait::async_trait;
+use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
 use tonic::{transport::Channel as TonicChannel, Request};
 
-// use crate::dapr::*;
+use crate::dapr::*;
 use crate::error::Error;
 
-#[derive(Clone)]
 pub struct Client<T>(T);
 
 impl<T: DaprInterface> Client<T> {
