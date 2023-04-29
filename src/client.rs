@@ -249,6 +249,42 @@ impl<T: DaprInterface> Client<T> {
     pub async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
         self.0.get_metadata().await
     }
+
+    /// Invoke a method in a Dapr actor.
+    ///
+    /// # Arguments
+    ///
+    /// * `actor_type` - Type of the actor.
+    /// * `actor_id` - Id of the actor.
+    /// * `method_name` - Name of the method to invoke.
+    /// * `data` - Required. Bytes value or data required to invoke service.
+    pub async fn invoke_actor<I, M>(
+        &mut self,
+        actor_type: I,
+        actor_id: I,
+        method_name: M,
+        data: Vec<u8>,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<InvokeActorResponse, Error>
+    where
+        I: Into<String>,
+        M: Into<String>,
+    {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
+        self.0
+            .invoke_actor(InvokeActorRequest {
+                actor_type: actor_type.into(),
+                actor_id: actor_id.into(),
+                method: method_name.into(),            
+                data,
+                metadata: mdata,
+            })
+            .await
+    }
 }
 
 #[async_trait]
@@ -270,6 +306,13 @@ pub trait DaprInterface: Sized {
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error>;
+    async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error>;
+    async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, Error>;
+    async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), Error>;
+    async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), Error>;
+    async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), Error>;
+    async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), Error>;
+    async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), Error>;
 }
 
 #[async_trait]
@@ -335,6 +378,34 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
         Ok(self.get_metadata(Request::new(())).await?.into_inner())
     }
+
+    async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error> {
+        Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
+    }
+
+    async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, Error> {
+        Ok(self.get_actor_state(Request::new(request)).await?.into_inner())
+    }
+
+    async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), Error> {
+        Ok(self.register_actor_reminder(Request::new(request)).await?.into_inner())
+    }
+
+    async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), Error> {
+        Ok(self.register_actor_timer(Request::new(request)).await?.into_inner())
+    }
+
+    async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), Error> {
+        Ok(self.unregister_actor_reminder(Request::new(request)).await?.into_inner())
+    }
+
+    async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), Error> {
+        Ok(self.unregister_actor_timer(Request::new(request)).await?.into_inner())
+    }
+
+    async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), Error> {
+        Ok(self.execute_actor_state_transaction(Request::new(request)).await?.into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -378,6 +449,26 @@ pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
 
 /// A request for setting metadata
 pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
+
+/// A request for invoking an actor
+pub type InvokeActorRequest = dapr_v1::InvokeActorRequest;
+
+/// A response from invoking an actor
+pub type InvokeActorResponse = dapr_v1::InvokeActorResponse;
+
+pub type GetActorStateRequest = dapr_v1::GetActorStateRequest;
+
+pub type GetActorStateResponse = dapr_v1::GetActorStateResponse;
+
+pub type ExecuteActorStateTransactionRequest = dapr_v1::ExecuteActorStateTransactionRequest;
+
+pub type RegisterActorTimerRequest = dapr_v1::RegisterActorTimerRequest;
+
+pub type RegisterActorReminderRequest = dapr_v1::RegisterActorReminderRequest;
+
+pub type UnregisterActorTimerRequest = dapr_v1::UnregisterActorTimerRequest;
+
+pub type UnregisterActorReminderRequest = dapr_v1::UnregisterActorReminderRequest;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;

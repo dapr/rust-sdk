@@ -16,6 +16,9 @@ prost = "0.11"
 bytes = "1"
 prost-types = "0.11"
 async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+actix-web = "4.3"
 
 [build-dependencies]
 tonic-build = "0.8"
@@ -50,3 +53,11 @@ path = "examples/invoke/grpc-proxying/client.rs"
 [[example]]
 name = "invoke-grpc-proxying-server"
 path = "examples/invoke/grpc-proxying/server.rs"
+
+[[example]]
+name = "actor-client"
+path = "examples/actors/client.rs"
+
+[[example]]
+name = "actor-server"
+path = "examples/actors/server.rs"
