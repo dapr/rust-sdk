@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::{SystemTime, Duration};
 
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
@@ -285,6 +286,73 @@ impl<T: DaprInterface> Client<T> {
             })
             .await
     }
+
+    pub async fn get_actor_state<I, K>(
+        &mut self,
+        actor_type: I,
+        actor_id: I,
+        key: K,
+    ) -> Result<GetActorStateResponse, Error>
+    where
+        I: Into<String>,
+        K: Into<String>,
+    {
+        self.0
+            .get_actor_state(GetActorStateRequest {
+                actor_type: actor_type.into(),
+                actor_id: actor_id.into(),
+                key: key.into(),
+            })
+            .await
+    }
+
+    pub async fn execute_actor_state_transaction<I>(
+        &mut self,
+        actor_type: I,
+        actor_id: I,
+        operations: Vec<TransactionalActorStateOperation>,
+    ) -> Result<(), Error>
+    where
+        I: Into<String>,
+    {
+        self.0
+            .execute_actor_state_transaction(ExecuteActorStateTransactionRequest {
+                actor_type: actor_type.into(),
+                actor_id: actor_id.into(),
+                operations: operations,
+            })
+            .await
+    }
+
+    pub async fn register_actor_reminder<I>(
+        &mut self,
+        actor_type: I,
+        actor_id: I,
+        name: I,
+        due_time: Duration,
+        period: Duration,
+        data: Vec<u8>,
+        ttl: Option<Duration>,
+    ) -> Result<(), Error>
+    where
+        I: Into<String>,
+    {
+        self.0
+            .register_actor_reminder(RegisterActorReminderRequest {
+                actor_type: actor_type.into(),
+                actor_id: actor_id.into(),
+                name: name.into(),
+                due_time: chrono::Duration::from_std(due_time).unwrap().to_string(),
+                period: chrono::Duration::from_std(period).unwrap().to_string(),
+                data: data,
+                ttl: match ttl {
+                    None => "".to_string(),
+                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+                },
+                
+            })
+            .await
+    }
 }
 
 #[async_trait]
@@ -461,6 +529,8 @@ pub type GetActorStateRequest = dapr_v1::GetActorStateRequest;
 pub type GetActorStateResponse = dapr_v1::GetActorStateResponse;
 
 pub type ExecuteActorStateTransactionRequest = dapr_v1::ExecuteActorStateTransactionRequest;
+
+pub type TransactionalActorStateOperation = dapr_v1::TransactionalActorStateOperation;
 
 pub type RegisterActorTimerRequest = dapr_v1::RegisterActorTimerRequest;
 
