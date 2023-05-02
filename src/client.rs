@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 use std::time::{SystemTime, Duration};
 
+use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
 use tonic::{async_trait, transport::Channel as TonicChannel, Request};
 
 use crate::dapr::*;
 use crate::error::Error;
+
+
 
 pub struct Client<T>(T);
 
@@ -285,73 +288,6 @@ impl<T: DaprInterface> Client<T> {
             })
             .await
     }
-
-    pub async fn get_actor_state<I, K>(
-        &mut self,
-        actor_type: I,
-        actor_id: I,
-        key: K,
-    ) -> Result<GetActorStateResponse, Error>
-    where
-        I: Into<String>,
-        K: Into<String>,
-    {
-        self.0
-            .get_actor_state(GetActorStateRequest {
-                actor_type: actor_type.into(),
-                actor_id: actor_id.into(),
-                key: key.into(),
-            })
-            .await
-    }
-
-    pub async fn execute_actor_state_transaction<I>(
-        &mut self,
-        actor_type: I,
-        actor_id: I,
-        operations: Vec<TransactionalActorStateOperation>,
-    ) -> Result<(), Error>
-    where
-        I: Into<String>,
-    {
-        self.0
-            .execute_actor_state_transaction(ExecuteActorStateTransactionRequest {
-                actor_type: actor_type.into(),
-                actor_id: actor_id.into(),
-                operations: operations,
-            })
-            .await
-    }
-
-    pub async fn register_actor_reminder<I>(
-        &mut self,
-        actor_type: I,
-        actor_id: I,
-        name: I,
-        due_time: Duration,
-        period: Duration,
-        data: Vec<u8>,
-        ttl: Option<Duration>,
-    ) -> Result<(), Error>
-    where
-        I: Into<String>,
-    {
-        self.0
-            .register_actor_reminder(RegisterActorReminderRequest {
-                actor_type: actor_type.into(),
-                actor_id: actor_id.into(),
-                name: name.into(),
-                due_time: chrono::Duration::from_std(due_time).unwrap().to_string(),
-                period: chrono::Duration::from_std(period).unwrap().to_string(),
-                data: data,
-                ttl: match ttl {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-                
-            })
-            .await
-    }
 }
 
 #[async_trait]
@@ -374,13 +310,8 @@ pub trait DaprInterface: Sized {
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error>;
     async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error>;
-    async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, Error>;
-    async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), Error>;
-    async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), Error>;
-    async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), Error>;
-    async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), Error>;
-    async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), Error>;
 }
+
 
 #[async_trait]
 impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
@@ -449,30 +380,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error> {
         Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
     }
-
-    async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, Error> {
-        Ok(self.get_actor_state(Request::new(request)).await?.into_inner())
-    }
-
-    async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), Error> {
-        Ok(self.register_actor_reminder(Request::new(request)).await?.into_inner())
-    }
-
-    async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), Error> {
-        Ok(self.register_actor_timer(Request::new(request)).await?.into_inner())
-    }
-
-    async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), Error> {
-        Ok(self.unregister_actor_reminder(Request::new(request)).await?.into_inner())
-    }
-
-    async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), Error> {
-        Ok(self.unregister_actor_timer(Request::new(request)).await?.into_inner())
-    }
-
-    async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), Error> {
-        Ok(self.execute_actor_state_transaction(Request::new(request)).await?.into_inner())
-    }
 }
 
 /// A request from invoking a service
@@ -522,22 +429,6 @@ pub type InvokeActorRequest = dapr_v1::InvokeActorRequest;
 
 /// A response from invoking an actor
 pub type InvokeActorResponse = dapr_v1::InvokeActorResponse;
-
-pub type GetActorStateRequest = dapr_v1::GetActorStateRequest;
-
-pub type GetActorStateResponse = dapr_v1::GetActorStateResponse;
-
-pub type ExecuteActorStateTransactionRequest = dapr_v1::ExecuteActorStateTransactionRequest;
-
-pub type TransactionalActorStateOperation = dapr_v1::TransactionalActorStateOperation;
-
-pub type RegisterActorTimerRequest = dapr_v1::RegisterActorTimerRequest;
-
-pub type RegisterActorReminderRequest = dapr_v1::RegisterActorReminderRequest;
-
-pub type UnregisterActorTimerRequest = dapr_v1::UnregisterActorTimerRequest;
-
-pub type UnregisterActorReminderRequest = dapr_v1::UnregisterActorReminderRequest;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
