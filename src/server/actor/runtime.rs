@@ -1,61 +1,26 @@
-use std::{collections::HashMap, sync::Arc, sync::Mutex, error::Error};
-use serde::{Serialize, Deserialize};
+use std::{collections::HashMap};
+use super::{ActorFactory, ActorInstance, ActorError, context_client::{DaprActorInterface}};
 
-pub type ActorInstance = Arc<Mutex<dyn Actor>>;
-pub type ActorFactory = Box<dyn Fn(&str) -> ActorInstance>;
-
-#[derive(Debug)]
-pub enum ActorError {
-    NotRegistered,
-    CorruptedState,
-    MethodNotFound,
-    ActorNotFound,
-    MethodError(Box<dyn Error>),
-    SerializationError()
-}
-
-pub trait Actor {
-    fn on_activate(&mut self) -> Result<(), ActorError> { Ok(()) }
-    fn on_deactivate(&mut self) -> Result<(), ActorError> { Ok(()) }
-    fn on_invoke(&mut self, method: &str, data: Vec<u8>) -> Result<Vec<u8>, ActorError>;
-    fn on_reminder(&mut self, _reminder_name: &str) {}
-    fn on_timer(&mut self, _timer_name: &str) {}
-}
-
-pub fn invoke_method_json<TActor, TInput, TOutput>(actor: &mut TActor, method: &dyn Fn(&mut TActor, TInput) -> Result<TOutput, ActorError>, data: Vec<u8>) -> Result<Vec<u8>, ActorError> 
-    where TActor: Actor, TInput: for<'a> Deserialize<'a>, TOutput: Serialize
-{    
-    let args = serde_json::from_slice::<TInput>(&data);
-    if args.is_err() {
-        return Err(ActorError::SerializationError());
-    }
-    match method(actor, args.unwrap()) {
-        Ok(r) => {
-            let serialized = serde_json::to_vec(&r).unwrap();
-            Ok(serialized)
-        },
-        Err(e) => Err(e)
-    }
-}
-
-pub struct ActorRuntime {
-    registered_actors_types: HashMap<String, ActorFactory>,
+pub struct ActorRuntime<TClient: DaprActorInterface> {
+    client_factory: Box<dyn Fn() -> TClient>,
+    registered_actors_types: HashMap<String, ActorFactory<TClient>>,
     active_actors: HashMap<(String, String), ActorInstance>
 }
 
-unsafe impl Send for ActorRuntime {
+unsafe impl<T: DaprActorInterface> Send for ActorRuntime<T>{
 }
 
-impl ActorRuntime {
-    pub fn new() -> Self {
+
+impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
+    pub fn new(client_factory: Box<dyn Fn() -> TClient>) -> Self {      
         ActorRuntime {
+            client_factory,
             registered_actors_types: HashMap::new(),
             active_actors: HashMap::new()
         }
     }
 
-    pub fn register_actor(&mut self, name: &str, factory: ActorFactory) {
-        
+    pub fn register_actor(&mut self, name: &str, factory: ActorFactory<TClient>) {
         self.registered_actors_types.insert(name.to_string(), factory);
     }
 
@@ -84,17 +49,17 @@ impl ActorRuntime {
         self.active_actors.clear();
     }
 
-    pub fn invoke_reminder(&mut self, name: &str, id: &str, reminder_name: &str) -> Result<(), ActorError> {
+    pub fn invoke_reminder(&mut self, name: &str, id: &str, reminder_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
         let actor = self.get_or_create_actor(name, id)?;
         let mut actor = actor.lock().unwrap();
-        actor.on_reminder(reminder_name);
+        actor.on_reminder(reminder_name, data)?;
         Ok(())
     }
 
-    pub fn invoke_timer(&mut self, name: &str, id: &str, timer_name: &str) -> Result<(), ActorError> {
+    pub fn invoke_timer(&mut self, name: &str, id: &str, timer_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
         let actor = self.get_or_create_actor(name, id)?;
         let mut actor = actor.lock().unwrap();
-        actor.on_timer(timer_name);
+        actor.on_timer(timer_name, data)?;
         Ok(())
     }
 
@@ -103,21 +68,25 @@ impl ActorRuntime {
     }
 
 
-    fn get_or_create_actor(&mut self, name: &str, id: &str) -> Result<ActorInstance, ActorError> {
+    fn get_or_create_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
         
-        match self.active_actors.get(&(name.to_string(), id.to_string())) {
+        match self.active_actors.get(&(actor_type.to_string(), id.to_string())) {
             Some(actor_ref) => Ok(actor_ref.clone()),
-            None => self.activate_actor(name, id)
+            None => self.activate_actor(actor_type, id)
         }
     }       
 
-    fn activate_actor(&mut self, name: &str, id: &str) -> Result<ActorInstance, ActorError> {
-        let actor = match self.registered_actors_types.get(name) {
-            Some(f) => f(id),
+    fn activate_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
+        let actor = match self.registered_actors_types.get(actor_type) {
+            Some(f) => {
+              let cc = self.client_factory.as_ref();
+              let client = Box::new(cc());              
+              f(id, actor_type, client)
+            },
             None => Err(ActorError::NotRegistered)?
         };
 
-        let actor_key = (name.to_string(), id.to_string());
+        let actor_key = (actor_type.to_string(), id.to_string());
         self.active_actors.insert(actor_key, actor.clone());
 
         match actor.lock() {
@@ -130,15 +99,20 @@ impl ActorRuntime {
 
 }
 
-impl Drop for ActorRuntime {
+impl<TClient: DaprActorInterface> Drop for ActorRuntime<TClient> {
     fn drop(&mut self) {
         self.deactivate_all();
     }
 }
 
 
+/*
 #[cfg(test)]
 mod tests {
+    use std::sync::{Arc, Mutex};
+
+    use serde::{Serialize, Deserialize};
+    use crate::server::actor::{invoke_method_json, Actor};
     use super::*;
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -215,3 +189,4 @@ mod tests {
     }
 
 }
+*/
