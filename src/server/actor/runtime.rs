@@ -1,19 +1,32 @@
 use std::{collections::HashMap};
-use super::{ActorFactory, ActorInstance, ActorError, context_client::{DaprActorInterface}};
+use super::{ActorFactory, ActorInstance, ActorError, context_client::{DaprActorInterface, ActorContextClient}, ActorBuilder};
 
-pub struct ActorRuntime<TClient: DaprActorInterface> {
-    client_factory: Box<dyn Fn() -> TClient>,
+pub struct ActorRuntime<TClient> 
+where 
+    TClient: DaprActorInterface,
+    TClient: Clone,
+{
+    inner_channel: TClient,
+    client_factory: Box<dyn Fn(TClient, &str, &str) -> ActorContextClient<TClient>>,
     registered_actors_types: HashMap<String, ActorFactory<TClient>>,
     active_actors: HashMap<(String, String), ActorInstance>
 }
 
-unsafe impl<T: DaprActorInterface> Send for ActorRuntime<T>{
+unsafe impl<TClient: DaprActorInterface> Send for ActorRuntime<TClient>
+where 
+    TClient: DaprActorInterface,
+    TClient: Clone
+{
 }
 
-
-impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
-    pub fn new(client_factory: Box<dyn Fn() -> TClient>) -> Self {      
+impl<TClient> ActorRuntime<TClient> 
+where 
+    TClient: DaprActorInterface,
+    TClient: Clone,
+{
+    pub fn new(channel: TClient, client_factory: Box<dyn Fn(TClient, &str, &str) -> ActorContextClient<TClient>>) -> Self {        
         ActorRuntime {
+            inner_channel: channel,
             client_factory,
             registered_actors_types: HashMap::new(),
             active_actors: HashMap::new()
@@ -24,19 +37,19 @@ impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
         self.registered_actors_types.insert(name.to_string(), factory);
     }
 
-    pub fn invoke_actor(&mut self, name: &str, id: &str, method: &str, data: Vec<u8>) -> Result<Vec<u8>, ActorError> {
-        let actor = self.get_or_create_actor(name, id)?;
+    pub async fn invoke_actor(&mut self, name: &str, id: &str, method: &str, data: Vec<u8>) -> Result<Vec<u8>, ActorError> {
+        let actor = self.get_or_create_actor(name, id).await?;
         let mut actor = actor.lock().unwrap();
-        actor.on_invoke(method, data)
+        actor.on_invoke(method, data).await
     }
 
-    pub fn deactivate_actor(&mut self, name: &str, id: &str) -> Result<(), ActorError> {
+    pub async fn deactivate_actor(&mut self, name: &str, id: &str) -> Result<(), ActorError> {
       let actor = match self.active_actors.remove(&(name.to_string(), id.to_string())) {
         Some(actor_ref) => actor_ref,
         None => return Err(ActorError::ActorNotFound)
       };
       let mut actor = actor.lock().unwrap();      
-      actor.on_deactivate()?;
+      actor.on_deactivate().await?;
       drop(actor);
       Ok(())
     }
@@ -44,22 +57,23 @@ impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
     pub fn deactivate_all(&mut self) {
         for actor in self.active_actors.values() {
             let mut actor = actor.lock().unwrap();
-            let _ = actor.on_deactivate();
+            let fut = actor.on_deactivate();
+            _ = futures::executor::block_on(fut);
         }
         self.active_actors.clear();
     }
 
-    pub fn invoke_reminder(&mut self, name: &str, id: &str, reminder_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
-        let actor = self.get_or_create_actor(name, id)?;
+    pub async fn invoke_reminder(&mut self, name: &str, id: &str, reminder_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
+        let actor = self.get_or_create_actor(name, id).await?;
         let mut actor = actor.lock().unwrap();
-        actor.on_reminder(reminder_name, data)?;
+        actor.on_reminder(reminder_name, data).await?;
         Ok(())
     }
 
-    pub fn invoke_timer(&mut self, name: &str, id: &str, timer_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
-        let actor = self.get_or_create_actor(name, id)?;
+    pub async fn invoke_timer(&mut self, name: &str, id: &str, timer_name: &str, data : Vec<u8>) -> Result<(), ActorError> {
+        let actor = self.get_or_create_actor(name, id).await?;
         let mut actor = actor.lock().unwrap();
-        actor.on_timer(timer_name, data)?;
+        actor.on_timer(timer_name, data).await?;
         Ok(())
     }
 
@@ -68,19 +82,18 @@ impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
     }
 
 
-    fn get_or_create_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
-        
+    async fn get_or_create_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
         match self.active_actors.get(&(actor_type.to_string(), id.to_string())) {
             Some(actor_ref) => Ok(actor_ref.clone()),
-            None => self.activate_actor(actor_type, id)
+            None => self.activate_actor(actor_type, id).await
         }
     }       
 
-    fn activate_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
+    async fn activate_actor(&mut self, actor_type: &str, id: &str) -> Result<ActorInstance, ActorError> {
         let actor = match self.registered_actors_types.get(actor_type) {
             Some(f) => {
               let cc = self.client_factory.as_ref();
-              let client = Box::new(cc());              
+              let client = Box::new(cc(self.inner_channel.clone(), actor_type, id));
               f(id, actor_type, client)
             },
             None => Err(ActorError::NotRegistered)?
@@ -90,7 +103,7 @@ impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
         self.active_actors.insert(actor_key, actor.clone());
 
         match actor.lock() {
-            Ok(mut a) => a.on_activate()?,
+            Ok(mut a) => a.on_activate().await?,
             Err(_) => Err(ActorError::CorruptedState)?
         };
 
@@ -99,7 +112,11 @@ impl<TClient: DaprActorInterface> ActorRuntime<TClient> {
 
 }
 
-impl<TClient: DaprActorInterface> Drop for ActorRuntime<TClient> {
+impl<TClient> Drop for ActorRuntime<TClient> 
+where 
+    TClient: DaprActorInterface,
+    TClient: Clone,
+{
     fn drop(&mut self) {
         self.deactivate_all();
     }

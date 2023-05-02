@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex}};
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, get, delete, put, middleware};
-use super::actor::{runtime::{ActorRuntime}, ActorFactory, context_client::{GrpcActorClient}};
+use super::actor::{runtime::{ActorRuntime}, ActorFactory, context_client::{GrpcDaprClient, ActorContextClient}, ActorBuilder};
 use super::super::client::TonicClient;
 
 type GrpcActorRuntime = ActorRuntime<TonicClient>;
@@ -18,17 +18,13 @@ impl DaprHttpServer {
             Ok(c) => c,
             Err(err) => panic!("failed to connect to dapr: {}", err)
         };
-        
-        let actor_client_factory = move || -> TonicClient {
-            cc.clone()
-        };
-
+                
         DaprHttpServer {
-            actor_runtime: Arc::new(Mutex::new(GrpcActorRuntime::new(Box::new(actor_client_factory)))),
+            actor_runtime: Arc::new(Mutex::new(GrpcActorRuntime::new(cc, Box::new(ActorContextClient::<TonicClient>::new)))),
         }
     }
 
-    pub fn register_actor(&mut self, actor_type: &str, factory: ActorFactory<GrpcActorClient>) {
+    pub fn register_actor(&mut self, actor_type: &str, factory: ActorFactory<GrpcDaprClient>) {
         let mut rt = self.actor_runtime.lock().unwrap();
         rt.register_actor(actor_type, factory);
     }
@@ -81,7 +77,7 @@ async fn registered_actors(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>) -> 
 async fn deactivate_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request: HttpRequest) -> HttpResponse {
     let actor_type = request.match_info().get("actor_type").unwrap();
     let actor_id = request.match_info().get("actor_id").unwrap();
-    match runtime.lock().unwrap().deactivate_actor(&actor_type, &actor_id) {
+    match runtime.lock().unwrap().deactivate_actor(&actor_type, &actor_id).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(err) => match err {
             super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
@@ -96,7 +92,7 @@ async fn invoke_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request:
     let actor_id = request.match_info().get("actor_id").unwrap();
     let method_name = request.match_info().get("method_name").unwrap();
     log::debug!("invoke_actor: {} {} {}", actor_type, actor_id, method_name);
-    match runtime.lock().unwrap().invoke_actor(&actor_type, &actor_id, &method_name, body.to_vec()) {
+    match runtime.lock().unwrap().invoke_actor(&actor_type, &actor_id, &method_name, body.to_vec()).await {
         Ok(output) => HttpResponse::Ok().body(output),
         Err(err) => match err {
             super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
@@ -113,7 +109,7 @@ async fn invoke_reminder(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, reque
     let payload = serde_json::from_slice::<ReminderPayload>(&body.to_vec()).unwrap();
     log::debug!("invoke_reminder: {} {} {} {:?}", actor_type, actor_id, reminder_name, payload);    
 
-    match runtime.lock().unwrap().invoke_reminder(&actor_type, &actor_id, &reminder_name, payload.data.unwrap_or_default().into_bytes()) {
+    match runtime.lock().unwrap().invoke_reminder(&actor_type, &actor_id, &reminder_name, payload.data.unwrap_or_default().into_bytes()).await {
         Ok(output) => HttpResponse::Ok().body(output),
         Err(err) => match err {
             super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
@@ -130,7 +126,7 @@ async fn invoke_timer(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request:
     let payload = serde_json::from_slice::<TimerPayload>(&body.to_vec()).unwrap();
     log::debug!("invoke_timer: {} {} {}, {:?}", actor_type, actor_id, timer_name, payload);
 
-    match runtime.lock().unwrap().invoke_timer(&actor_type, &actor_id, &timer_name, payload.data.unwrap_or_default().into_bytes()) {
+    match runtime.lock().unwrap().invoke_timer(&actor_type, &actor_id, &timer_name, payload.data.unwrap_or_default().into_bytes()).await {
         Ok(output) => HttpResponse::Ok().body(output),
         Err(err) => match err {
             super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
