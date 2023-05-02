@@ -6,7 +6,7 @@ use crate::dapr::dapr::proto::{runtime::v1 as dapr_v1};
 use crate::error::Error as DaprError;
 
 
-pub type GrpcActorClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
+pub type GrpcDaprClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 pub enum ActorStateOperation {
   Upsert {
@@ -92,12 +92,12 @@ pub struct ActorContextClient<T>{
 
 impl<T: DaprActorInterface> ActorContextClient<T> {
   
-  pub async fn connect(addr: String, actor_type: String, actor_id: String) -> Result<Self, DaprError> {
-      Ok(ActorContextClient{
-          client: T::connect(addr).await?,
-          actor_type: actor_type,
-          actor_id: actor_id,
-      })
+  pub fn new(client: T, actor_type: &str, actor_id: &str) -> Self {
+      ActorContextClient{
+          client,
+          actor_type: actor_type.to_string(),
+          actor_id: actor_id.to_string(),
+      }
   }
 
   pub async fn get_actor_state<K>(&mut self, key: K) -> Result<GetActorStateResponse, DaprError>
