@@ -8,8 +8,6 @@ use tonic::{transport::Channel as TonicChannel, Request};
 use crate::dapr::*;
 use crate::error::Error;
 
-
-
 pub struct Client<T>(T);
 
 impl<T: DaprInterface> Client<T> {
@@ -279,7 +277,10 @@ impl<T: DaprInterface> Client<T> {
             mdata = m;
         }
 
-        let data = serde_json::to_vec(&input).unwrap();
+        let data = match serde_json::to_vec(&input) {
+            Ok(data) => data,
+            Err(e) => return Err(Error::SerializationError),
+        };
 
         let res = self.0
             .invoke_actor(InvokeActorRequest {
