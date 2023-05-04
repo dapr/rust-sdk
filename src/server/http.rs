@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex}};
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, get, delete, put, middleware};
-use super::actor::{runtime::{ActorRuntime}, ActorFactory, context_client::{GrpcDaprClient, ActorContextClient}, ActorBuilder};
+use super::actor::{runtime::{ActorRuntime, ActorTypeRegistration}, context_client::{GrpcDaprClient, ActorContextClient}};
 use super::super::client::TonicClient;
 
 type GrpcActorRuntime = ActorRuntime<TonicClient>;
@@ -24,9 +24,9 @@ impl DaprHttpServer {
         }
     }
 
-    pub fn register_actor(&mut self, actor_type: &str, factory: ActorFactory<GrpcDaprClient>) {
+    pub fn register_actor(&mut self, registration: ActorTypeRegistration<GrpcDaprClient>) {
         let mut rt = self.actor_runtime.lock().unwrap();
-        rt.register_actor(actor_type, factory);
+        rt.register_actor(registration);
     }
 
     pub async fn start(&mut self, addr: Option<&str>, port: Option<u16>) -> Result<(), std::io::Error> {
