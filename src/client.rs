@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
+use serde::{Deserialize, Serialize};
 use tonic::{transport::Channel as TonicChannel, Request};
 
 use crate::dapr::*;
@@ -258,25 +259,29 @@ impl<T: DaprInterface> Client<T> {
     /// * `actor_type` - Type of the actor.
     /// * `actor_id` - Id of the actor.
     /// * `method_name` - Name of the method to invoke.
-    /// * `data` - Required. Bytes value or data required to invoke service.
-    pub async fn invoke_actor<I, M>(
+    /// * `input` - Required. Data required to invoke service, should be json serializable.
+    pub async fn invoke_actor<I, M, TInput, TOutput>(
         &mut self,
         actor_type: I,
         actor_id: I,
         method_name: M,
-        data: Vec<u8>,
+        input: TInput,
         metadata: Option<HashMap<String, String>>,
-    ) -> Result<InvokeActorResponse, Error>
+    ) -> Result<TOutput, Error>
     where
         I: Into<String>,
         M: Into<String>,
+        TInput: Serialize,
+        TOutput: for<'a> Deserialize<'a>,
     {
         let mut mdata = HashMap::<String, String>::new();
         if let Some(m) = metadata {
             mdata = m;
         }
 
-        self.0
+        let data = serde_json::to_vec(&input).unwrap();
+
+        let res = self.0
             .invoke_actor(InvokeActorRequest {
                 actor_type: actor_type.into(),
                 actor_id: actor_id.into(),
@@ -284,7 +289,12 @@ impl<T: DaprInterface> Client<T> {
                 data,
                 metadata: mdata,
             })
-            .await
+            .await?;
+
+        match serde_json::from_slice::<TOutput>(&res.data) {
+            Ok(output) => Ok(output),
+            Err(e) => Err(Error::SerializationError),
+        }
     }
 }
 
