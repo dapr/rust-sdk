@@ -79,9 +79,12 @@ async fn deactivate_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, requ
     let actor_id = request.match_info().get("actor_id").unwrap();
     match runtime.lock().unwrap().deactivate_actor(&actor_type, &actor_id).await {
         Ok(_) => HttpResponse::Ok().finish(),
-        Err(err) => match err {
-            super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+        Err(err) => {
+            log::error!("invoke_actor: {:?}", err);
+            match err {
+                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
+                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+            }
         },
     }    
 }
@@ -94,9 +97,12 @@ async fn invoke_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request:
     log::debug!("invoke_actor: {} {} {}", actor_type, actor_id, method_name);
     match runtime.lock().unwrap().invoke_actor(&actor_type, &actor_id, &method_name, body.to_vec()).await {
         Ok(output) => HttpResponse::Ok().body(output),
-        Err(err) => match err {
-            super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+        Err(err) => {
+            log::error!("invoke_actor: {:?}", err);
+            match err {
+                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
+                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+            }
         },
     }    
 }
@@ -111,9 +117,12 @@ async fn invoke_reminder(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, reque
 
     match runtime.lock().unwrap().invoke_reminder(&actor_type, &actor_id, &reminder_name, payload.data.unwrap_or_default().into_bytes()).await {
         Ok(output) => HttpResponse::Ok().body(output),
-        Err(err) => match err {
-            super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+        Err(err) => {
+            log::error!("invoke_actor: {:?}", err);
+            match err {
+                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
+                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+            }
         },
     }    
 }
@@ -128,9 +137,12 @@ async fn invoke_timer(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request:
 
     match runtime.lock().unwrap().invoke_timer(&actor_type, &actor_id, &timer_name, payload.data.unwrap_or_default().into_bytes()).await {
         Ok(output) => HttpResponse::Ok().body(output),
-        Err(err) => match err {
-            super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+        Err(err) => {
+            log::error!("invoke_actor: {:?}", err);
+            match err {
+                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
+                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+            }
         },
     }    
 }
