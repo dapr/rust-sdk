@@ -36,8 +36,10 @@ pub fn decorate_actor_method<TActor, TInput, TMethod, TOutput>(method: TMethod) 
         TMethod: Fn(&mut TActor, TInput) -> Result<TOutput, ActorError> + 'static
 {       
     let f =  move |actor: &mut dyn Actor, data: Vec<u8>| {
+        log::debug!("Invoking actor method with data: {:?}", data);        
         let args = serde_json::from_slice::<TInput>(&data);
         if args.is_err() {
+            log::error!("Failed to deserialize actor method arguments - {:?}", args.err());
             return Err(ActorError::SerializationError());
         }
         
