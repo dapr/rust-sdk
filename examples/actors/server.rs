@@ -1,4 +1,5 @@
 use std::str::from_utf8;
+use async_trait::async_trait;
 use dapr::{server::actor::{self, ActorError, context_client::{ActorContextClient}, Actor, runtime::ActorTypeRegistration}, client::{TonicClient}};
 use serde::{Serialize, Deserialize};
 
@@ -29,24 +30,25 @@ impl MyActor {
 }
 
 
+#[async_trait]
 impl Actor for MyActor {
     
-    fn on_activate(&mut self) -> Result<(), ActorError> {
+    async fn on_activate(&mut self) -> Result<(), ActorError> {
         println!("on_activate {}", self.id);
         Ok(())
     }
 
-    fn on_deactivate(&mut self) -> Result<(), ActorError> {
+    async fn on_deactivate(&mut self) -> Result<(), ActorError> {
         println!("on_deactivate");
         Ok(())
     }
 
-    fn on_reminder(&mut self, reminder_name: &str, data: Vec<u8>) -> Result<(), actor::ActorError> {
+    async fn on_reminder(&mut self, reminder_name: &str, data: Vec<u8>) -> Result<(), actor::ActorError> {
         println!("on_reminder {} {:?}", reminder_name, from_utf8(&data));
         Ok(())
     }
 
-    fn on_timer(&mut self, timer_name: &str, data: Vec<u8>) -> Result<(), actor::ActorError> {
+    async fn on_timer(&mut self, timer_name: &str, data: Vec<u8>) -> Result<(), actor::ActorError> {
         println!("on_timer {} {:?}", timer_name, from_utf8(&data));
         Ok(())
     }
