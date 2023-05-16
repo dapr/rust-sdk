@@ -31,7 +31,6 @@ This example demonstrates the Dapr actor framework.  To author an actor,
 
 
     ```rust
-    #[async_trait]
     impl Actor for MyActor {
         
         async fn on_activate(&mut self) -> Result<(), ActorError> {
@@ -39,7 +38,7 @@ This example demonstrates the Dapr actor framework.  To author an actor,
             Ok(())
         }
 
-        async fn on_deactivate(&mut self) -> Result<(), ActorError> {
+        fn on_deactivate(&mut self) -> Result<(), ActorError> {
             println!("on_deactivate");
             Ok(())
         }

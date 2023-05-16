@@ -1,5 +1,4 @@
 use std::{sync::Arc, sync::Mutex, error::Error};
-use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
 
 use self::context_client::{ActorContextClient};
@@ -20,12 +19,11 @@ pub enum ActorError {
     SerializationError()
 }
 
-#[async_trait]
 pub trait Actor {
-    async fn on_activate(&mut self) -> Result<(), ActorError>;
-    async fn on_deactivate(&mut self) -> Result<(), ActorError>;
-    async fn on_reminder(&mut self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
-    async fn on_timer(&mut self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+    fn on_activate(&mut self) -> Result<(), ActorError>;
+    fn on_deactivate(&mut self) -> Result<(), ActorError>;
+    fn on_reminder(&mut self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+    fn on_timer(&mut self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
 }
 
 pub type ActorMethod = Box<dyn Fn(&mut dyn Actor, Vec<u8>) -> Result<Vec<u8>, ActorError>>;

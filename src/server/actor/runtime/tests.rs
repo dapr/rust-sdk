@@ -1,6 +1,5 @@
 use super::*;
 use crate::server::actor::Actor;
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone)]
@@ -144,21 +143,20 @@ struct MyActor {
     id: String,
 }
 
-#[async_trait]
 impl Actor for MyActor {
-    async fn on_activate(&mut self) -> Result<(), ActorError> {
+    fn on_activate(&mut self) -> Result<(), ActorError> {
         Ok(())
     }
 
-    async fn on_deactivate(&mut self) -> Result<(), ActorError> {
+    fn on_deactivate(&mut self) -> Result<(), ActorError> {
         Ok(())
     }
 
-    async fn on_reminder(&mut self, _reminder_name: &str, _data: Vec<u8>) -> Result<(), ActorError> {
+    fn on_reminder(&mut self, _reminder_name: &str, _data: Vec<u8>) -> Result<(), ActorError> {
         Ok(())
     }
 
-    async fn on_timer(&mut self, _timer_name: &str, _data: Vec<u8>) -> Result<(), ActorError> {
+    fn on_timer(&mut self, _timer_name: &str, _data: Vec<u8>) -> Result<(), ActorError> {
         Ok(())
     }
 }
