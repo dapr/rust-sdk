@@ -122,15 +122,15 @@ where
             None => return Err(ActorError::ActorNotFound),
         };
         let mut actor = actor.lock().unwrap();
-        actor.on_deactivate()?;
+        actor.on_deactivate().await?;
         drop(actor);
         Ok(())
     }
 
-    pub fn deactivate_all(&mut self) {
+    pub async fn deactivate_all(&mut self) {
         for actor in self.active_actors.values() {
             let mut actor = actor.lock().unwrap();
-            actor.on_deactivate();
+            actor.on_deactivate().await;
         }
         self.active_actors.clear();
     }
@@ -138,14 +138,14 @@ where
     pub async fn invoke_reminder(&mut self, name: &str, id: &str, reminder_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
         let actor = self.get_or_create_actor(name, id).await?;
         let mut actor = actor.lock().unwrap();
-        actor.on_reminder(reminder_name, data)?;
+        actor.on_reminder(reminder_name, data).await?;
         Ok(())
     }
 
     pub async fn invoke_timer(&mut self, name: &str, id: &str, timer_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
         let actor = self.get_or_create_actor(name, id).await?;
         let mut actor = actor.lock().unwrap();
-        actor.on_timer(timer_name, data)?;
+        actor.on_timer(timer_name, data).await?;
         Ok(())
     }
 
@@ -180,7 +180,7 @@ where
         self.active_actors.insert(actor_key, actor.clone());
 
         match actor.lock() {
-            Ok(mut a) => a.on_activate()?,
+            Ok(mut a) => a.on_activate().await?,
             Err(_) => Err(ActorError::CorruptedState)?,
         };
 
@@ -194,7 +194,7 @@ where
     TClient: Clone,
 {
     fn drop(&mut self) {
-        self.deactivate_all();
+        futures::executor::block_on(self.deactivate_all());
     }
 }
 
