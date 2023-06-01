@@ -29,7 +29,7 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 ```toml
 [dependencies]
-dapr = "0.11.0"
+dapr = "0.12.0"
 ```
 
 A client can be created as follows:
