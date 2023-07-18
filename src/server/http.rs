@@ -39,7 +39,7 @@ impl DaprHttpServer {
             .unwrap_or(8080);
     
         
-        HttpServer::new(move || {
+        let final_result = HttpServer::new(move || {
             App::new()
                 .wrap(middleware::Logger::default())
                 .app_data(web::Data::new(rt.clone()))
@@ -52,7 +52,11 @@ impl DaprHttpServer {
         })
         .bind((addr.unwrap_or("127.0.0.1"), port.unwrap_or(default_port)))?
         .run()
-        .await
+        .await;
+
+        self.actor_runtime.lock().unwrap().deactivate_all().await;
+
+        final_result
     }
 }
 

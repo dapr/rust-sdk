@@ -188,15 +188,5 @@ where
     }
 }
 
-impl<TClient> Drop for ActorRuntime<TClient>
-where
-    TClient: DaprActorInterface,
-    TClient: Clone,
-{
-    fn drop(&mut self) {
-        futures::executor::block_on(self.deactivate_all());
-    }
-}
-
 #[cfg(test)]
 mod tests;
