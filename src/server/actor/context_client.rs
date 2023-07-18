@@ -82,6 +82,7 @@ impl DaprActorInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
   }
 }
 
+#[derive(Clone)]
 pub struct ActorContextClient<T>{
   client: T,
   actor_type: String,
