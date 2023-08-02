@@ -103,7 +103,7 @@ macro_rules! actor {
                     }
                 };
                 let actor = actor.as_ref();
-                let well_known_actor = unsafe { & *(actor as *const dyn Actor as *const $t) };        
+                let well_known_actor = unsafe { & *(actor as *const dyn $crate::server::actor::Actor as *const $t) };        
                 Ok(well_known_actor)
             }
         }
