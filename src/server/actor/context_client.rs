@@ -1,8 +1,9 @@
-use std::{time::Duration};
-use async_trait::async_trait;
+use std::collections::HashMap;
+use std::time::Duration;
 use prost_types::Any;
-use tonic::{transport::Channel as TonicChannel, Request};
-use crate::dapr::dapr::proto::{runtime::v1 as dapr_v1};
+use tonic::transport::Channel as TonicChannel;
+use crate::client::TonicClient;
+use crate::dapr::dapr::proto::runtime::v1 as dapr_v1;
 use crate::error::Error as DaprError;
 
 pub type GrpcDaprClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
@@ -31,67 +32,29 @@ impl Into<TransactionalActorStateOperation> for ActorStateOperation {
                   }),
                   None => None,
               },
+              metadata: HashMap::new(),
           },
           ActorStateOperation::Delete { key} => TransactionalActorStateOperation {
               operation_type: "delete".to_string(),
               key: key,
               value: None,
+              metadata: HashMap::new(),
+              
           },
       }
   }
 }
 
-#[async_trait]
-pub trait DaprActorInterface {
-  async fn connect(addr: String) -> Result<Self, DaprError> where Self: Sized;
-  async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, DaprError>;
-  async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), DaprError>;
-  async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), DaprError>;
-  async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), DaprError>;
-  async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), DaprError>;
-  async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), DaprError>;
-}
-
-#[async_trait]
-impl DaprActorInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
-  async fn connect(addr: String) -> Result<Self, DaprError> {
-      Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
-  }
-  async fn get_actor_state(&mut self, request: GetActorStateRequest) -> Result<GetActorStateResponse, DaprError> {
-      Ok(self.get_actor_state(Request::new(request)).await?.into_inner())
-  }
-
-  async fn register_actor_reminder(&mut self, request: RegisterActorReminderRequest) -> Result<(), DaprError> {
-      Ok(self.register_actor_reminder(Request::new(request)).await?.into_inner())
-  }
-
-  async fn register_actor_timer(&mut self, request: RegisterActorTimerRequest) -> Result<(), DaprError> {
-      Ok(self.register_actor_timer(Request::new(request)).await?.into_inner())
-  }
-
-  async fn unregister_actor_reminder(&mut self, request: UnregisterActorReminderRequest) -> Result<(), DaprError> {
-      Ok(self.unregister_actor_reminder(Request::new(request)).await?.into_inner())
-  }
-
-  async fn unregister_actor_timer(&mut self, request: UnregisterActorTimerRequest) -> Result<(), DaprError> {
-      Ok(self.unregister_actor_timer(Request::new(request)).await?.into_inner())
-  }
-
-  async fn execute_actor_state_transaction(&mut self, request: ExecuteActorStateTransactionRequest) -> Result<(), DaprError> {
-      Ok(self.execute_actor_state_transaction(Request::new(request)).await?.into_inner())
-  }
-}
-
 #[derive(Clone)]
-pub struct ActorContextClient<T>{
-  client: T,
+pub struct ActorContextClient{
+  client: TonicClient,
   actor_type: String,
   actor_id: String,
 }
 
-impl<T: DaprActorInterface> ActorContextClient<T> {
+impl ActorContextClient {
   
-  pub fn new(client: T, actor_type: &str, actor_id: &str) -> Self {
+  pub fn new(client: TonicClient, actor_type: &str, actor_id: &str) -> Self {
       ActorContextClient{
           client,
           actor_type: actor_type.to_string(),
@@ -99,33 +62,30 @@ impl<T: DaprActorInterface> ActorContextClient<T> {
       }
   }
 
-  pub fn get_actor_state<K>(&mut self, key: K) -> Result<GetActorStateResponse, DaprError>
+  pub async fn get_actor_state<K>(&mut self, key: K) -> Result<GetActorStateResponse, DaprError>
   where K: Into<String>
-  {
-      futures::executor::block_on(
-        self.client
-            .get_actor_state(GetActorStateRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                key: key.into(),
-            })
-        )
+  {  
+    Ok(self.client.get_actor_state(GetActorStateRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            key: key.into(),
+        }).await?.into_inner())
   }
 
-  pub fn execute_actor_state_transaction(
+  pub async fn execute_actor_state_transaction(
       &mut self,
       operations: Vec<ActorStateOperation>,
   ) -> Result<(), DaprError>
   {
-    futures::executor::block_on(self.client
+    Ok(self.client
           .execute_actor_state_transaction(ExecuteActorStateTransactionRequest {
               actor_type: self.actor_type.to_string(),
               actor_id: self.actor_id.to_string(),
               operations: operations.into_iter().map(|o| o.into()).collect(),
-          }))
+          }).await?.into_inner())
   }
 
-  pub fn register_actor_reminder<I>(
+  pub async fn register_actor_reminder<I>(
       &mut self,
       name: I,
       due_time: Option<Duration>,
@@ -136,7 +96,7 @@ impl<T: DaprActorInterface> ActorContextClient<T> {
   where
       I: Into<String>,
   {
-    futures::executor::block_on(self.client
+    Ok(self.client
           .register_actor_reminder(RegisterActorReminderRequest {
               actor_type: self.actor_type.to_string(),
               actor_id: self.actor_id.to_string(),
@@ -155,25 +115,25 @@ impl<T: DaprActorInterface> ActorContextClient<T> {
                   Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
               },
               
-          }))
+          }).await?.into_inner())
   }
 
-  pub fn unregister_actor_reminder<I>(
+  pub async fn unregister_actor_reminder<I>(
       &mut self,
       name: I
   ) -> Result<(), DaprError>
   where
       I: Into<String>,
   {
-    futures::executor::block_on(self.client
+    Ok(self.client
           .unregister_actor_reminder(UnregisterActorReminderRequest {
               actor_type: self.actor_type.to_string(),
               actor_id: self.actor_id.to_string(),
               name: name.into(),
-          }))
+          }).await?.into_inner())
   }
 
-  pub fn register_actor_timer<I>(
+  pub async fn register_actor_timer<I>(
       &mut self,
       name: I,
       due_time: Option<Duration>,
@@ -185,7 +145,7 @@ impl<T: DaprActorInterface> ActorContextClient<T> {
   where
       I: Into<String>,
   {
-    futures::executor::block_on(self.client
+    Ok(self.client
           .register_actor_timer(RegisterActorTimerRequest {
               actor_type: self.actor_type.to_string(),
               actor_id: self.actor_id.to_string(),
@@ -204,22 +164,22 @@ impl<T: DaprActorInterface> ActorContextClient<T> {
                   None => "".to_string(),
                   Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
               },
-          }))
+          }).await?.into_inner())
   }
 
-  pub fn unregister_actor_timer<I>(
+  pub async fn unregister_actor_timer<I>(
       &mut self,
       name: I
   ) -> Result<(), DaprError>
   where
       I: Into<String>,
   {
-    futures::executor::block_on(self.client
+    Ok(self.client
           .unregister_actor_timer(UnregisterActorTimerRequest {
               actor_type: self.actor_type.to_string(),
               actor_id: self.actor_id.to_string(),
               name: name.into(),
-          }))
+          }).await?.into_inner())
   }
 }
 

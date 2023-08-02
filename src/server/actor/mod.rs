@@ -1,14 +1,15 @@
-use std::{sync::Arc, sync::Mutex, error::Error};
+use std::{sync::Arc, error::Error, fmt::Display};
 use async_trait::async_trait;
+use axum::{response::IntoResponse, extract::rejection::PathRejection, http::StatusCode};
 use serde::{Serialize, Deserialize};
 
-use self::context_client::{ActorContextClient};
+use self::context_client::ActorContextClient;
 
 pub mod context_client;
 pub mod runtime;
 
-pub type ActorInstance = Arc<Mutex<Box<dyn Actor>>>;
-pub type ActorFactory<TActorClient> = Box<dyn Fn(String, String, Box<ActorContextClient<TActorClient>>) -> Box<dyn Actor>>;
+
+pub type ActorFactory = Arc<dyn Fn(&str, &str, ActorContextClient) -> Arc<dyn Actor> + Send + Sync>;
 
 #[derive(Debug)]
 pub enum ActorError {
@@ -20,40 +21,86 @@ pub enum ActorError {
     SerializationError()
 }
 
-#[async_trait]
-pub trait Actor {
-    async fn on_activate(&mut self) -> Result<(), ActorError>;
-    async fn on_deactivate(&mut self) -> Result<(), ActorError>;
-    async fn on_reminder(&mut self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
-    async fn on_timer(&mut self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+impl Display for ActorError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ActorError::NotRegistered => write!(f, "Actor not registered"),
+            ActorError::CorruptedState => write!(f, "Actor state corrupted"),
+            ActorError::MethodNotFound => write!(f, "Method not found"),
+            ActorError::ActorNotFound => write!(f, "Actor not found"),
+            ActorError::MethodError(e) => write!(f, "Method error: {}", e),
+            ActorError::SerializationError() => write!(f, "Serialization error"),
+        }
+    }
 }
 
-pub type ActorMethod = Box<dyn Fn(&mut dyn Actor, Vec<u8>) -> Result<Vec<u8>, ActorError>>;
+#[async_trait]
+pub trait Actor : Send + Sync {
+    fn new(actor_type: &str, actor_id: &str, context: ActorContextClient) -> Arc<dyn Actor> where Self: Sized;
+    async fn on_activate(&self) -> Result<(), ActorError>;
+    async fn on_deactivate(&self) -> Result<(), ActorError>;
+    async fn on_reminder(&self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+    async fn on_timer(&self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+}
 
-pub fn decorate_actor_method<TActor, TInput, TMethod, TOutput>(method: TMethod) -> ActorMethod
-    where 
-        TActor: Actor, 
-        TInput: for<'a> Deserialize<'a>, 
-        TOutput: Serialize,
-        TMethod: Fn(&mut TActor, TInput) -> Result<TOutput, ActorError> + 'static
-{       
-    let f =  move |actor: &mut dyn Actor, data: Vec<u8>| {
-        log::debug!("Invoking actor method with data: {:?}", data);        
-        let args = serde_json::from_slice::<TInput>(&data);
-        if args.is_err() {
-            log::error!("Failed to deserialize actor method arguments - {:?}", args.err());
-            return Err(ActorError::SerializationError());
-        }
-        
-        let well_known_actor = unsafe { &mut *(actor as *mut dyn Actor as *mut TActor) };
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ActorPath {
+    pub actor_id: String,
+}
 
-        match method(well_known_actor, args.unwrap()) {
-            Ok(r) => {
-                let serialized = serde_json::to_vec(&r).unwrap();
-                Ok(serialized)
+pub enum ActorRejection {
+    ActorError(String),
+    Path(PathRejection)
+}
+
+impl IntoResponse for ActorRejection {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            ActorRejection::ActorError(e) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, axum::Json(e)).into_response()
             },
-            Err(e) => Err(e)
+            ActorRejection::Path(e) => {
+                (StatusCode::BAD_REQUEST, axum::Json(e.body_text())).into_response()
+            }
         }
-    };
-    Box::new(f)
+    }
+}
+
+#[macro_export]
+macro_rules! actor {
+    ( $t:ident ) => {
+        use axum::extract::{FromRequestParts, Path};
+        use axum::http::request::Parts;
+        use dapr::server::actor::{ActorPath, ActorRejection};
+        use dapr::server::actor::runtime::ActorState;
+        
+        #[async_trait]
+        impl FromRequestParts<ActorState> for &$t {
+            
+            type Rejection = ActorRejection;
+
+            async fn from_request_parts(parts: &mut Parts, state: &ActorState) -> Result<Self, Self::Rejection> {                
+                let path = match Path::<ActorPath>::from_request_parts(parts, state).await{
+                    Ok(path) => path,
+                    Err(e) => {
+                        log::error!("Error getting path: {}", e);
+                        return Err(ActorRejection::Path(e));
+                    }
+                };
+                let actor_type = state.actor_type.clone();
+                let actor_id = path.actor_id.clone();                
+                log::info!("Request for actor_type: {}, actor_id: {}", actor_type, actor_id);
+                let actor = match state.runtime.get_or_create_actor(&actor_type, &actor_id).await {
+                    Ok(actor) => actor,
+                    Err(e) => {
+                        log::error!("Error getting actor: {}", e);
+                        return Err(ActorRejection::ActorError(e.to_string()));
+                    }
+                };
+                let actor = actor.as_ref();
+                let well_known_actor = unsafe { & *(actor as *const dyn Actor as *const $t) };        
+                Ok(well_known_actor)
+            }
+        }
+    }
 }

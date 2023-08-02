@@ -1,12 +1,12 @@
-use std::{sync::{Arc, Mutex}};
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, get, delete, put, middleware};
-use super::actor::{runtime::{ActorRuntime, ActorTypeRegistration}, context_client::{GrpcDaprClient, ActorContextClient}};
+use std::{sync::Arc, net::SocketAddr};
+use axum::{Router, routing::{get, delete, put}, http::StatusCode, response::IntoResponse, Json, extract::{State, Path}};
+
+use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 use super::super::client::TonicClient;
 
-type GrpcActorRuntime = ActorRuntime<TonicClient>;
 
 pub struct DaprHttpServer {
-    actor_runtime: Arc<Mutex<GrpcActorRuntime>>,
+    actor_runtime: Arc<ActorRuntime>,
 }
 
 impl DaprHttpServer {
@@ -17,19 +17,19 @@ impl DaprHttpServer {
         let cc = match TonicClient::connect(dapr_addr).await {
             Ok(c) => c,
             Err(err) => panic!("failed to connect to dapr: {}", err)
-        };
-                
+        };                
+        let rt = ActorRuntime::new(cc);
+
         DaprHttpServer {
-            actor_runtime: Arc::new(Mutex::new(GrpcActorRuntime::new(cc, Box::new(ActorContextClient::<TonicClient>::new)))),
+            actor_runtime: Arc::new(rt),
         }
     }
 
-    pub fn register_actor(&mut self, registration: ActorTypeRegistration<GrpcDaprClient>) {
-        let mut rt = self.actor_runtime.lock().unwrap();
-        rt.register_actor(registration);
+    pub async fn register_actor(&self, registration: ActorTypeRegistration) {
+        self.actor_runtime.register_actor(registration).await;
     }
 
-    pub async fn start(&mut self, addr: Option<&str>, port: Option<u16>) -> Result<(), std::io::Error> {
+    pub async fn start(&mut self, addr: Option<&str>, port: Option<u16>) -> Result<(), Box<dyn std::error::Error>> {
         
         let rt =  self.actor_runtime.clone();
 
@@ -38,114 +38,104 @@ impl DaprHttpServer {
             .parse()
             .unwrap_or(8080);
     
+
+        let app = Router::new()
+            .route("/healthz", get(health_check))
+            .route("/dapr/config", get(registered_actors).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id", delete(deactivate_actor).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id/method/remind/:reminder_name", put(invoke_reminder).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id/method/timer/:timer_name", put(invoke_timer).with_state(rt.clone()));
+       
+        let app = self.actor_runtime.configure_method_routes(app, rt.clone()).await;
+
+        let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(default_port)));
         
-        let final_result = HttpServer::new(move || {
-            App::new()
-                .wrap(middleware::Logger::default())
-                .app_data(web::Data::new(rt.clone()))
-                .service(health_check)
-                .service(registered_actors)
-                .service(deactivate_actor)
-                .service(invoke_actor)
-                .service(invoke_reminder)
-                .service(invoke_timer)
-        })
-        .bind((addr.unwrap_or("127.0.0.1"), port.unwrap_or(default_port)))?
-        .run()
-        .await;
+        let final_result = axum::Server::bind(&addr)
+            .serve(app.into_make_service())
+            .await;
 
-        self.actor_runtime.lock().unwrap().deactivate_all().await;
+        self.actor_runtime.deactivate_all().await;
 
-        final_result
+        Ok(final_result?)
     }
 }
 
-#[get("/healthz")]
-async fn health_check() -> HttpResponse {
+
+async fn health_check() -> impl IntoResponse {
     log::debug!("recieved health check request");
-    HttpResponse::Ok().finish()
+    StatusCode::OK
 }
 
-#[get("/dapr/config")]
-async fn registered_actors(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>) -> HttpResponse {
+async fn registered_actors(State(runtime): State<Arc<ActorRuntime>>) -> impl IntoResponse {
     log::debug!("daprd requested registered actors");
-    let ra = runtime.lock().unwrap().list_registered_actors();
+    let ra = runtime.list_registered_actors().await;
     let result = super::models::RegisteredActorsResponse { 
         entities: ra 
     };
     
-    HttpResponse::Ok().json(result)
+    Json(result)
 }
 
-#[delete("/actors/{actor_type}/{actor_id}")]
-async fn deactivate_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request: HttpRequest) -> HttpResponse {
-    let actor_type = request.match_info().get("actor_type").unwrap();
-    let actor_id = request.match_info().get("actor_id").unwrap();
-    match runtime.lock().unwrap().deactivate_actor(&actor_type, &actor_id).await {
-        Ok(_) => HttpResponse::Ok().finish(),
+async fn deactivate_actor(
+        State(runtime): State<Arc<ActorRuntime>>, 
+        Path((actor_type, actor_id)): Path<(String, String)>,
+    ) -> impl IntoResponse {
+    
+    match runtime.deactivate_actor(&actor_type, &actor_id).await {
+        Ok(_) => StatusCode::OK,
         Err(err) => {
             log::error!("invoke_actor: {:?}", err);
             match err {
-                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+                super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
+                _ => {
+                    log::error!("deactivate_actor: {:?}", err);
+                    StatusCode::INTERNAL_SERVER_ERROR
+                },
             }
         },
     }    
 }
 
-#[put("/actors/{actor_type}/{actor_id}/method/{method_name}")]
-async fn invoke_actor(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request: HttpRequest, body: web::Bytes) -> HttpResponse {   
-    let actor_type = request.match_info().get("actor_type").unwrap();
-    let actor_id = request.match_info().get("actor_id").unwrap();
-    let method_name = request.match_info().get("method_name").unwrap();
-    log::debug!("invoke_actor: {} {} {}", actor_type, actor_id, method_name);
-    match runtime.lock().unwrap().invoke_actor(&actor_type, &actor_id, &method_name, body.to_vec()).await {
-        Ok(output) => HttpResponse::Ok().body(output),
-        Err(err) => {
-            log::error!("invoke_actor: {:?}", err);
-            match err {
-                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
-            }
-        },
-    }    
-}
-
-#[put("/actors/{actor_type}/{actor_id}/method/remind/{reminder_name}")]
-async fn invoke_reminder(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request: HttpRequest, body: web::Bytes) -> HttpResponse {   
-    let actor_type = request.match_info().get("actor_type").unwrap();
-    let actor_id = request.match_info().get("actor_id").unwrap();
-    let reminder_name = request.match_info().get("reminder_name").unwrap();
-    let payload = serde_json::from_slice::<ReminderPayload>(&body.to_vec()).unwrap();
+async fn invoke_reminder(
+        State(runtime): State<Arc<ActorRuntime>>, 
+        Path((actor_type, actor_id, reminder_name)): Path<(String, String, String)>,
+        Json(payload): Json<ReminderPayload>
+    ) -> impl IntoResponse {
+    
     log::debug!("invoke_reminder: {} {} {} {:?}", actor_type, actor_id, reminder_name, payload);    
 
-    match runtime.lock().unwrap().invoke_reminder(&actor_type, &actor_id, &reminder_name, payload.data.unwrap_or_default().into_bytes()).await {
-        Ok(output) => HttpResponse::Ok().body(output),
+    match runtime.invoke_reminder(&actor_type, &actor_id, &reminder_name, payload.data.unwrap_or_default().into_bytes()).await {
+        Ok(_output) => StatusCode::OK,
         Err(err) => {
             log::error!("invoke_actor: {:?}", err);
             match err {
-                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+                super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
+                _ => {
+                    log::error!("invoke_reminder: {:?}", err);
+                    StatusCode::INTERNAL_SERVER_ERROR
+                },
             }
         },
     }    
 }
 
-#[put("/actors/{actor_type}/{actor_id}/method/timer/{timer_name}")]
-async fn invoke_timer(runtime: web::Data<Arc<Mutex<GrpcActorRuntime>>>, request: HttpRequest, body: web::Bytes) -> HttpResponse {   
-    let actor_type = request.match_info().get("actor_type").unwrap();
-    let actor_id = request.match_info().get("actor_id").unwrap();
-    let timer_name = request.match_info().get("timer_name").unwrap();
-    let payload = serde_json::from_slice::<TimerPayload>(&body.to_vec()).unwrap();
+async fn invoke_timer(
+        State(runtime): State<Arc<ActorRuntime>>, 
+        Path((actor_type, actor_id, timer_name)): Path<(String, String, String)>,
+        Json(payload): Json<TimerPayload>
+    ) -> impl IntoResponse {    
     log::debug!("invoke_timer: {} {} {}, {:?}", actor_type, actor_id, timer_name, payload);
 
-    match runtime.lock().unwrap().invoke_timer(&actor_type, &actor_id, &timer_name, payload.data.unwrap_or_default().into_bytes()).await {
-        Ok(output) => HttpResponse::Ok().body(output),
+    match runtime.invoke_timer(&actor_type, &actor_id, &timer_name, payload.data.unwrap_or_default().into_bytes()).await {
+        Ok(_output) => StatusCode::OK,
         Err(err) => {
             log::error!("invoke_actor: {:?}", err);
             match err {
-                super::actor::ActorError::ActorNotFound => HttpResponse::NotFound().finish(),
-                _ => HttpResponse::InternalServerError().body(format!("{:?}", err)),
+                super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
+                _ => {
+                    log::error!("invoke_timer: {:?}", err);
+                    StatusCode::INTERNAL_SERVER_ERROR
+                },
             }
         },
     }    

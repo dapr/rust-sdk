@@ -1,15 +1,11 @@
 use std::collections::HashMap;
-use std::time::{SystemTime, Duration};
 
 use async_trait::async_trait;
 use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
-use tonic::{async_trait, transport::Channel as TonicChannel, Request};
-use serde::{Deserialize, Serialize};
 use tonic::{transport::Channel as TonicChannel, Request};
-
-use crate::dapr::*;
-use crate::error::Error;
+use serde::{Deserialize, Serialize};
+use crate::{error::Error, dapr::dapr};
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -280,6 +276,8 @@ impl<T: DaprInterface> Client<T> {
         if let Some(m) = metadata {
             mdata = m;
         }
+
+        mdata.insert("Content-Type".to_string(), "application/json".to_string());
 
         let data = match serde_json::to_vec(&input) {
             Ok(data) => data,
