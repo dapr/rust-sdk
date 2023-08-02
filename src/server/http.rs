@@ -11,7 +11,11 @@ pub struct DaprHttpServer {
 
 impl DaprHttpServer {
     pub async fn new() -> Self {
-        let dapr_port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
+        let dapr_port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap_or("3501".into()).parse().unwrap();
+        Self::with_dapr_port(dapr_port).await
+    }
+
+    pub async fn with_dapr_port(dapr_port: u16) -> Self {        
         let dapr_addr = format!("https://127.0.0.1:{}", dapr_port);
         
         let cc = match TonicClient::connect(dapr_addr).await {
@@ -29,24 +33,13 @@ impl DaprHttpServer {
         self.actor_runtime.register_actor(registration).await;
     }
 
-    pub async fn start(&mut self, addr: Option<&str>, port: Option<u16>) -> Result<(), Box<dyn std::error::Error>> {
-        
-        let rt =  self.actor_runtime.clone();
+    pub async fn start(&mut self, port: Option<u16>) -> Result<(), Box<dyn std::error::Error>> {
+        let app = self.build_router().await;
 
         let default_port: u16 = std::env::var("APP_PORT")
             .unwrap_or(String::from("8080"))
             .parse()
             .unwrap_or(8080);
-    
-
-        let app = Router::new()
-            .route("/healthz", get(health_check))
-            .route("/dapr/config", get(registered_actors).with_state(rt.clone()))
-            .route("/actors/:actor_type/:actor_id", delete(deactivate_actor).with_state(rt.clone()))
-            .route("/actors/:actor_type/:actor_id/method/remind/:reminder_name", put(invoke_reminder).with_state(rt.clone()))
-            .route("/actors/:actor_type/:actor_id/method/timer/:timer_name", put(invoke_timer).with_state(rt.clone()));
-       
-        let app = self.actor_runtime.configure_method_routes(app, rt.clone()).await;
 
         let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(default_port)));
         
@@ -57,6 +50,25 @@ impl DaprHttpServer {
         self.actor_runtime.deactivate_all().await;
 
         Ok(final_result?)
+    }
+
+    #[cfg(test)]
+    pub async fn build_test_router(&mut self) -> Router {
+        self.build_router().await
+    }
+
+    async fn build_router(&mut self) -> Router {
+        let rt =  self.actor_runtime.clone();
+
+        let app = Router::new()
+            .route("/healthz", get(health_check))
+            .route("/dapr/config", get(registered_actors).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id", delete(deactivate_actor).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id/method/remind/:reminder_name", put(invoke_reminder).with_state(rt.clone()))
+            .route("/actors/:actor_type/:actor_id/method/timer/:timer_name", put(invoke_timer).with_state(rt.clone()));
+       
+        let app = self.actor_runtime.configure_method_routes(app, rt.clone()).await;
+        app
     }
 }
 

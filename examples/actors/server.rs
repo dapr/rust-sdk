@@ -76,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_method("do_stuff2", MyActor::do_stuff)).await;
         
     
-    dapr_server.start(None, None).await?;
+    dapr_server.start(None).await?;
         
     Ok(())
 }

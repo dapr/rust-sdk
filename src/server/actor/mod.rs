@@ -71,8 +71,8 @@ macro_rules! actor {
     ( $t:ident ) => {
         use axum::extract::{FromRequestParts, Path};
         use axum::http::request::Parts;
-        use dapr::server::actor::{ActorPath, ActorRejection};
-        use dapr::server::actor::runtime::ActorState;
+        use $crate::server::actor::{ActorPath, ActorRejection};
+        use $crate::server::actor::runtime::ActorState;
         
         #[async_trait]
         impl FromRequestParts<ActorState> for &$t {

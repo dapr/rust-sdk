@@ -115,7 +115,7 @@ impl ActorRuntime {
         let mut actors = self.active_actors.write().await;
         
         for actor in actors.values() {
-            actor.on_deactivate().await;
+            _ = actor.on_deactivate().await;
         }
         actors.clear();
     }
@@ -170,5 +170,3 @@ impl ActorRuntime {
     }
 }
 
-#[cfg(test)]
-mod tests;
