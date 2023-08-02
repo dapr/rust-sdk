@@ -79,7 +79,7 @@ macro_rules! actor {
         use $crate::server::actor::{ActorPath, ActorRejection};
         use $crate::server::actor::runtime::ActorState;
         
-        #[async_trait]
+        #[async_trait::async_trait]
         impl FromRequestParts<ActorState> for &$t {
             
             type Rejection = ActorRejection;
