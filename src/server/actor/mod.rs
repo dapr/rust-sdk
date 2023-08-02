@@ -9,7 +9,15 @@ pub mod context_client;
 pub mod runtime;
 
 
-pub type ActorFactory = Arc<dyn Fn(&str, &str, ActorContextClient) -> Arc<dyn Actor> + Send + Sync>;
+pub type ActorFactory = Box<dyn Fn(&str, &str, ActorContextClient) -> Arc<dyn Actor> + Send + Sync>;
+
+#[async_trait]
+pub trait Actor : Send + Sync {
+    async fn on_activate(&self) -> Result<(), ActorError>;
+    async fn on_deactivate(&self) -> Result<(), ActorError>;
+    async fn on_reminder(&self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+    async fn on_timer(&self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+}
 
 #[derive(Debug)]
 pub enum ActorError {
@@ -34,13 +42,10 @@ impl Display for ActorError {
     }
 }
 
-#[async_trait]
-pub trait Actor : Send + Sync {
-    fn new(actor_type: &str, actor_id: &str, context: ActorContextClient) -> Arc<dyn Actor> where Self: Sized;
-    async fn on_activate(&self) -> Result<(), ActorError>;
-    async fn on_deactivate(&self) -> Result<(), ActorError>;
-    async fn on_reminder(&self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
-    async fn on_timer(&self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+impl IntoResponse for ActorError {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::INTERNAL_SERVER_ERROR, axum::Json(self.to_string())).into_response()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

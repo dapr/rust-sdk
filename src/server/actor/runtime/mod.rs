@@ -25,10 +25,10 @@ pub struct ActorTypeRegistration {
 }
 
 impl ActorTypeRegistration {
-    pub fn new<TActor>(name: &str) -> Self where TActor: Actor + Send + Sync + 'static {        
+    pub fn new<TActor>(name: &str, factory: ActorFactory) -> Self where TActor: Actor + Send + Sync + 'static {        
         ActorTypeRegistration {
             name: name.to_string(),
-            factory: Arc::new(TActor::new),
+            factory,
             method_registrations: HashMap::new(),
         }
     }

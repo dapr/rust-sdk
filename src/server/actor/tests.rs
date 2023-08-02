@@ -10,7 +10,7 @@ use serde_json::json;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use super::{context_client::ActorContextClient, ActorError};
+use super::ActorError;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct MyResponse {
@@ -30,13 +30,6 @@ struct MyActor {
 
 #[async_trait]
 impl Actor for MyActor {
-    
-    fn new(_actor_type: &str, actor_id: &str, _context: ActorContextClient) -> Arc<dyn Actor> {
-        Arc::new(MyActor {
-            id: actor_id.to_string(),
-        })
-    }
-    
     async fn on_activate(&self) -> Result<(), ActorError> {
         TEST_STATE.increment_on_activate(&self.id).await;
         Ok(())
@@ -82,7 +75,11 @@ async fn test_actor_invoke() {
 
     let mut dapr_server = DaprHttpServer::with_dapr_port(dapr_port).await;
     
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor")
+    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, _context| {
+        Arc::new(MyActor {
+            id: actor_id.to_string(),
+        })
+    }))
         .register_method("do_stuff", MyActor::do_stuff)).await;
 
     let actor_id = Uuid::new_v4().to_string();
@@ -123,7 +120,11 @@ async fn test_actor_deactivate() {
 
     let mut dapr_server = DaprHttpServer::with_dapr_port(dapr_port).await;
     
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor")
+    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id,_context| {
+        Arc::new(MyActor {
+            id: actor_id.to_string(),
+        })
+    }))
         .register_method("do_stuff", MyActor::do_stuff)).await;
     
     

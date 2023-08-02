@@ -32,14 +32,6 @@ impl MyActor {
 
 #[async_trait]
 impl Actor for MyActor {
-
-    fn new(_actor_type: &str, actor_id: &str, context: ActorContextClient) -> Arc<dyn Actor> {
-        Arc::new(MyActor {
-            id: actor_id.to_string(),
-            client: context,
-        })
-    }
-    
     async fn on_activate(&self) -> Result<(), ActorError> {
         println!("on_activate {}", self.id);
         Ok(())
@@ -71,7 +63,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let mut dapr_server = dapr::server::DaprHttpServer::new().await;
     
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor")
+    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
+        Arc::new(MyActor {
+            id: actor_id.to_string(),
+            client: context,
+        })}))
         .register_method("do_stuff", MyActor::do_stuff)
         .register_method("do_stuff2", MyActor::do_stuff)).await;
         
