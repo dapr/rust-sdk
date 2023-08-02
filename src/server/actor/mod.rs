@@ -104,3 +104,6 @@ macro_rules! actor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -10,7 +10,7 @@ use serde_json::json;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use super::actor::{context_client::ActorContextClient, ActorError};
+use super::{context_client::ActorContextClient, ActorError};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct MyResponse {
