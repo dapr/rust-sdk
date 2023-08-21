@@ -114,11 +114,11 @@ impl DaprHttpServer {
                 put(invoke_timer).with_state(rt.clone()),
             );
 
-        let app = self
+        
+        self
             .actor_runtime
             .configure_method_routes(app, rt.clone())
-            .await;
-        app
+            .await
     }
 }
 

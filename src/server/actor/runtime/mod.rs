@@ -12,6 +12,8 @@ pub struct ActorState {
     pub runtime: Arc<ActorRuntime>,
 }
 
+type MethodRegistrationMap = HashMap<String, Box<dyn (FnOnce(Router, Arc<ActorRuntime>) -> Router) + Send + Sync>>;
+
 /// Describes the registration of an actor type, including the methods that can be invoked on it and the factory to create instances of it.
 /// # Example:
 /// ```rust
@@ -29,8 +31,7 @@ pub struct ActorState {
 pub struct ActorTypeRegistration {
     name: String,
     factory: ActorFactory,
-    method_registrations:
-        HashMap<String, Box<dyn (FnOnce(Router, Arc<ActorRuntime>) -> Router) + Send + Sync>>,
+    method_registrations: MethodRegistrationMap,
 }
 
 impl ActorTypeRegistration {
@@ -112,16 +113,19 @@ impl ActorTypeRegistration {
 
     fn create_actor(&self, actor_id: &str, client: TonicClient) -> Arc<dyn Actor> {
         let client = ActorContextClient::new(client, &self.name, actor_id);
-        let actor = (self.factory)(&self.name, actor_id, client);
-        actor
+        
+        (self.factory)(&self.name, actor_id, client) as _
     }
 }
+
+type ActiveActorMap = Arc<RwLock<HashMap<(String, String), Arc<dyn Actor>>>>;
+type ActorRegistrationMap = Arc<RwLock<HashMap<String, ActorTypeRegistration>>>;
 
 pub struct ActorRuntime {
     dapr_client: TonicClient,
 
-    registered_actors_types: Arc<RwLock<HashMap<String, ActorTypeRegistration>>>,
-    active_actors: Arc<RwLock<HashMap<(String, String), Arc<dyn Actor>>>>,
+    registered_actors_types: ActorRegistrationMap,
+    active_actors: ActiveActorMap,
 }
 
 impl ActorRuntime {

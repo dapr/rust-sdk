@@ -13,24 +13,21 @@ pub enum ActorStateOperation {
     Delete { key: String },
 }
 
-impl Into<TransactionalActorStateOperation> for ActorStateOperation {
-    fn into(self) -> TransactionalActorStateOperation {
-        match self {
+impl From<ActorStateOperation> for TransactionalActorStateOperation {
+    fn from(val: ActorStateOperation) -> Self {
+        match val {
             ActorStateOperation::Upsert { key, value } => TransactionalActorStateOperation {
                 operation_type: "upsert".to_string(),
-                key: key,
-                value: match value {
-                    Some(v) => Some(Any {
+                key,
+                value: value.map(|v| Any {
                         type_url: "type.googleapis.com/bytes".to_string(),
                         value: v,
                     }),
-                    None => None,
-                },
                 metadata: HashMap::new(),
             },
             ActorStateOperation::Delete { key } => TransactionalActorStateOperation {
                 operation_type: "delete".to_string(),
-                key: key,
+                key,
                 value: None,
                 metadata: HashMap::new(),
             },
@@ -84,15 +81,16 @@ impl ActorContextClient {
         &mut self,
         operations: Vec<ActorStateOperation>,
     ) -> Result<(), DaprError> {
-        Ok(self
-            .client
-            .execute_actor_state_transaction(ExecuteActorStateTransactionRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                operations: operations.into_iter().map(|o| o.into()).collect(),
-            })
-            .await?
-            .into_inner())
+        self
+        .client
+        .execute_actor_state_transaction(ExecuteActorStateTransactionRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            operations: operations.into_iter().map(|o| o.into()).collect(),
+        })
+        .await?
+        .into_inner();
+        Ok(())
     }
 
     /// Registers a reminder with the Dapr runtime.
@@ -114,28 +112,29 @@ impl ActorContextClient {
     where
         I: Into<String>,
     {
-        Ok(self
-            .client
-            .register_actor_reminder(RegisterActorReminderRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                name: name.into(),
-                due_time: match due_time {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-                period: match period {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-                data: data,
-                ttl: match ttl {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-            })
-            .await?
-            .into_inner())
+        self
+        .client
+        .register_actor_reminder(RegisterActorReminderRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            name: name.into(),
+            due_time: match due_time {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+            period: match period {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+            data,
+            ttl: match ttl {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+        })
+        .await?
+        .into_inner();
+        Ok(())
     }
 
     /// Unregisters a reminder with the Dapr runtime.
@@ -146,15 +145,16 @@ impl ActorContextClient {
     where
         I: Into<String>,
     {
-        Ok(self
-            .client
-            .unregister_actor_reminder(UnregisterActorReminderRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                name: name.into(),
-            })
-            .await?
-            .into_inner())
+        self
+        .client
+        .unregister_actor_reminder(UnregisterActorReminderRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            name: name.into(),
+        })
+        .await?
+        .into_inner();
+        Ok(())
     }
 
     /// Registers a timer with the Dapr runtime.
@@ -178,29 +178,30 @@ impl ActorContextClient {
     where
         I: Into<String>,
     {
-        Ok(self
-            .client
-            .register_actor_timer(RegisterActorTimerRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                name: name.into(),
-                due_time: match due_time {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-                period: match period {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-                data: data,
-                callback: callback.unwrap_or_default(),
-                ttl: match ttl {
-                    None => "".to_string(),
-                    Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
-                },
-            })
-            .await?
-            .into_inner())
+        self
+        .client
+        .register_actor_timer(RegisterActorTimerRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            name: name.into(),
+            due_time: match due_time {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+            period: match period {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+            data,
+            callback: callback.unwrap_or_default(),
+            ttl: match ttl {
+                None => "".to_string(),
+                Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
+            },
+        })
+        .await?
+        .into_inner();
+        Ok(())
     }
 
     /// Unregisters a timer with the Dapr runtime.
@@ -211,15 +212,16 @@ impl ActorContextClient {
     where
         I: Into<String>,
     {
-        Ok(self
-            .client
-            .unregister_actor_timer(UnregisterActorTimerRequest {
-                actor_type: self.actor_type.to_string(),
-                actor_id: self.actor_id.to_string(),
-                name: name.into(),
-            })
-            .await?
-            .into_inner())
+        self
+        .client
+        .unregister_actor_timer(UnregisterActorTimerRequest {
+            actor_type: self.actor_type.to_string(),
+            actor_id: self.actor_id.to_string(),
+            name: name.into(),
+        })
+        .await?
+        .into_inner();
+        Ok(())
     }
 }
 

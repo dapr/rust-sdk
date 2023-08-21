@@ -249,7 +249,7 @@ impl TestState {
     }
 }
 
-static TEST_STATE: Lazy<TestState> = Lazy::new(|| TestState::new());
+static TEST_STATE: Lazy<TestState> = Lazy::new(TestState::new);
 
 fn get_available_port() -> Option<u16> {
     (8000..9000).find(|port| port_is_available(*port))
