@@ -45,6 +45,9 @@ impl Into<TransactionalActorStateOperation> for ActorStateOperation {
   }
 }
 
+/// A client for interacting with the Dapr runtime within the scope of an actor.
+/// 
+/// Hosts methods for interacting with the Dapr sidecar specific to the actor instance.
 #[derive(Clone)]
 pub struct ActorContextClient{
   client: TonicClient,
@@ -62,6 +65,10 @@ impl ActorContextClient {
       }
   }
 
+  /// Retrieves a keyed state value within the scope of this instance of the actor.
+  /// 
+  /// # Arguments
+  /// * `key` - The key of the state to retrieve.
   pub async fn get_actor_state<K>(&mut self, key: K) -> Result<GetActorStateResponse, DaprError>
   where K: Into<String>
   {  
@@ -72,6 +79,10 @@ impl ActorContextClient {
         }).await?.into_inner())
   }
 
+  /// Saves a state value within the scope of this instance of the actor.
+  /// 
+  /// # Arguments
+  /// * `operations` - A list of [ActorStateOperation] to perform on the state.
   pub async fn execute_actor_state_transaction(
       &mut self,
       operations: Vec<ActorStateOperation>,
@@ -85,6 +96,14 @@ impl ActorContextClient {
           }).await?.into_inner())
   }
 
+  /// Registers a reminder with the Dapr runtime.
+  /// 
+  /// # Arguments
+  /// * `name` - The name of the reminder.
+  /// * `due_time` - The time at which the reminder should first be invoked.
+  /// * `period` - The time interval between invocations of the reminder.
+  /// * `data` - The data to pass to the reminder when it is invoked.
+  /// * `ttl` - The time to live for the reminder.
   pub async fn register_actor_reminder<I>(
       &mut self,
       name: I,
@@ -118,6 +137,10 @@ impl ActorContextClient {
           }).await?.into_inner())
   }
 
+  /// Unregisters a reminder with the Dapr runtime.
+  /// 
+  /// # Arguments
+  /// * `name` - The name of the reminder to unregister.
   pub async fn unregister_actor_reminder<I>(
       &mut self,
       name: I
@@ -133,6 +156,15 @@ impl ActorContextClient {
           }).await?.into_inner())
   }
 
+  /// Registers a timer with the Dapr runtime.
+  /// 
+  /// # Arguments
+  /// * `name` - The name of the timer.
+  /// * `due_time` - The time at which the timer should first be invoked.
+  /// * `period` - The time interval between invocations of the timer.
+  /// * `data` - The data to pass to the timer when it is invoked.
+  /// * `callback` - The callback name to include in the invocation.
+  /// * `ttl` - The time to live for the timer.
   pub async fn register_actor_timer<I>(
       &mut self,
       name: I,
@@ -167,6 +199,10 @@ impl ActorContextClient {
           }).await?.into_inner())
   }
 
+  /// Unregisters a timer with the Dapr runtime.
+  /// 
+  /// # Arguments
+  /// * `name` - The name of the timer to unregister.
   pub async fn unregister_actor_timer<I>(
       &mut self,
       name: I

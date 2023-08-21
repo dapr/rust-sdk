@@ -5,11 +5,30 @@ use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 use super::super::client::TonicClient;
 
 
+/// The Dapr HTTP server.
+/// 
+/// Supports Http callbacks from the Dapr sidecar.
+/// 
+/// # Example:
+/// ```rust
+/// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
+///     
+/// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
+///     Arc::new(MyActor {
+///         id: actor_id.to_string(),
+///         client: context,
+///     })}))
+///     .register_method("do_stuff", MyActor::do_stuff)
+///     .await;
+/// 
+/// dapr_server.start(None).await?;
+/// ```
 pub struct DaprHttpServer {
     actor_runtime: Arc<ActorRuntime>,
 }
 
 impl DaprHttpServer {
+    /// Creates a new instance of the Dapr HTTP server with default options.
     pub async fn new() -> Self {
         let dapr_port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap_or("3501".into()).parse().unwrap();
         Self::with_dapr_port(dapr_port).await
@@ -29,10 +48,18 @@ impl DaprHttpServer {
         }
     }
 
+    /// Registers an actor type with the Dapr runtime.
+    /// 
+    /// # Arguments:
+    /// * `registration` - The [ActorTypeRegistration] struct, carries the methods that can be invoked on it and the factory to create instances of it.
     pub async fn register_actor(&self, registration: ActorTypeRegistration) {
         self.actor_runtime.register_actor(registration).await;
     }
 
+    /// Starts the Dapr HTTP server.
+    /// 
+    /// # Arguments:
+    /// * `port` - The port to listen on. If not specified, the APP_PORT environment variable will be used. If that is not specified, 8080 will be used.
     pub async fn start(&mut self, port: Option<u16>) -> Result<(), Box<dyn std::error::Error>> {
         let app = self.build_router().await;
 

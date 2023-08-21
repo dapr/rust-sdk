@@ -18,6 +18,20 @@ pub struct ActorState {
     pub runtime: Arc<ActorRuntime>,
 }
 
+/// Describes the registration of an actor type, including the methods that can be invoked on it and the factory to create instances of it.
+/// # Example:
+/// ```rust
+/// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
+///
+/// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
+///    Arc::new(MyActor {
+///        id: actor_id.to_string(),
+///        client: context,
+///    })}))
+///    .register_method("do_stuff", MyActor::do_stuff)
+///    .register_method("do_other_stuff", MyActor::do_other_stuff))
+/// .await;
+/// ```
 pub struct ActorTypeRegistration {
     name: String,
     factory: ActorFactory,
@@ -33,6 +47,45 @@ impl ActorTypeRegistration {
         }
     }
 
+    /// Registers a method on the actor type to be exposed to actor clients.
+    ///
+    /// # Arguments:
+    /// * `method_name` - The name of the method to be registered. This name will be used by actor clients to invoke the method.
+    /// * `handler` - The handler function to be invoked when the method is called.  
+    ///     Can be any valid [Axum handler](https://docs.rs/axum/latest/axum/handler/index.html), 
+    ///     use [Axum extractors](https://docs.rs/axum/latest/axum/extract/index.html) to access the incoming request and return an [`impl IntoResponse`](https://docs.rs/axum/latest/axum/response/trait.IntoResponse.html).
+    ///     Use the `DaprJson` extractor to deserialize the request from Json coming from a Dapr sidecar.
+    /// # Example:
+    /// ```rust
+    /// #[derive(Serialize, Deserialize)]
+    /// pub struct MyRequest {
+    /// pub name: String,
+    ///}
+    ///
+    ///#[derive(Serialize, Deserialize)]
+    ///pub struct MyResponse {
+    ///    pub available: bool,
+    ///}   
+    ///
+    ///impl MyActor {
+    ///    fn do_stuff(&self, DaprJson(data): DaprJson<MyRequest>) -> Json<MyResponse> {        
+    ///        println!("doing stuff with {}", data.name);        
+    ///        Json(MyResponse { 
+    ///            available: true 
+    ///        })
+    ///    }    
+    ///}
+    /// 
+    /// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
+    /// 
+    /// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
+    ///    Arc::new(MyActor {
+    ///        id: actor_id.to_string(),
+    ///        client: context,
+    ///    })}))
+    ///    .register_method("do_stuff", MyActor::do_stuff)
+    /// .await;
+    /// ```
     pub fn register_method<T>(mut self, method_name: &str, handler: impl Handler<T, ActorState> + Send + Sync) -> Self
     where T: 'static
     {
@@ -78,6 +131,9 @@ impl ActorRuntime {
         }
     }
 
+    /// Registers an actor type to be exposed to actor clients.
+    /// # Arguments:
+    /// * `registration` - The [ActorTypeRegistration] that describes the actor implementation.
     pub async fn register_actor(&self, registration: ActorTypeRegistration) {        
         let name = registration.name.clone();
         let mut g = self.registered_actors_types.write().await;

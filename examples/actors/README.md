@@ -5,6 +5,11 @@ This example demonstrates the Dapr actor framework.  To author an actor,
 1. Create a struct with your custom actor methods that map to [Axum handlers](https://docs.rs/axum/latest/axum/handler/index.html), use [Axum extractors](https://docs.rs/axum/latest/axum/extract/index.html) to access the incoming request and return an [`impl IntoResponse`](https://docs.rs/axum/latest/axum/response/trait.IntoResponse.html).
 Use the `DaprJson` extractor to deserialize the request from Json coming from a Dapr sidecar.
     ```rust
+    struct MyActor {
+        id: String,
+        client: ActorContextClient
+    }
+    
     #[derive(Serialize, Deserialize)]
     pub struct MyRequest {
         pub name: String,
