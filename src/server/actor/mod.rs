@@ -1,22 +1,21 @@
-use std::{sync::Arc, error::Error, fmt::Display};
 use async_trait::async_trait;
-use axum::{response::IntoResponse, extract::rejection::PathRejection, http::StatusCode};
-use serde::{Serialize, Deserialize};
+use axum::{extract::rejection::PathRejection, http::StatusCode, response::IntoResponse};
+use serde::{Deserialize, Serialize};
+use std::{error::Error, fmt::Display, sync::Arc};
 
 use self::context_client::ActorContextClient;
 
 pub mod context_client;
 pub mod runtime;
 
-
 pub type ActorFactory = Box<dyn Fn(&str, &str, ActorContextClient) -> Arc<dyn Actor> + Send + Sync>;
 
 #[async_trait]
-pub trait Actor : Send + Sync {
+pub trait Actor: Send + Sync {
     async fn on_activate(&self) -> Result<(), ActorError>;
     async fn on_deactivate(&self) -> Result<(), ActorError>;
-    async fn on_reminder(&self, _reminder_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
-    async fn on_timer(&self, _timer_name: &str, _data : Vec<u8>) -> Result<(), ActorError>;
+    async fn on_reminder(&self, _reminder_name: &str, _data: Vec<u8>) -> Result<(), ActorError>;
+    async fn on_timer(&self, _timer_name: &str, _data: Vec<u8>) -> Result<(), ActorError>;
 }
 
 #[derive(Debug)]
@@ -26,7 +25,7 @@ pub enum ActorError {
     MethodNotFound,
     ActorNotFound,
     MethodError(Box<dyn Error>),
-    SerializationError()
+    SerializationError(),
 }
 
 impl Display for ActorError {
@@ -44,7 +43,11 @@ impl Display for ActorError {
 
 impl IntoResponse for ActorError {
     fn into_response(self) -> axum::response::Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, axum::Json(self.to_string())).into_response()
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            axum::Json(self.to_string()),
+        )
+            .into_response()
     }
 }
 
@@ -55,7 +58,7 @@ pub struct ActorPath {
 
 pub enum ActorRejection {
     ActorError(String),
-    Path(PathRejection)
+    Path(PathRejection),
 }
 
 impl IntoResponse for ActorRejection {
@@ -63,7 +66,7 @@ impl IntoResponse for ActorRejection {
         match self {
             ActorRejection::ActorError(e) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, axum::Json(e)).into_response()
-            },
+            }
             ActorRejection::Path(e) => {
                 (StatusCode::BAD_REQUEST, axum::Json(e.body_text())).into_response()
             }
@@ -76,16 +79,18 @@ macro_rules! actor {
     ( $t:ident ) => {
         use axum::extract::{FromRequestParts, Path};
         use axum::http::request::Parts;
-        use $crate::server::actor::{ActorPath, ActorRejection};
         use $crate::server::actor::runtime::ActorState;
-        
+        use $crate::server::actor::{ActorPath, ActorRejection};
+
         #[async_trait::async_trait]
         impl FromRequestParts<ActorState> for &$t {
-            
             type Rejection = ActorRejection;
 
-            async fn from_request_parts(parts: &mut Parts, state: &ActorState) -> Result<Self, Self::Rejection> {                
-                let path = match Path::<ActorPath>::from_request_parts(parts, state).await{
+            async fn from_request_parts(
+                parts: &mut Parts,
+                state: &ActorState,
+            ) -> Result<Self, Self::Rejection> {
+                let path = match Path::<ActorPath>::from_request_parts(parts, state).await {
                     Ok(path) => path,
                     Err(e) => {
                         log::error!("Error getting path: {}", e);
@@ -93,9 +98,17 @@ macro_rules! actor {
                     }
                 };
                 let actor_type = state.actor_type.clone();
-                let actor_id = path.actor_id.clone();                
-                log::info!("Request for actor_type: {}, actor_id: {}", actor_type, actor_id);
-                let actor = match state.runtime.get_or_create_actor(&actor_type, &actor_id).await {
+                let actor_id = path.actor_id.clone();
+                log::info!(
+                    "Request for actor_type: {}, actor_id: {}",
+                    actor_type,
+                    actor_id
+                );
+                let actor = match state
+                    .runtime
+                    .get_or_create_actor(&actor_type, &actor_id)
+                    .await
+                {
                     Ok(actor) => actor,
                     Err(e) => {
                         log::error!("Error getting actor: {}", e);
@@ -103,11 +116,12 @@ macro_rules! actor {
                     }
                 };
                 let actor = actor.as_ref();
-                let well_known_actor = unsafe { & *(actor as *const dyn $crate::server::actor::Actor as *const $t) };        
+                let well_known_actor =
+                    unsafe { &*(actor as *const dyn $crate::server::actor::Actor as *const $t) };
                 Ok(well_known_actor)
             }
         }
-    }
+    };
 }
 
 #[cfg(test)]

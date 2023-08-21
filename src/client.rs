@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use prost_types::Any;
-use tonic::{transport::Channel as TonicChannel, Request};
-use serde::{Deserialize, Serialize};
 use crate::error::Error;
+use async_trait::async_trait;
+use prost_types::Any;
+use serde::{Deserialize, Serialize};
+use tonic::{transport::Channel as TonicChannel, Request};
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -284,11 +284,12 @@ impl<T: DaprInterface> Client<T> {
             Err(_e) => return Err(Error::SerializationError),
         };
 
-        let res = self.0
+        let res = self
+            .0
             .invoke_actor(InvokeActorRequest {
                 actor_type: actor_type.into(),
                 actor_id: actor_id.into(),
-                method: method_name.into(),            
+                method: method_name.into(),
                 data,
                 metadata: mdata,
             })
@@ -320,9 +321,11 @@ pub trait DaprInterface: Sized {
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error>;
-    async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error>;
+    async fn invoke_actor(
+        &mut self,
+        request: InvokeActorRequest,
+    ) -> Result<InvokeActorResponse, Error>;
 }
-
 
 #[async_trait]
 impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
@@ -388,7 +391,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(self.get_metadata(Request::new(())).await?.into_inner())
     }
 
-    async fn invoke_actor(&mut self, request: InvokeActorRequest) -> Result<InvokeActorResponse, Error> {
+    async fn invoke_actor(
+        &mut self,
+        request: InvokeActorRequest,
+    ) -> Result<InvokeActorResponse, Error> {
         Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
     }
 }

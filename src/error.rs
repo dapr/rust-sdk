@@ -6,7 +6,7 @@ use tonic::{transport::Error as TonicError, Status as TonicStatus};
 pub enum Error {
     TransportError,
     GrpcError(GrpcError),
-    SerializationError
+    SerializationError,
 }
 
 impl Display for Error {

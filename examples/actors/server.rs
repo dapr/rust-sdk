@@ -1,8 +1,13 @@
-use std::{str::from_utf8, sync::Arc};
 use async_trait::async_trait;
 use axum::Json;
-use dapr::server::{actor::{ActorError, context_client::ActorContextClient, Actor, runtime::ActorTypeRegistration}, utils::DaprJson};
-use serde::{Serialize, Deserialize};
+use dapr::server::{
+    actor::{
+        context_client::ActorContextClient, runtime::ActorTypeRegistration, Actor, ActorError,
+    },
+    utils::DaprJson,
+};
+use serde::{Deserialize, Serialize};
+use std::{str::from_utf8, sync::Arc};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyResponse {
@@ -16,11 +21,11 @@ pub struct MyRequest {
 
 struct MyActor {
     id: String,
-    client: ActorContextClient
+    client: ActorContextClient,
 }
 
 impl MyActor {
-    async fn do_stuff(&self, DaprJson(req): DaprJson<MyRequest>) -> Json<MyResponse> {        
+    async fn do_stuff(&self, DaprJson(req): DaprJson<MyRequest>) -> Json<MyResponse> {
         println!("doing stuff with {}", req.name);
         let mut dapr = self.client.clone();
         let r = dapr.get_actor_state("key1").await.unwrap();
@@ -28,7 +33,6 @@ impl MyActor {
         Json(MyResponse { available: true })
     }
 }
-
 
 #[async_trait]
 impl Actor for MyActor {
@@ -51,27 +55,32 @@ impl Actor for MyActor {
         println!("on_timer {} {:?}", timer_name, from_utf8(&data));
         Ok(())
     }
-
 }
 
 dapr::actor!(MyActor);
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let mut dapr_server = dapr::server::DaprHttpServer::new().await;
-    
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
-        Arc::new(MyActor {
-            id: actor_id.to_string(),
-            client: context,
-        })}))
-        .register_method("do_stuff", MyActor::do_stuff)
-        .register_method("do_stuff2", MyActor::do_stuff)).await;
-    
+
+    dapr_server
+        .register_actor(
+            ActorTypeRegistration::new::<MyActor>(
+                "MyActor",
+                Box::new(|_actor_type, actor_id, context| {
+                    Arc::new(MyActor {
+                        id: actor_id.to_string(),
+                        client: context,
+                    })
+                }),
+            )
+            .register_method("do_stuff", MyActor::do_stuff)
+            .register_method("do_stuff2", MyActor::do_stuff),
+        )
+        .await;
+
     dapr_server.start(None).await?;
-        
+
     Ok(())
 }

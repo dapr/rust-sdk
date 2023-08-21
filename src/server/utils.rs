@@ -1,16 +1,20 @@
 use async_trait::async_trait;
-use axum::{extract::FromRequest, body::HttpBody, BoxError, http::{Request, StatusCode}, response::IntoResponse};
+use axum::{
+    body::HttpBody,
+    extract::FromRequest,
+    http::{Request, StatusCode},
+    response::IntoResponse,
+    BoxError,
+};
 use serde::de::DeserializeOwned;
-
 
 /// Workaround for Dapr's JSON serialization not correcly setting Content-Type header
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DaprJson<T>(pub T);
 
-
 pub enum JsonRejection {
-    JsonError(String)
+    JsonError(String),
 }
 
 #[async_trait]
@@ -24,7 +28,7 @@ where
 {
     type Rejection = JsonRejection;
 
-    async fn from_request(req: Request<B>, state: &S) -> Result<Self, Self::Rejection> {        
+    async fn from_request(req: Request<B>, state: &S) -> Result<Self, Self::Rejection> {
         let bytes = match axum::body::Bytes::from_request(req, state).await {
             Ok(bytes) => bytes,
             Err(e) => {
@@ -47,9 +51,7 @@ where
 impl IntoResponse for JsonRejection {
     fn into_response(self) -> axum::response::Response {
         match self {
-            JsonRejection::JsonError(e) => {
-                (StatusCode::BAD_REQUEST, axum::Json(e)).into_response()
-            }
+            JsonRejection::JsonError(e) => (StatusCode::BAD_REQUEST, axum::Json(e)).into_response(),
         }
     }
 }

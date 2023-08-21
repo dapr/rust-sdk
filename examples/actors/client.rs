@@ -23,13 +23,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
-    let data = MyRequest { 
-        name: "test".to_string()
+    let data = MyRequest {
+        name: "test".to_string(),
     };
 
-    let resp: Result<MyResponse, dapr::error::Error> = client.invoke_actor("MyActor", "a1", "do_stuff", data, None).await;
+    let resp: Result<MyResponse, dapr::error::Error> = client
+        .invoke_actor("MyActor", "a1", "do_stuff", data, None)
+        .await;
 
     println!("Response: {:#?}", resp);
-    
+
     Ok(())
 }

@@ -1,6 +1,16 @@
-use std::{net::{SocketAddr, TcpListener}, sync::Arc, collections::HashMap};
+use std::{
+    collections::HashMap,
+    net::{SocketAddr, TcpListener},
+    sync::Arc,
+};
 
-use crate::{server::{actor::{Actor, runtime::ActorTypeRegistration}, DaprHttpServer}, actor};
+use crate::{
+    actor,
+    server::{
+        actor::{runtime::ActorTypeRegistration, Actor},
+        DaprHttpServer,
+    },
+};
 use async_trait::async_trait;
 use axum::{Json, Router};
 use axum_test::TestServer;
@@ -49,12 +59,12 @@ impl Actor for MyActor {
     }
 }
 
-impl MyActor {    
+impl MyActor {
     async fn do_stuff(&self, Json(req): Json<MyRequest>) -> Json<MyResponse> {
-        Json(MyResponse { 
+        Json(MyResponse {
             actor_id: self.id.clone(),
             name: req.name,
-            available: true 
+            available: true,
         })
     }
 }
@@ -64,7 +74,7 @@ actor!(MyActor);
 #[tokio::test]
 async fn test_actor_invoke() {
     let dapr_port = get_available_port().unwrap();
-    
+
     let fake_sidecar = tokio::spawn(async move {
         let sidecar = Router::new();
         _ = axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], dapr_port)))
@@ -74,20 +84,30 @@ async fn test_actor_invoke() {
     tokio::task::yield_now().await;
 
     let mut dapr_server = DaprHttpServer::with_dapr_port(dapr_port).await;
-    
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, _context| {
-        Arc::new(MyActor {
-            id: actor_id.to_string(),
-        })
-    }))
-        .register_method("do_stuff", MyActor::do_stuff)).await;
+
+    dapr_server
+        .register_actor(
+            ActorTypeRegistration::new::<MyActor>(
+                "MyActor",
+                Box::new(|_actor_type, actor_id, _context| {
+                    Arc::new(MyActor {
+                        id: actor_id.to_string(),
+                    })
+                }),
+            )
+            .register_method("do_stuff", MyActor::do_stuff),
+        )
+        .await;
 
     let actor_id = Uuid::new_v4().to_string();
-    
+
     let app = dapr_server.build_test_router().await;
     let server = TestServer::new(app.into_make_service()).unwrap();
-        
-    let invoke_resp = server.put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id)).json(&json!({ "name": "foo" })).await;
+
+    let invoke_resp = server
+        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .json(&json!({ "name": "foo" }))
+        .await;
     invoke_resp.assert_status_ok();
 
     invoke_resp.assert_json(&MyResponse {
@@ -96,20 +116,37 @@ async fn test_actor_invoke() {
         available: true,
     });
 
-    assert_eq!(TEST_STATE.get_actor_state(&actor_id).await.unwrap().on_activate, 1);
+    assert_eq!(
+        TEST_STATE
+            .get_actor_state(&actor_id)
+            .await
+            .unwrap()
+            .on_activate,
+        1
+    );
 
-    let invoke_resp2 = server.put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id)).json(&json!({ "name": "foo" })).await;
+    let invoke_resp2 = server
+        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .json(&json!({ "name": "foo" }))
+        .await;
     invoke_resp2.assert_status_ok();
 
-    assert_eq!(TEST_STATE.get_actor_state(&actor_id).await.unwrap().on_activate, 1);
-    
+    assert_eq!(
+        TEST_STATE
+            .get_actor_state(&actor_id)
+            .await
+            .unwrap()
+            .on_activate,
+        1
+    );
+
     fake_sidecar.abort();
 }
 
 #[tokio::test]
 async fn test_actor_deactivate() {
     let dapr_port = get_available_port().unwrap();
-    
+
     let fake_sidecar = tokio::spawn(async move {
         let sidecar = Router::new();
         _ = axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], dapr_port)))
@@ -119,39 +156,58 @@ async fn test_actor_deactivate() {
     tokio::task::yield_now().await;
 
     let mut dapr_server = DaprHttpServer::with_dapr_port(dapr_port).await;
-    
-    dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id,_context| {
-        Arc::new(MyActor {
-            id: actor_id.to_string(),
-        })
-    }))
-        .register_method("do_stuff", MyActor::do_stuff)).await;
-    
-    
+
+    dapr_server
+        .register_actor(
+            ActorTypeRegistration::new::<MyActor>(
+                "MyActor",
+                Box::new(|_actor_type, actor_id, _context| {
+                    Arc::new(MyActor {
+                        id: actor_id.to_string(),
+                    })
+                }),
+            )
+            .register_method("do_stuff", MyActor::do_stuff),
+        )
+        .await;
+
     let app = dapr_server.build_test_router().await;
     let server = TestServer::new(app.into_make_service()).unwrap();
 
     let actor_id = Uuid::new_v4().to_string();
-        
-    let invoke_resp = server.put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id)).json(&json!({ "name": "foo" })).await;
+
+    let invoke_resp = server
+        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .json(&json!({ "name": "foo" }))
+        .await;
     invoke_resp.assert_status_ok();
 
-    let deactivate_resp1 = server.delete(&format!("/actors/MyActor/{}", actor_id)).await;
+    let deactivate_resp1 = server
+        .delete(&format!("/actors/MyActor/{}", actor_id))
+        .await;
     deactivate_resp1.assert_status_ok();
 
-    let deactivate_resp2 = server.delete(&format!("/actors/MyActor/{}", actor_id)).await;
+    let deactivate_resp2 = server
+        .delete(&format!("/actors/MyActor/{}", actor_id))
+        .await;
     deactivate_resp2.assert_status_not_found();
 
-    assert_eq!(TEST_STATE.get_actor_state(&actor_id).await.unwrap().on_deactivate, 1);
-    
+    assert_eq!(
+        TEST_STATE
+            .get_actor_state(&actor_id)
+            .await
+            .unwrap()
+            .on_deactivate,
+        1
+    );
+
     fake_sidecar.abort();
 }
-
 
 #[derive(Clone, Debug)]
 struct TestActorState {
     pub on_activate: u32,
-    pub on_deactivate: u32,    
+    pub on_deactivate: u32,
 }
 
 struct TestState {
@@ -172,29 +228,31 @@ impl TestState {
 
     pub async fn increment_on_activate(&self, actor_id: &str) {
         let mut actors = self.actors.lock().await;
-        let actor_state = actors.entry(actor_id.to_string()).or_insert(TestActorState {
-            on_activate: 0,
-            on_deactivate: 0,
-        });
+        let actor_state = actors
+            .entry(actor_id.to_string())
+            .or_insert(TestActorState {
+                on_activate: 0,
+                on_deactivate: 0,
+            });
         actor_state.on_activate += 1;
     }
 
     pub async fn increment_on_deactivate(&self, actor_id: &str) {
         let mut actors = self.actors.lock().await;
-        let actor_state = actors.entry(actor_id.to_string()).or_insert(TestActorState {
-            on_activate: 0,
-            on_deactivate: 0,
-        });
+        let actor_state = actors
+            .entry(actor_id.to_string())
+            .or_insert(TestActorState {
+                on_activate: 0,
+                on_deactivate: 0,
+            });
         actor_state.on_deactivate += 1;
     }
-
 }
 
 static TEST_STATE: Lazy<TestState> = Lazy::new(|| TestState::new());
 
 fn get_available_port() -> Option<u16> {
-    (8000..9000)
-        .find(|port| port_is_available(*port))
+    (8000..9000).find(|port| port_is_available(*port))
 }
 
 fn port_is_available(port: u16) -> bool {
