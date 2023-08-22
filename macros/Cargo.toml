@@ -12,7 +12,7 @@ log = "0.4"
 axum = "0.6.19"
 syn = {version="2.0.29",features=["full"]}
 quote = "1.0.8"
-dapr = {version="0.14.0", path="../"}
 
 [dev-dependencies]
+dapr = {version="0.14.0", path="../"}
 

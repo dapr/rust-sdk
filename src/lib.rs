@@ -5,3 +5,5 @@ pub mod error;
 pub mod server;
 
 pub use client::Client;
+
+pub use dapr_macros::actor;
