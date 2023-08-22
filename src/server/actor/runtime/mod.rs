@@ -16,7 +16,56 @@ type MethodRegistrationMap = HashMap<String, Box<dyn (FnOnce(Router, Arc<ActorRu
 
 /// Describes the registration of an actor type, including the methods that can be invoked on it and the factory to create instances of it.
 /// # Example:
-/// ```rust
+/// ```ignore
+/// # use std::sync::Arc;
+/// # use dapr::server::actor::{context_client::ActorContextClient, Actor, ActorError, ActorFactory, runtime::ActorTypeRegistration};
+/// # use dapr::server::utils::DaprJson;
+/// # use dapr::actor;
+/// # use axum::{Json, Router};
+/// # use serde::{Deserialize, Serialize};
+/// # #[dapr::actor]
+/// # struct MyActor {
+/// #     id: String,
+/// #     client: ActorContextClient,
+/// # }
+/// #
+/// # #[derive(Serialize, Deserialize)]
+/// # pub struct MyRequest {
+/// # pub name: String,
+/// # }
+/// #
+/// # #[derive(Serialize, Deserialize)]
+/// # pub struct MyResponse {
+/// #   pub available: bool,
+/// # }
+/// #
+/// # impl MyActor {
+/// #     async fn do_stuff(&self, DaprJson(req): DaprJson<MyRequest>) -> Json<MyResponse> {
+/// #         todo!()
+/// #     }
+/// #     async fn do_other_stuff(&self, DaprJson(req): DaprJson<MyRequest>) -> Json<MyResponse> {
+/// #         todo!()
+/// #     }
+/// # }
+/// #
+/// #
+/// # #[async_trait::async_trait]
+/// # impl Actor for MyActor {
+/// #    async fn on_activate(&self) -> Result<(), ActorError> {
+/// #        todo!()
+/// #    }
+/// #    async fn on_deactivate(&self) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// #    async fn on_reminder(&self, reminder_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// #    async fn on_timer(&self, timer_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// # }
+/// 
+/// # async fn main_async() {
 /// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
 ///
 /// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
@@ -27,6 +76,7 @@ type MethodRegistrationMap = HashMap<String, Box<dyn (FnOnce(Router, Arc<ActorRu
 ///    .register_method("do_stuff", MyActor::do_stuff)
 ///    .register_method("do_other_stuff", MyActor::do_other_stuff))
 /// .await;
+/// # }
 /// ```
 pub struct ActorTypeRegistration {
     name: String,
@@ -55,13 +105,40 @@ impl ActorTypeRegistration {
     ///     use [Axum extractors](https://docs.rs/axum/latest/axum/extract/index.html) to access the incoming request and return an [`impl IntoResponse`](https://docs.rs/axum/latest/axum/response/trait.IntoResponse.html).
     ///     Use the `DaprJson` extractor to deserialize the request from Json coming from a Dapr sidecar.
     /// # Example:
-    /// ```rust
-    /// #[derive(Serialize, Deserialize)]
+    /// ```ignore
+    /// # use std::sync::Arc;
+    /// # use dapr::server::actor::{context_client::ActorContextClient, Actor, ActorError, ActorFactory, runtime::ActorTypeRegistration};
+    /// # use dapr::server::utils::DaprJson;
+    /// # use dapr::actor;
+    /// # use axum::{Json, Router};
+    /// # use serde::{Deserialize, Serialize};
+    /// # #[dapr::actor]
+    /// # struct MyActor {
+    /// #     id: String,
+    /// #     client: ActorContextClient,
+    /// # }
+    /// #
+    /// # #[async_trait::async_trait]
+    /// # impl Actor for MyActor {
+    /// #    async fn on_activate(&self) -> Result<(), ActorError> {
+    /// #        todo!()
+    /// #    }
+    /// #    async fn on_deactivate(&self) -> Result<(), ActorError> {
+    /// #         todo!()
+    /// #    }
+    /// #    async fn on_reminder(&self, reminder_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+    /// #         todo!()
+    /// #    }
+    /// #    async fn on_timer(&self, timer_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+    /// #         todo!()
+    /// #    }
+    /// # }
+    /// ##[derive(Serialize, Deserialize)]
     /// pub struct MyRequest {
     /// pub name: String,
-    ///}
+    /// }
     ///
-    ///#[derive(Serialize, Deserialize)]
+    ///##[derive(Serialize, Deserialize)]
     ///pub struct MyResponse {
     ///    pub available: bool,
     ///}   
@@ -75,6 +152,7 @@ impl ActorTypeRegistration {
     ///    }    
     ///}
     ///
+    /// # async fn main_async() {
     /// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
     ///
     /// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
@@ -82,8 +160,9 @@ impl ActorTypeRegistration {
     ///        id: actor_id.to_string(),
     ///        client: context,
     ///    })}))
-    ///    .register_method("do_stuff", MyActor::do_stuff)
+    ///    .register_method("do_stuff", MyActor::do_stuff))
     /// .await;
+    /// # }
     /// ```
     pub fn register_method<T>(
         mut self,

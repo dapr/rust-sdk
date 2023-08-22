@@ -15,7 +15,53 @@ use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 /// Supports Http callbacks from the Dapr sidecar.
 ///
 /// # Example:
-/// ```rust
+/// ```ignore
+/// # use std::sync::Arc;
+/// # use dapr::server::actor::{context_client::ActorContextClient, Actor, ActorError, ActorFactory, runtime::ActorTypeRegistration};
+/// # use dapr::server::utils::DaprJson;
+/// # use dapr::actor;
+/// # use axum::{Json, Router};
+/// # use serde::{Deserialize, Serialize};
+/// # #[actor]
+/// # struct MyActor {
+/// #     id: String,
+/// #     client: ActorContextClient,
+/// # }
+/// #
+/// # #[async_trait::async_trait]
+/// # impl Actor for MyActor {
+/// #    async fn on_activate(&self) -> Result<(), ActorError> {
+/// #        todo!()
+/// #    }
+/// #    async fn on_deactivate(&self) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// #    async fn on_reminder(&self, reminder_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// #    async fn on_timer(&self, timer_name: &str, data: Vec<u8>) -> Result<(), ActorError> {
+/// #         todo!()
+/// #    }
+/// # }
+/// ##[derive(Serialize, Deserialize)]
+/// pub struct MyRequest {
+/// pub name: String,
+/// }
+///
+///##[derive(Serialize, Deserialize)]
+///pub struct MyResponse {
+///    pub available: bool,
+///}   
+///
+///impl MyActor {
+///    fn do_stuff(&self, DaprJson(data): DaprJson<MyRequest>) -> Json<MyResponse> {        
+///        println!("doing stuff with {}", data.name);        
+///        Json(MyResponse {
+///            available: true
+///        })
+///    }    
+///}
+/// # async fn main_async() {
 /// let mut dapr_server = dapr::server::DaprHttpServer::new().await;
 ///     
 /// dapr_server.register_actor(ActorTypeRegistration::new::<MyActor>("MyActor", Box::new(|_actor_type, actor_id, context| {
@@ -23,10 +69,11 @@ use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 ///         id: actor_id.to_string(),
 ///         client: context,
 ///     })}))
-///     .register_method("do_stuff", MyActor::do_stuff)
+///     .register_method("do_stuff", MyActor::do_stuff))
 ///     .await;
 ///
-/// dapr_server.start(None).await?;
+/// dapr_server.start(None).await;
+/// # }
 /// ```
 pub struct DaprHttpServer {
     actor_runtime: Arc<ActorRuntime>,
