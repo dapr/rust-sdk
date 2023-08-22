@@ -6,6 +6,7 @@ use dapr::server::{
     },
     utils::DaprJson,
 };
+use dapr_macros::actor;
 use serde::{Deserialize, Serialize};
 use std::{str::from_utf8, sync::Arc};
 
@@ -19,6 +20,7 @@ pub struct MyRequest {
     pub name: String,
 }
 
+#[actor]
 struct MyActor {
     id: String,
     client: ActorContextClient,
@@ -56,8 +58,6 @@ impl Actor for MyActor {
         Ok(())
     }
 }
-
-dapr::actor!(MyActor);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -74,55 +74,5 @@ impl IntoResponse for ActorRejection {
     }
 }
 
-#[macro_export]
-macro_rules! actor {
-    ( $t:ident ) => {
-        use axum::extract::{FromRequestParts, Path};
-        use axum::http::request::Parts;
-        use $crate::server::actor::runtime::ActorState;
-        use $crate::server::actor::{ActorPath, ActorRejection};
-
-        #[async_trait::async_trait]
-        impl FromRequestParts<ActorState> for &$t {
-            type Rejection = ActorRejection;
-
-            async fn from_request_parts(
-                parts: &mut Parts,
-                state: &ActorState,
-            ) -> Result<Self, Self::Rejection> {
-                let path = match Path::<ActorPath>::from_request_parts(parts, state).await {
-                    Ok(path) => path,
-                    Err(e) => {
-                        log::error!("Error getting path: {}", e);
-                        return Err(ActorRejection::Path(e));
-                    }
-                };
-                let actor_type = state.actor_type.clone();
-                let actor_id = path.actor_id.clone();
-                log::info!(
-                    "Request for actor_type: {}, actor_id: {}",
-                    actor_type,
-                    actor_id
-                );
-                let actor = match state
-                    .runtime
-                    .get_or_create_actor(&actor_type, &actor_id)
-                    .await
-                {
-                    Ok(actor) => actor,
-                    Err(e) => {
-                        log::error!("Error getting actor: {}", e);
-                        return Err(ActorRejection::ActorError(e.to_string()));
-                    }
-                };
-                let actor = actor.as_ref();
-                let well_known_actor =
-                    unsafe { &*(actor as *const dyn $crate::server::actor::Actor as *const $t) };
-                Ok(well_known_actor)
-            }
-        }
-    };
-}
-
 #[cfg(test)]
 mod tests;

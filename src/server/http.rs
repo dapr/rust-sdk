@@ -87,7 +87,6 @@ impl DaprHttpServer {
         Ok(final_result?)
     }
 
-    #[cfg(test)]
     pub async fn build_test_router(&mut self) -> Router {
         self.build_router().await
     }

@@ -4,23 +4,20 @@ use std::{
     sync::Arc,
 };
 
-use crate::{
-    actor,
-    server::{
-        actor::{runtime::ActorTypeRegistration, Actor},
+use dapr::server::{
+        actor::{runtime::ActorTypeRegistration, Actor, ActorError},
         DaprHttpServer,
-    },
-};
+    };
 use async_trait::async_trait;
 use axum::{Json, Router};
 use axum_test::TestServer;
+use dapr_macros::actor;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use super::ActorError;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct MyResponse {
@@ -34,6 +31,7 @@ pub struct MyRequest {
     pub name: String,
 }
 
+#[actor]
 struct MyActor {
     id: String,
 }
@@ -68,8 +66,6 @@ impl MyActor {
         })
     }
 }
-
-actor!(MyActor);
 
 #[tokio::test]
 async fn test_actor_invoke() {
