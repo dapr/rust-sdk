@@ -2,14 +2,16 @@ use std::iter;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::parse_macro_input;
 
 #[proc_macro_attribute]
 pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
-
-    let actor_struct = item.clone();
-    let actor_struct = parse_macro_input!(actor_struct as syn::ItemStruct);
-    let actor_struct_name = actor_struct.ident.clone();
+    let actor_struct_name = match syn::parse::<syn::ItemStruct>(item.clone()) {
+        Ok(actor_struct) => actor_struct.ident.clone(),
+        Err(_) => match syn::parse::<syn::ItemType>(item.clone()) {
+            Ok(ty) => ty.ident.clone(),
+            Err(e) => panic!("Error parsing actor struct: {}", e),
+        },
+    };
     
     let mut result = TokenStream::from(quote!(    
         #[async_trait::async_trait]
