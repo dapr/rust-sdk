@@ -6,4 +6,5 @@ pub mod server;
 
 pub use client::Client;
 
+extern crate dapr_macros;
 pub use dapr_macros::actor;
