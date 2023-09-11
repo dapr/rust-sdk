@@ -21,18 +21,20 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 - [dapr.io](https://dapr.io)
 - [@DaprDev](https://twitter.com/DaprDev)
 
-## Prerequsites
+## Prerequisites
 
-* [Install Rust > 1.40](https://www.rust-lang.org/tools/install)
+Ensure you have Rust version 1.40 or higher installed. If not, install Rust [here]((https://www.rust-lang.org/tools/install)).
 
-## Usage
+## How to use
+
+Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.12.0"
+dapr = "0.13.0"
 ```
 
-A client can be created as follows:
+Here's a basic example to create a client:
 
 ```rust
 use dapr;
@@ -46,25 +48,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 ```
 
-## Try out examples
+## Explore more examples
 
-[Examples](./examples)
+Browse through more examples to understand the SDK better: [View examples](./examples)
 
 ## Building
 
-To build
+To build the SDK run:
 
 ```bash
 cargo build
 ```
 
->Note: The proto buf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the proto buf client.
+>Note: The protobuf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the protobuf client.
 
-## To refresh .proto files from upstream dapr
+## Updating .proto files from upstream Dapr
 
-1. Just need to run update-protos.sh, which will basically fetch latest proto updates.
-2. By default, it picks from master proto. To specify a particular release/version, please specify with a -v flag
+To fetch the latest .proto files from Dapr execute the script `update-protos.sh`:
 
 ```bash
-./update-protos.sh -v v1.10.1
+./update-protos.sh
+```
+
+By default, the script fetches the latest proto updates from the master branch of the Dapr repository. If you need to choose a specific release or version, use the -v flag:
+
+```bash
+./update-protos.sh -v v1.12.0
 ```
