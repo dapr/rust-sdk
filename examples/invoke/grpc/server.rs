@@ -1,6 +1,6 @@
 use dapr::{
     appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
+    proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
 };
 use prost::Message;
 use tonic::{transport::Server, Request, Response, Status};
