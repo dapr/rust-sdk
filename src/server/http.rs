@@ -5,7 +5,8 @@ use axum::{
     routing::{delete, get, put},
     Json, Router,
 };
-use std::{net::SocketAddr, sync::Arc};
+use futures::{Future, FutureExt};
+use std::{net::SocketAddr, sync::Arc, pin::Pin};
 
 use super::super::client::TonicClient;
 use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
@@ -77,6 +78,7 @@ use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 /// ```
 pub struct DaprHttpServer {
     actor_runtime: Arc<ActorRuntime>,
+    shutdown_signal: Option<Pin<Box<dyn Future<Output = ()> + Send>>>,
 }
 
 impl DaprHttpServer {
@@ -100,6 +102,16 @@ impl DaprHttpServer {
 
         DaprHttpServer {
             actor_runtime: Arc::new(rt),
+            shutdown_signal: None,
+        }
+    }
+
+    pub fn with_graceful_shutdown<F>(self, signal: F) -> Self
+        where F: Future<Output = ()> + Send + 'static
+    {
+        DaprHttpServer {
+            shutdown_signal: Some(signal.boxed()),
+            ..self
         }
     }
 
@@ -125,10 +137,20 @@ impl DaprHttpServer {
 
         let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(default_port)));
 
-        let final_result = axum::Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await;
+        let server = axum::Server::bind(&addr)
+            .serve(app.into_make_service());
+            
 
+        let final_result = match self.shutdown_signal.take() {
+            Some(signal) => {
+                server.with_graceful_shutdown(async move {
+                    signal.await;
+                })
+                .await
+            }
+            None => server.await,
+        };
+        
         self.actor_runtime.deactivate_all().await;
 
         Ok(final_result?)
