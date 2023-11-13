@@ -15,13 +15,13 @@ tonic = "0.8"
 prost = "0.11"
 bytes = "1"
 prost-types = "0.11"
-tokio-stream = { version = "0.1" }
 
 [build-dependencies]
 tonic-build = "0.8"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1" }
 
 [[example]]
 name = "client"
