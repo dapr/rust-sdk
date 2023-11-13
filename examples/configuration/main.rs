@@ -19,12 +19,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let key = String::from("hello");
 
     // save key-value pair in the state store
-    let response = client.get_configuration(CONFIGSTORE_NAME, vec![(&key)]).await?;
+    let response = client
+        .get_configuration(CONFIGSTORE_NAME, vec![(&key)])
+        .await?;
     let val = response.items.get("hello").unwrap();
     println!("Configuration value: {val:?}");
 
     // Subscribe for configuration changes
-    let mut stream = client.subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)]).await?;
+    let mut stream = client
+        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)])
+        .await?;
 
     let mut subscription_id = String::new();
     while let Some(result) = stream.next().await {
@@ -44,10 +48,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 // Function to unsubscribe from configuration updates and exit the app
 async fn unsubscribe(client: &mut DaprClient, subscription_id: &str) {
-    match client.unsubscribe_configuration("CONFIGSTORE_NAME", subscription_id).await {
+    match client
+        .unsubscribe_configuration("CONFIGSTORE_NAME", subscription_id)
+        .await
+    {
         Ok(_) => println!("App unsubscribed from config changes"),
         Err(e) => println!("Error unsubscribing from config updates: {}", e),
     }
     std::process::exit(0);
 }
-
