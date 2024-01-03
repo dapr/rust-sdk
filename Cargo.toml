@@ -21,10 +21,15 @@ tonic-build = "0.8"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1" }
 
 [[example]]
 name = "client"
 path = "examples/client/client.rs"
+
+[[example]]
+name = "configuration"
+path = "examples/configuration/main.rs"
 
 [[example]]
 name = "publisher"
