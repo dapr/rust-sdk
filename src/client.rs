@@ -1,15 +1,12 @@
-use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
 use std::collections::HashMap;
 use tonic::Streaming;
-use tonic::{async_trait, transport::Channel as TonicChannel, Request};
+use tonic::{transport::Channel as TonicChannel, Request};
 
-use crate::dapr::*;
 use crate::error::Error;
 use async_trait::async_trait;
-use prost_types::Any;
 use serde::{Deserialize, Serialize};
-use tonic::{transport::Channel as TonicChannel, Request};
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -303,6 +300,8 @@ impl<T: DaprInterface> Client<T> {
             Ok(output) => Ok(output),
             Err(_e) => Err(Error::SerializationError),
         }
+    }
+
     /// Get the configuration for a specific key
     /// ///
     /// # Arguments
@@ -471,6 +470,8 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         request: InvokeActorRequest,
     ) -> Result<InvokeActorResponse, Error> {
         Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
+    }
+
     async fn get_configuration(
         &mut self,
         request: GetConfigurationRequest,
