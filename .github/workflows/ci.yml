@@ -82,5 +82,9 @@ jobs:
       with:
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
+    - name: cargo publish macros
+      run: cargo publish --manifest-path macros/Cargo.toml --token ${{ env.CARGO_TOKEN }}
     - name: cargo publish
       run: cargo publish --token ${{ env.CARGO_TOKEN }}
+
+      
