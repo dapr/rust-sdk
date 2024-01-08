@@ -240,7 +240,6 @@ impl<T: DaprInterface> Client<T> {
             .set_metadata(SetMetadataRequest {
                 key: key.into(),
                 value: value.into(),
-                ..Default::default()
             })
             .await
     }
