@@ -36,10 +36,15 @@ tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.4.0", features = ["v4"] }
 dapr = {path="./"}
 tokio-test = "0.4.2"
+tokio-stream = { version = "0.1" }
 
 [[example]]
 name = "client"
 path = "examples/client/client.rs"
+
+[[example]]
+name = "configuration"
+path = "examples/configuration/main.rs"
 
 [[example]]
 name = "publisher"
