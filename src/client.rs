@@ -423,10 +423,9 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        self
-        .publish_event(Request::new(request))
-        .await?
-        .into_inner();
+        self.publish_event(Request::new(request))
+            .await?
+            .into_inner();
         Ok(())
     }
 
@@ -449,10 +448,9 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error> {
-        self
-        .delete_bulk_state(Request::new(request))
-        .await?
-        .into_inner();
+        self.delete_bulk_state(Request::new(request))
+            .await?
+            .into_inner();
         Ok(())
     }
 

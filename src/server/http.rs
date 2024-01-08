@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
 };
 use futures::{Future, FutureExt};
-use std::{net::SocketAddr, sync::Arc, pin::Pin};
+use std::{net::SocketAddr, pin::Pin, sync::Arc};
 
 use super::super::client::TonicClient;
 use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
@@ -107,7 +107,8 @@ impl DaprHttpServer {
     }
 
     pub fn with_graceful_shutdown<F>(self, signal: F) -> Self
-        where F: Future<Output = ()> + Send + 'static
+    where
+        F: Future<Output = ()> + Send + 'static,
     {
         DaprHttpServer {
             shutdown_signal: Some(signal.boxed()),
@@ -137,20 +138,19 @@ impl DaprHttpServer {
 
         let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(default_port)));
 
-        let server = axum::Server::bind(&addr)
-            .serve(app.into_make_service());
-            
+        let server = axum::Server::bind(&addr).serve(app.into_make_service());
 
         let final_result = match self.shutdown_signal.take() {
             Some(signal) => {
-                server.with_graceful_shutdown(async move {
-                    signal.await;
-                })
-                .await
+                server
+                    .with_graceful_shutdown(async move {
+                        signal.await;
+                    })
+                    .await
             }
             None => server.await,
         };
-        
+
         self.actor_runtime.deactivate_all().await;
 
         Ok(final_result?)
@@ -182,9 +182,7 @@ impl DaprHttpServer {
                 put(invoke_timer).with_state(rt.clone()),
             );
 
-        
-        self
-            .actor_runtime
+        self.actor_runtime
             .configure_method_routes(app, rt.clone())
             .await
     }
