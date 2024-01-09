@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 pub mod dapr {
     pub mod proto {
         pub mod common {

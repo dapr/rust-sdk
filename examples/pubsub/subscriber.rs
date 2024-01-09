@@ -44,7 +44,7 @@ impl AppCallback for AppCallbackService {
         let data = &r.data;
         let data_content_type = &r.data_content_type;
 
-        let message = String::from_utf8_lossy(&data);
+        let message = String::from_utf8_lossy(data);
         println!("Message: {}", &message);
         println!("Content-Type: {}", &data_content_type);
 
