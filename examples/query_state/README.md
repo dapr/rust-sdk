@@ -51,7 +51,10 @@ dapr run --app-id=rustapp --dapr-grpc-port 3501  cargo run -- --example query_st
 ```
 Expected result:
 ```
-Query results: [Object {"id": String("3"), "value": String("{\"city\":\"Sacramento\",\"state\":\"CA\",\"person\":{\"org\":\"Finance\",\"id\":1071.0}}")}, Object {"id": String("7"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\",\"state\":\"CA\"}")}, Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, Object {"id": String("9"), "value": String("{\"person\":{\"org\":\"Finance\",\"id\":1002.0},\"city\":\"San Diego\",\"state\":\"CA\"}")}]
+Query results: [Object {"id": String("3"), "value": String("{\"city\":\"Sacramento\",\"state\":\"CA\",\"person\":{\"org\":\"Finance\",\"id\":1071.0}}")}, 
+Object {"id": String("7"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\",\"state\":\"CA\"}")}, 
+Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")},
+ Object {"id": String("9"), "value": String("{\"person\":{\"org\":\"Finance\",\"id\":1002.0},\"city\":\"San Diego\",\"state\":\"CA\"}")}]
 ```
 
 3. Executing the second query
@@ -69,7 +72,11 @@ dapr run --app-id=rustapp --dapr-grpc-port 3501  cargo run -- --example query_st
 ```
 Expected result:
 ```
-
-
- Query results: [Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, Object {"id": String("2"), "value": String("{\"person\":{\"id\":1028.0,\"org\":\"Hardware\"},\"city\":\"Portland\",\"state\":\"OR\"}")}, Object {"id": String("4"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1042.0},\"city\":\"Spokane\",\"state\":\"WA\"}")}, Object {"id": String("7"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\",\"state\":\"CA\"}")}, Object {"id": String("8"), "value": String("{\"city\":\"Redmond\",\"state\":\"WA\",\"person\":{\"id\":1077.0,\"org\":\"Hardware\"}}")}, Object {"id": String("10"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1054.0},\"city\":\"New York\",\"state\":\"NY\"}")}, Object {"id": String("1"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1036.0},\"city\":\"Seattle\",\"state\":\"WA\"}")}]
+Query results: [Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, 
+Object {"id": String("2"), "value": String("{\"person\":{\"id\":1028.0,\"org\":\"Hardware\"},\"city\":\"Portland\",\"state\":\"OR\"}")}, 
+Object {"id": String("4"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1042.0},\"city\":\"Spokane\",\"state\":\"WA\"}")},
+Object {"id": String("7"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\",\"state\":\"CA\"}")}, 
+Object {"id": String("8"), "value": String("{\"city\":\"Redmond\",\"state\":\"WA\",\"person\":{\"id\":1077.0,\"org\":\"Hardware\"}}")}, 
+Object {"id": String("10"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1054.0},\"city\":\"New York\",\"state\":\"NY\"}")}, 
+Object {"id": String("1"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1036.0},\"city\":\"Seattle\",\"state\":\"WA\"}")}]
 ```

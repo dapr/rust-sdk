@@ -178,7 +178,12 @@ impl<T: DaprInterface> Client<T> {
             .await
     }
 
-    //query should be type json
+    /// Query state objects based on specific query conditions
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `query` - The query request (json)
     pub async fn query_state_alpha1<S>(
         &mut self,
         store_name: S,
