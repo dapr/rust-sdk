@@ -3,6 +3,7 @@ use prost_types::Any;
 use std::collections::HashMap;
 use tonic::Streaming;
 use tonic::{transport::Channel as TonicChannel, Request};
+use serde_json::Value;
 
 use crate::error::Error;
 use async_trait::async_trait;
@@ -177,6 +178,30 @@ impl<T: DaprInterface> Client<T> {
             .await
     }
 
+    //query should be type json
+    pub async fn query_state<S>(
+        &mut self,
+        store_name: S,
+        query: Value,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<QueryStateResponse, Error> 
+    where
+        S: Into<String>
+    {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
+        self.0
+            .query_state_alpha1(QueryStateRequest {
+                store_name: store_name.into(),
+                query: serde_json::to_string(&query).unwrap(),
+                metadata: mdata,
+            })
+            .await
+    }
+
     /// Delete an array of state objects.
     ///
     /// # Arguments
@@ -193,7 +218,7 @@ impl<T: DaprInterface> Client<T> {
                 store_name: store_name.into(),
                 states: states.into_iter().map(|pair| pair.into()).collect(),
             })
-            .await
+            .await 
     }
 
     /// Delete the state for a specific key.
@@ -373,6 +398,7 @@ pub trait DaprInterface: Sized {
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
+    async fn query_state_alpha1(&mut self, request: QueryStateRequest) -> Result<QueryStateResponse, Error>;
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
@@ -434,6 +460,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
 
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
+    }
+
+    async fn query_state_alpha1(&mut self, request: QueryStateRequest) -> Result<QueryStateResponse, Error> {
+        Ok(self.query_state_alpha1(Request::new(request)).await?.into_inner())
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
@@ -523,6 +553,12 @@ pub type GetStateResponse = dapr_v1::GetStateResponse;
 
 /// A request for saving state
 pub type SaveStateRequest = dapr_v1::SaveStateRequest;
+
+/// A request for querying state
+pub type QueryStateRequest = dapr_v1::QueryStateRequest;
+
+/// A response from querying state
+pub type QueryStateResponse = dapr_v1::QueryStateResponse;
 
 /// A request for deleting state
 pub type DeleteStateRequest = dapr_v1::DeleteStateRequest;
