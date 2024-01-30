@@ -1,0 +1,5 @@
+Query results: [Object {"id": String("3"), "value": String("{\"city\":\"Sacramento\",\"state\":\"CA\",\"person\":{\"org\":\"Finance\",\"id\":1071.0}}")}, Object {"id": String("7"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\",\"state\":\"CA\"}")}, Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, Object {"id": String("9"), "value": String("{\"person\":{\"org\":\"Finance\",\"id\":1002.0},\"city\":\"San Diego\",\"state\":\"CA\"}")}]
+
+
+
+ GrpcError(GrpcError { _status: Status { code: Internal, message: "failed query in state store statestore: redis-json server support is required for query capability", metadata: MetadataMap { headers: {"content-type": "application/grpc", "grpc-trace-bin": "AABniqIo9TrSF6TepfB0yzgNAZzAwpG45zK0AgE"} }, source: None } })

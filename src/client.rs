@@ -179,7 +179,7 @@ impl<T: DaprInterface> Client<T> {
     }
 
     //query should be type json
-    pub async fn query_state<S>(
+    pub async fn query_state_alpha1<S>(
         &mut self,
         store_name: S,
         query: Value,

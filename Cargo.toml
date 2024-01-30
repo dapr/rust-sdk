@@ -51,6 +51,15 @@ name = "publisher"
 path = "examples/pubsub/publisher.rs"
 
 [[example]]
+name = "query_state_q1"
+path = "examples/query_state/query1.rs"
+
+[[example]]
+name = "query_state_q2"
+path = "examples/query_state/query2.rs"
+
+
+[[example]]
 name = "subscriber"
 path = "examples/pubsub/subscriber.rs"
 
