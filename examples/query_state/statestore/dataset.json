@@ -75,38 +75,5 @@
             "city": "San Francisco",
             "state": "CA"
         }
-    },
-    {
-        "key": "8",
-        "value": {
-            "person": {
-                "org": "Hardware",
-                "id": 1077
-            },
-            "city": "Redmond",
-            "state": "WA"
-        }
-    },
-    {
-        "key": "9",
-        "value": {
-            "person": {
-                "org": "Finance",
-                "id": 1002
-            },
-            "city": "San Diego",
-            "state": "CA"
-        }
-    },
-    {
-        "key": "10",
-        "value": {
-            "person": {
-                "org": "Dev Ops",
-                "id": 1054
-            },
-            "city": "New York",
-            "state": "NY"
-        }
     }
 ]
