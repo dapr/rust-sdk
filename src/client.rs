@@ -223,7 +223,7 @@ impl<T: DaprInterface> Client<T> {
                 store_name: store_name.into(),
                 states: states.into_iter().map(|pair| pair.into()).collect(),
             })
-            .await 
+            .await
     }
 
     /// Delete the state for a specific key.
