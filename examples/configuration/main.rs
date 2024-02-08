@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Subscribe for configuration changes
     let mut stream = client
-        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)], Some(metadata))
+        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
         .await?;
 
     let mut subscription_id = String::new();
