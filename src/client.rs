@@ -333,7 +333,7 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
-        Ok(self.get_metadata(Request::new(())).await?.into_inner())
+        Ok(self.get_metadata(GetMetadataRequest {}).await?.into_inner())
     }
 }
 
@@ -375,6 +375,9 @@ pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 
 /// A response from getting metadata
 pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
+
+/// A request for getting metadata
+pub type GetMetadataRequest = dapr_v1::GetMetadataRequest;
 
 /// A request for setting metadata
 pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
