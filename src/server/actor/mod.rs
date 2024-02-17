@@ -5,6 +5,8 @@ use std::{error::Error, fmt::Display, sync::Arc};
 
 use self::context_client::ActorContextClient;
 
+pub use axum;
+
 pub mod context_client;
 pub mod runtime;
 
