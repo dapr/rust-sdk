@@ -13,10 +13,10 @@ keywords = ["microservices", "dapr"]
 [dependencies]
 dapr-macros = {version="0.14.0", path = "macros" }
 futures = "0.3"
-tonic = "0.8"
-prost = "0.11"
+tonic = "0.11.0"
+prost = "0.12.3"
 bytes = "1"
-prost-types = "0.11"
+prost-types = "0.12.3"
 async-trait = "0.1"
 env_logger = "0.10"
 log = "0.4"
@@ -27,7 +27,7 @@ tokio = { version = "1.29", features = ["sync"] }
 chrono = "0.4.24"
 
 [build-dependencies]
-tonic-build = "0.8"
+tonic-build = "0.11.0"
 
 [dev-dependencies]
 axum-test = "14.3.0"

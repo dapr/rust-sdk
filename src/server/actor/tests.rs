@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    sync::Arc,
-};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use axum::{Json, Router};
@@ -73,8 +70,7 @@ async fn test_actor_invoke() {
         let sidecar = Router::new();
         let address = format!("127.0.0.1:{dapr_port}");
         let listener = TcpListener::bind(address).await.unwrap();
-        _ = axum::serve(listener, sidecar.into_make_service())
-            .await;
+        _ = axum::serve(listener, sidecar.into_make_service()).await;
     });
     tokio::task::yield_now().await;
 
@@ -146,8 +142,7 @@ async fn test_actor_deactivate() {
         let sidecar = Router::new();
         let address = format!("127.0.0.1:{dapr_port}");
         let listener = TcpListener::bind(address).await.unwrap();
-        _ = axum::serve(listener, sidecar.into_make_service())
-            .await;
+        _ = axum::serve(listener, sidecar.into_make_service()).await;
     });
     tokio::task::yield_now().await;
 
@@ -249,7 +244,10 @@ static TEST_STATE: Lazy<TestState> = Lazy::new(TestState::new);
 
 async fn get_available_port() -> Option<u16> {
     for port in 8000..9000 {
-        if TcpListener::bind(format!("127.0.0.1:{}", port)).await.is_ok() {
+        if TcpListener::bind(format!("127.0.0.1:{}", port))
+            .await
+            .is_ok()
+        {
             return Some(port);
         }
     }
