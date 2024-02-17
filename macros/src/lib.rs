@@ -15,14 +15,14 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
     
     let mut result = TokenStream::from(quote!(    
         #[async_trait::async_trait]
-        impl axum::extract::FromRequestParts<dapr::server::actor::runtime::ActorState> for &#actor_struct_name {
+        impl dapr::axum::extract::FromRequestParts<dapr::server::actor::runtime::ActorState> for &#actor_struct_name {
             type Rejection = dapr::server::actor::ActorRejection;
 
             async fn from_request_parts(
-                parts: &mut axum::http::request::Parts,
+                parts: &mut dapr::axum::http::request::Parts,
                 state: &dapr::server::actor::runtime::ActorState,
             ) -> Result<Self, Self::Rejection> {
-                let path = match axum::extract::Path::<dapr::server::actor::ActorPath>::from_request_parts(parts, state).await {
+                let path = match dapr::axum::extract::Path::<dapr::server::actor::ActorPath>::from_request_parts(parts, state).await {
                     Ok(path) => path,
                     Err(e) => {
                         log::error!("Error getting path: {}", e);
