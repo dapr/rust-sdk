@@ -9,7 +9,6 @@ description = "Rust SDK for dapr"
 readme = "README.md"
 keywords = ["microservices", "dapr"]
 
-
 [dependencies]
 dapr-macros = {version="0.14.0", path = "macros" }
 futures = "0.3"
