@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use dapr::server::{
     actor::{
-        axum::Json, context_client::ActorContextClient, runtime::ActorTypeRegistration, Actor, ActorError,
+        axum::Json, context_client::ActorContextClient, runtime::ActorTypeRegistration, Actor,
+        ActorError,
     },
     utils::DaprJson,
 };
