@@ -244,7 +244,7 @@ static TEST_STATE: Lazy<TestState> = Lazy::new(TestState::new);
 
 async fn get_available_port() -> Option<u16> {
     for port in 8000..9000 {
-        if TcpListener::bind(format!("127.0.0.1:{}", port))
+        if TcpListener::bind(format!("127.0.0.1:{port}"))
             .await
             .is_ok()
         {
