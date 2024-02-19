@@ -16,12 +16,32 @@ This is a simple example that demonstrates Dapr's pub/sub capabilities. To imple
 
 To run this example:
 
-1. Start Subscriber (expose gRPC server receiver on port 50051):
+1. Run the multi-app run template:
+
+<!-- STEP
+name: Run Subscriber
+output_match_mode: substring
+expected_stdout_lines:
+  - '== APP - rust-subscriber == Message: 0 => hello from rust!'
+  - '== APP - rust-subscriber == Content-Type: text/plain'
+  - '== APP - rust-subscriber == Message: 1 => hello from rust!'
+  - '== APP - rust-subscriber == Content-Type: text/plain'
+  - '== APP - rust-subscriber == Message: 2 => hello from rust!'
+  - '== APP - rust-subscriber == Content-Type: text/plain'
+  - '== APP - rust-publisher == messages published'
+background: true
+sleep: 60
+-->
+
+
 ```bash
-dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run -- --example subscriber
+dapr run -f .
 ```
 
-2. Start Publisher:
+2. Stop and clean up application processes
+
 ```bash
-dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example publisher
+dapr stop -f .
 ```
+
+<!-- END_STEP -->
