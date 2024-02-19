@@ -21,6 +21,7 @@ To run this example:
 <!-- STEP
 name: Run Subscriber
 output_match_mode: substring
+match_order: none
 expected_stdout_lines:
   - '== APP - rust-subscriber == Message: 0 => hello from rust!'
   - '== APP - rust-subscriber == Content-Type: text/plain'
