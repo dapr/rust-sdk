@@ -11,8 +11,9 @@ cargo build --examples
 
 2. Run the example with dapr using the following command:
 
+
 ```bash
-dapr run --app-id=rustapp --resources-path ./examples/components --dapr-grpc-port 3500 -- cargo run --example configuration
+dapr run --app-id=rustapp --resources-path ../components --dapr-grpc-port 3500 -- cargo run --example configuration
 ```
 
 3. Change the value of the key `hello` in redis using the following command:
