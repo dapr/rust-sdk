@@ -99,7 +99,7 @@ expected_stdout_lines:
   - 'Request for actor_type: MyActor, actor_id: a1'
   - '== APP - actor-server == on_activate a1'
   - '== APP - actor-server == doing stuff with test'
-  - '== APP - actor-server == get_actor_state GetActorStateResponse { data: [] }'
+  - '== APP - actor-server == get_actor_state GetActorStateResponse { data: []'
   - '== APP - actor-client == Response: Ok('
   - '== APP - actor-client ==     MyResponse {'
   - '== APP - actor-client ==         available: true,'
