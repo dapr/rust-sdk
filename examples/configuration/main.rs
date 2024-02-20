@@ -20,14 +20,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // save key-value pair in the state store
     let response = client
-        .get_configuration(CONFIGSTORE_NAME, vec![(&key)])
+        .get_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
         .await?;
     let val = response.items.get("hello").unwrap();
     println!("Configuration value: {val:?}");
 
     // Subscribe for configuration changes
     let mut stream = client
-        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)])
+        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
         .await?;
 
     let mut subscription_id = String::new();

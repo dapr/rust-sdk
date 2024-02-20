@@ -311,6 +311,7 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         store_name: S,
         keys: Vec<K>,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<GetConfigurationResponse, Error>
     where
         S: Into<String>,
@@ -319,7 +320,7 @@ impl<T: DaprInterface> Client<T> {
         let request = GetConfigurationRequest {
             store_name: store_name.into(),
             keys: keys.into_iter().map(|key| key.into()).collect(),
-            metadata: Default::default(),
+            metadata: metadata.unwrap_or_default(),
         };
         self.0.get_configuration(request).await
     }
@@ -329,6 +330,7 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         store_name: S,
         keys: Vec<S>,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<Streaming<SubscribeConfigurationResponse>, Error>
     where
         S: Into<String>,
@@ -336,7 +338,7 @@ impl<T: DaprInterface> Client<T> {
         let request = SubscribeConfigurationRequest {
             store_name: store_name.into(),
             keys: keys.into_iter().map(|key| key.into()).collect(),
-            metadata: Default::default(),
+            metadata: metadata.unwrap_or_default(),
         };
         self.0.subscribe_configuration(request).await
     }
