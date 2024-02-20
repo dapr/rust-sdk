@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        examples: ["actors", "pubsub"]
+        examples: ["actors", "client", "pubsub"]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
