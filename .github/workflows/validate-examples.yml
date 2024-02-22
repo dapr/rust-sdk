@@ -138,7 +138,7 @@ jobs:
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
-      RUST_BACKTRACE: 1
+      RUST_BACKTRACE: full
 
     strategy:
       fail-fast: false
