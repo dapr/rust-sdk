@@ -1,0 +1,14 @@
+version: 1
+common:
+  daprdLogDestination: console
+apps:
+  - appID: invoke-grpc-server
+    appDirPath: ./
+    appProtocol: grpc
+    appPort: 50052
+    logLevel: debug
+    command: ["cargo", "run", "--example", "invoke-grpc-proxying-server"]
+  - appID: invoke-grpc-client
+    appDirPath: ./
+    logLevel: debug
+    command: ["cargo", "run", "--example", "invoke-grpc-proxying-client"]

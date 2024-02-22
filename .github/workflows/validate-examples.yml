@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        examples: ["actors", "client", "pubsub"]
+        examples: ["actors", "client", "invoke/grpc-proxying", "pubsub"]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
