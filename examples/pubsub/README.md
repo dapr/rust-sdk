@@ -31,7 +31,8 @@ expected_stdout_lines:
   - '== APP - rust-subscriber == Content-Type: text/plain'
   - '== APP - rust-publisher == messages published'
 background: true
-sleep: 60
+sleep: 30
+timeout_seconds: 90
 -->
 
 
@@ -39,10 +40,18 @@ sleep: 60
 dapr run -f .
 ```
 
-2. Stop and clean up application processes
+<!-- END_STEP -->
 
+2. Stop with `ctrl + c`
+
+### Running without multi-app
+
+1. Run the subscriber with dapr
 ```bash
-dapr stop -f .
+dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run -- --example subscriber
 ```
 
-<!-- END_STEP -->
+2. Run the publisher with dapr
+```bash
+dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example publisher
+```
