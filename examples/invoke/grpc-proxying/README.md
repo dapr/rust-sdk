@@ -16,12 +16,12 @@ name: Run Multi-app
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP - invoke-grpc-server == AppCallback server listening on: [::]:50052'
+  - '== APP - invoke-grpc-server == AppCallback server listening on: [::]:50051'
   - '== APP - invoke-grpc-client == Response: HelloReply {'
   - '== APP - invoke-grpc-client ==     message: "Hello Test!",'
   - '== APP - invoke-grpc-client == }'
 background: true
-sleep: 15
+sleep: 30
 timeout_seconds: 30
 -->
 
@@ -34,7 +34,7 @@ dapr run -f .
 What the multi-run step effectively runs for you:
 1. Runs the invoke-grpc-server:
 ```bash
-dapr run --app-id=invoke-grpc-server --app-protocol grpc --app-port 50052 -- cargo run --example invoke-grpc-proxying-server
+dapr run --app-id=invoke-grpc-server --app-protocol grpc --app-port 50051 -- cargo run --example invoke-grpc-proxying-server
 ```
 
 2. Runs the invoke-grpc-client:

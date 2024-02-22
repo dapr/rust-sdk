@@ -5,7 +5,7 @@ apps:
   - appID: invoke-grpc-server
     appDirPath: ./
     appProtocol: grpc
-    appPort: 50052
+    appPort: 50051
     logLevel: debug
     command: ["cargo", "run", "--example", "invoke-grpc-proxying-server"]
   - appID: invoke-grpc-client
