@@ -16,6 +16,8 @@ name: Run Multi-app
 output_match_mode: substring
 match_order: sequential
 expected_stdout_lines:
+  - '== APP - invoke-grpc-server == Method: say_hello'
+  - '== APP - invoke-grpc-server == Name: "Test"'
   - '== APP - invoke-grpc-client == Message: "Hello World!"'
   - '== APP - invoke-grpc-client == Response: InvokeResponse {'
   - '== APP - invoke-grpc-client ==     data: Some('
@@ -45,7 +47,8 @@ background: true
 sleep: 30
 timeout_seconds: 60
 -->
-
+== APP - invoke-grpc-server == Method: say_hello
+		== APP - invoke-grpc-server == Name: "Test"
 ```bash
 dapr run -f .
 ```
