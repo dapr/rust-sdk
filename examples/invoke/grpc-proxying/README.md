@@ -22,7 +22,7 @@ expected_stdout_lines:
   - '== APP - invoke-grpc-client == }'
 background: true
 sleep: 30
-timeout_seconds: 30
+timeout_seconds: 90
 -->
 
 ```bash
