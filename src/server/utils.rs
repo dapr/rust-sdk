@@ -1,10 +1,9 @@
 use async_trait::async_trait;
 use axum::{
-    body::HttpBody,
+    body::Body,
     extract::FromRequest,
     http::{Request, StatusCode},
     response::IntoResponse,
-    BoxError,
 };
 use serde::de::DeserializeOwned;
 
@@ -18,17 +17,14 @@ pub enum JsonRejection {
 }
 
 #[async_trait]
-impl<T, S, B> FromRequest<S, B> for DaprJson<T>
+impl<T, S> FromRequest<S> for DaprJson<T>
 where
     T: DeserializeOwned,
-    B: HttpBody + Send + 'static,
-    B::Data: Send,
-    B::Error: Into<BoxError>,
     S: Send + Sync,
 {
     type Rejection = JsonRejection;
 
-    async fn from_request(req: Request<B>, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request(req: Request<Body>, state: &S) -> Result<Self, Self::Rejection> {
         let bytes = match axum::body::Bytes::from_request(req, state).await {
             Ok(bytes) => bytes,
             Err(e) => {

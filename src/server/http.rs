@@ -6,7 +6,8 @@ use axum::{
     Json, Router,
 };
 use futures::{Future, FutureExt};
-use std::{net::SocketAddr, pin::Pin, sync::Arc};
+use std::{pin::Pin, sync::Arc};
+use tokio::net::TcpListener;
 
 use super::super::client::TonicClient;
 use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
@@ -136,9 +137,10 @@ impl DaprHttpServer {
             .parse()
             .unwrap_or(8080);
 
-        let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(default_port)));
+        let address = format!("127.0.0.1:{}", port.unwrap_or(default_port));
+        let listener = TcpListener::bind(address).await.unwrap();
 
-        let server = axum::Server::bind(&addr).serve(app.into_make_service());
+        let server = axum::serve(listener, app.into_make_service());
 
         let final_result = match self.shutdown_signal.take() {
             Some(signal) => {

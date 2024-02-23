@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    net::{SocketAddr, TcpListener},
-    sync::Arc,
-};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use axum::{Json, Router};
@@ -15,7 +11,7 @@ use dapr_macros::actor;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tokio::sync::Mutex;
+use tokio::{net::TcpListener, sync::Mutex};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -68,13 +64,13 @@ impl MyActor {
 
 #[tokio::test]
 async fn test_actor_invoke() {
-    let dapr_port = get_available_port().unwrap();
+    let dapr_port = get_available_port().await.unwrap();
 
     let fake_sidecar = tokio::spawn(async move {
         let sidecar = Router::new();
-        _ = axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], dapr_port)))
-            .serve(sidecar.into_make_service())
-            .await;
+        let address = format!("127.0.0.1:{dapr_port}");
+        let listener = TcpListener::bind(address).await.unwrap();
+        _ = axum::serve(listener, sidecar.into_make_service()).await;
     });
     tokio::task::yield_now().await;
 
@@ -140,13 +136,13 @@ async fn test_actor_invoke() {
 
 #[tokio::test]
 async fn test_actor_deactivate() {
-    let dapr_port = get_available_port().unwrap();
+    let dapr_port = get_available_port().await.unwrap();
 
     let fake_sidecar = tokio::spawn(async move {
         let sidecar = Router::new();
-        _ = axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], dapr_port)))
-            .serve(sidecar.into_make_service())
-            .await;
+        let address = format!("127.0.0.1:{dapr_port}");
+        let listener = TcpListener::bind(address).await.unwrap();
+        _ = axum::serve(listener, sidecar.into_make_service()).await;
     });
     tokio::task::yield_now().await;
 
@@ -246,13 +242,11 @@ impl TestState {
 
 static TEST_STATE: Lazy<TestState> = Lazy::new(TestState::new);
 
-fn get_available_port() -> Option<u16> {
-    (8000..9000).find(|port| port_is_available(*port))
-}
-
-fn port_is_available(port: u16) -> bool {
-    match TcpListener::bind(("127.0.0.1", port)) {
-        Ok(_) => true,
-        Err(_) => false,
+async fn get_available_port() -> Option<u16> {
+    for port in 8000..9000 {
+        if TcpListener::bind(format!("127.0.0.1:{port}")).await.is_ok() {
+            return Some(port);
+        }
     }
+    None
 }
