@@ -9,8 +9,8 @@ use github::GitHub;
 
 // Defining the repo explicitly as the octocrab model for the event doesn't deserialize a
 // owner/repo.
-const OWNER: &str = "geckr";
-const REPOSITORY: &str = "rust-comments";
+const OWNER: &str = "dapr";
+const REPOSITORY: &str = "rust-sdk";
 
 const GITHUB_TOKEN: &str = "GITHUB_TOKEN";
 
