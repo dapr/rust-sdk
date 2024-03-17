@@ -1,14 +1,18 @@
 use std::{collections::HashMap, thread, time::Duration};
 
-use dapr::serde::{Serialize, Deserialize};
-
+use dapr::serde::{Deserialize, Serialize};
 use dapr::serde_json;
-
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Order {
     pub order_number: i32,
     pub order_details: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Refund {
+    pub order_number: i32,
+    pub refund_amount: i32,
 }
 
 #[tokio::main]
@@ -33,8 +37,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // topic to publish message to
     let topic = "A".to_string();
 
-    for count in 0..100 {
+    let topic_b = "B".to_string();
 
+    for count in 0..10 {
         let order = Order {
             order_number: count,
             order_details: format!("Count is {}", count),
@@ -50,6 +55,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .publish_event(
                 &pubsub_name,
                 &topic,
+                &data_content_type,
+                message,
+                Some(metadata),
+            )
+            .await?;
+
+        // sleep for 2 secs to simulate delay b/w two events
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+
+    for count in 0..10 {
+        let refund = Refund {
+            order_number: count,
+            refund_amount: 1200,
+        };
+        // message metadata
+        let mut metadata = HashMap::<String, String>::new();
+        metadata.insert("count".to_string(), count.to_string());
+
+        // message
+        let message = serde_json::to_string(&refund).unwrap().into_bytes();
+
+        client
+            .publish_event(
+                &pubsub_name,
+                &topic_b,
                 &data_content_type,
                 message,
                 Some(metadata),

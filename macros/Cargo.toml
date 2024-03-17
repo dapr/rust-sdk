@@ -12,5 +12,6 @@ proc-macro = true
 async-trait = "0.1"
 log = "0.4"
 axum = "0.7.4"
-syn = {version="2.0.29",features=["full"]}
+syn = { version = "2.0.29", features = ["full"] }
 quote = "1.0.8"
+proc-macro2 = "1.0"

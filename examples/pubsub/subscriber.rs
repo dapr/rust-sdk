@@ -1,11 +1,11 @@
-use dapr::proc_macros::topic;
-use dapr::{
-    appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
-};
-use tonic::{transport::Server, Request, Response, Status};
+use dapr_macros::topic;
+use tonic::transport::Server;
 
+use dapr::appcallback::AppCallbackService;
 use dapr::serde::{Deserialize, Serialize};
+use dapr::{
+    appcallback::*, dapr::dapr::proto::runtime::v1::app_callback_server::AppCallbackServer,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Order {
@@ -13,16 +13,31 @@ struct Order {
     pub order_details: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct Refund {
+    pub order_number: i32,
+    pub refund_amount: i32,
+}
+
 #[topic(pub_sub_name = "pubsub", topic = "A")]
-async fn handle_event(order: Order) {
-    println!("{:#?}", order)
+async fn handle_a_event(order: Order) {
+    println!("Topic A - {:#?}", order)
+}
+
+#[topic(pub_sub_name = "pubsub", topic = "B")]
+async fn handle_b_event(refund: Refund) {
+    println!("Topic B - {:#?}", refund)
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "127.0.0.1:50051".parse().unwrap();
 
-    let callback_service = HandleEvent::default();
+    let mut callback_service = AppCallbackService::new();
+
+    callback_service.add_handler(HandleAEvent::default().get_handler());
+
+    callback_service.add_handler(HandleBEvent::default().get_handler());
 
     println!("AppCallback server listening on: {}", addr);
 
