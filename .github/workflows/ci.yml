@@ -15,12 +15,12 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
-  PROTOC_VERSION: '3.x'
-  RUST_TOOLCHAIN: '1.67.0'
+  PROTOC_VERSION: 3.x
+  RUST_TOOLCHAIN: 1.76.0
 
 jobs:
   lint:
-    name: Lint 
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +42,7 @@ jobs:
 
 
   build:
-    name: Build 
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -63,7 +63,7 @@ jobs:
       run: cargo build --examples
     - name: Run Tests
       run: cargo test --all-targets
-   
+
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -82,5 +82,7 @@ jobs:
       with:
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
+    - name: cargo publish macros
+      run: cargo publish --manifest-path macros/Cargo.toml --token ${{ env.CARGO_TOKEN }}
     - name: cargo publish
       run: cargo publish --token ${{ env.CARGO_TOKEN }}

@@ -1,13 +1,14 @@
-use std::collections::HashMap;
-
-use async_trait::async_trait;
-use dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use prost_types::Any;
+use std::collections::HashMap;
+use tonic::Streaming;
 use tonic::{transport::Channel as TonicChannel, Request};
 
-use crate::dapr::*;
 use crate::error::Error;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
+#[derive(Clone)]
 pub struct Client<T>(T);
 
 impl<T: DaprInterface> Client<T> {
@@ -239,7 +240,6 @@ impl<T: DaprInterface> Client<T> {
             .set_metadata(SetMetadataRequest {
                 key: key.into(),
                 value: value.into(),
-                ..Default::default()
             })
             .await
     }
@@ -248,6 +248,115 @@ impl<T: DaprInterface> Client<T> {
     ///
     pub async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
         self.0.get_metadata().await
+    }
+
+    /// Invoke a method in a Dapr actor.
+    ///
+    /// # Arguments
+    ///
+    /// * `actor_type` - Type of the actor.
+    /// * `actor_id` - Id of the actor.
+    /// * `method_name` - Name of the method to invoke.
+    /// * `input` - Required. Data required to invoke service, should be json serializable.
+    pub async fn invoke_actor<I, M, TInput, TOutput>(
+        &mut self,
+        actor_type: I,
+        actor_id: I,
+        method_name: M,
+        input: TInput,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<TOutput, Error>
+    where
+        I: Into<String>,
+        M: Into<String>,
+        TInput: Serialize,
+        TOutput: for<'a> Deserialize<'a>,
+    {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
+        mdata.insert("Content-Type".to_string(), "application/json".to_string());
+
+        let data = match serde_json::to_vec(&input) {
+            Ok(data) => data,
+            Err(_e) => return Err(Error::SerializationError),
+        };
+
+        let res = self
+            .0
+            .invoke_actor(InvokeActorRequest {
+                actor_type: actor_type.into(),
+                actor_id: actor_id.into(),
+                method: method_name.into(),
+                data,
+                metadata: mdata,
+            })
+            .await?;
+
+        match serde_json::from_slice::<TOutput>(&res.data) {
+            Ok(output) => Ok(output),
+            Err(_e) => Err(Error::SerializationError),
+        }
+    }
+
+    /// Get the configuration for a specific key
+    /// ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of config store.
+    /// * `keys` - The key of the desired configuration.
+    pub async fn get_configuration<S, K>(
+        &mut self,
+        store_name: S,
+        keys: Vec<K>,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<GetConfigurationResponse, Error>
+    where
+        S: Into<String>,
+        K: Into<String>,
+    {
+        let request = GetConfigurationRequest {
+            store_name: store_name.into(),
+            keys: keys.into_iter().map(|key| key.into()).collect(),
+            metadata: metadata.unwrap_or_default(),
+        };
+        self.0.get_configuration(request).await
+    }
+
+    /// Subscribe to configuration changes
+    pub async fn subscribe_configuration<S>(
+        &mut self,
+        store_name: S,
+        keys: Vec<S>,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<Streaming<SubscribeConfigurationResponse>, Error>
+    where
+        S: Into<String>,
+    {
+        let request = SubscribeConfigurationRequest {
+            store_name: store_name.into(),
+            keys: keys.into_iter().map(|key| key.into()).collect(),
+            metadata: metadata.unwrap_or_default(),
+        };
+        self.0.subscribe_configuration(request).await
+    }
+
+    /// Unsubscribe from configuration changes
+    pub async fn unsubscribe_configuration<S>(
+        &mut self,
+        store_name: S,
+        id: S,
+    ) -> Result<UnsubscribeConfigurationResponse, Error>
+    where
+        S: Into<String>,
+    {
+        let request = UnsubscribeConfigurationRequest {
+            id: id.into(),
+            store_name: store_name.into(),
+        };
+        self.0.unsubscribe_configuration(request).await
     }
 }
 
@@ -270,6 +379,22 @@ pub trait DaprInterface: Sized {
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error>;
+    async fn invoke_actor(
+        &mut self,
+        request: InvokeActorRequest,
+    ) -> Result<InvokeActorResponse, Error>;
+    async fn get_configuration(
+        &mut self,
+        request: GetConfigurationRequest,
+    ) -> Result<GetConfigurationResponse, Error>;
+    async fn subscribe_configuration(
+        &mut self,
+        request: SubscribeConfigurationRequest,
+    ) -> Result<Streaming<SubscribeConfigurationResponse>, Error>;
+    async fn unsubscribe_configuration(
+        &mut self,
+        request: UnsubscribeConfigurationRequest,
+    ) -> Result<UnsubscribeConfigurationResponse, Error>;
 }
 
 #[async_trait]
@@ -299,10 +424,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        Ok(self
-            .publish_event(Request::new(request))
+        self.publish_event(Request::new(request))
             .await?
-            .into_inner())
+            .into_inner();
+        Ok(())
     }
 
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
@@ -314,26 +439,66 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        Ok(self.save_state(Request::new(request)).await?.into_inner())
+        self.save_state(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
-        Ok(self.delete_state(Request::new(request)).await?.into_inner())
+        self.delete_state(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error> {
-        Ok(self
-            .delete_bulk_state(Request::new(request))
+        self.delete_bulk_state(Request::new(request))
             .await?
-            .into_inner())
+            .into_inner();
+        Ok(())
     }
 
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error> {
-        Ok(self.set_metadata(Request::new(request)).await?.into_inner())
+        self.set_metadata(Request::new(request)).await?.into_inner();
+        Ok(())
     }
 
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
         Ok(self.get_metadata(GetMetadataRequest {}).await?.into_inner())
+    }
+
+    async fn invoke_actor(
+        &mut self,
+        request: InvokeActorRequest,
+    ) -> Result<InvokeActorResponse, Error> {
+        Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
+    }
+
+    async fn get_configuration(
+        &mut self,
+        request: GetConfigurationRequest,
+    ) -> Result<GetConfigurationResponse, Error> {
+        Ok(self
+            .get_configuration(Request::new(request))
+            .await?
+            .into_inner())
+    }
+
+    async fn subscribe_configuration(
+        &mut self,
+        request: SubscribeConfigurationRequest,
+    ) -> Result<Streaming<SubscribeConfigurationResponse>, Error> {
+        Ok(self
+            .subscribe_configuration(Request::new(request))
+            .await?
+            .into_inner())
+    }
+
+    async fn unsubscribe_configuration(
+        &mut self,
+        request: UnsubscribeConfigurationRequest,
+    ) -> Result<UnsubscribeConfigurationResponse, Error> {
+        Ok(self
+            .unsubscribe_configuration(Request::new(request))
+            .await?
+            .into_inner())
     }
 }
 
@@ -381,6 +546,29 @@ pub type GetMetadataRequest = dapr_v1::GetMetadataRequest;
 
 /// A request for setting metadata
 pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
+
+/// A request for invoking an actor
+pub type InvokeActorRequest = dapr_v1::InvokeActorRequest;
+
+/// A response from invoking an actor
+pub type InvokeActorResponse = dapr_v1::InvokeActorResponse;
+/// A request for getting configuration
+pub type GetConfigurationRequest = dapr_v1::GetConfigurationRequest;
+
+/// A response from getting configuration
+pub type GetConfigurationResponse = dapr_v1::GetConfigurationResponse;
+
+/// A request for subscribing to configuration changes
+pub type SubscribeConfigurationRequest = dapr_v1::SubscribeConfigurationRequest;
+
+/// A response from subscribing tto configuration changes
+pub type SubscribeConfigurationResponse = dapr_v1::SubscribeConfigurationResponse;
+
+/// A request for unsubscribing from configuration changes
+pub type UnsubscribeConfigurationRequest = dapr_v1::UnsubscribeConfigurationRequest;
+
+/// A response from unsubscribing from configuration changes
+pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationResponse;
 
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;

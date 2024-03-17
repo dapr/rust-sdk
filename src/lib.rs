@@ -2,14 +2,9 @@ pub mod appcallback;
 pub mod client;
 pub mod dapr;
 pub mod error;
+pub mod server;
 
 pub use client::Client;
 
-#[cfg(feature = "proc-macros")]
-pub use proc_macros;
-
-#[cfg(feature = "serde")]
-pub use serde;
-
-#[cfg(feature = "serde")]
-pub use serde_json;
+extern crate dapr_macros;
+pub use dapr_macros::actor;
