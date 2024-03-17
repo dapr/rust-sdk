@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use tonic::{Code, Request, Response, Status};
 
-use crate::dapr::*;
-use crate::dapr::dapr::proto::{common, runtime};
 use crate::dapr::dapr::proto::runtime::v1::app_callback_server::AppCallback;
+use crate::dapr::dapr::proto::{common, runtime};
+use crate::dapr::*;
 
 /// InvokeRequest is the message to invoke a method with the data.
 pub type InvokeRequest = dapr::proto::common::v1::InvokeRequest;
