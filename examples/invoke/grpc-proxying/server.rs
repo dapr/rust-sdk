@@ -29,7 +29,7 @@ impl Greeter for GreeterService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let server_address = "[::]:50052".parse().unwrap();
+    let server_address = "[::]:50051".parse().unwrap();
 
     let greeter_service = GreeterService::default();
 
