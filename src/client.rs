@@ -129,6 +129,27 @@ impl<T: DaprInterface> Client<T> {
             .await
     }
 
+    /// Get all secrets for a given store
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of the secret store.
+    pub async fn get_bulk_secret<S>(
+        &mut self,
+        store_name: S,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<GetBulkSecretResponse, Error>
+    where
+        S: Into<String>,
+    {
+        self.0
+            .get_bulk_secret(GetBulkSecretRequest {
+                store_name: store_name.into(),
+                metadata: metadata.unwrap_or_default(),
+            })
+            .await
+    }
+
     /// Get the state for a specific key.
     ///
     /// # Arguments
@@ -374,6 +395,10 @@ pub trait DaprInterface: Sized {
         request: InvokeBindingRequest,
     ) -> Result<InvokeBindingResponse, Error>;
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
+    async fn get_bulk_secret(
+        &mut self,
+        request: GetBulkSecretRequest,
+    ) -> Result<GetBulkSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
@@ -433,6 +458,16 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
 
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
         Ok(self.get_secret(Request::new(request)).await?.into_inner())
+    }
+
+    async fn get_bulk_secret(
+        &mut self,
+        request: GetBulkSecretRequest,
+    ) -> Result<GetBulkSecretResponse, Error> {
+        Ok(self
+            .get_bulk_secret(Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
@@ -538,6 +573,12 @@ pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 
 /// A response from getting secret
 pub type GetSecretResponse = dapr_v1::GetSecretResponse;
+
+/// A request for getting bulk secrets
+pub type GetBulkSecretRequest = dapr_v1::GetBulkSecretRequest;
+
+/// A response for getting bulk secrets
+pub type GetBulkSecretResponse = dapr_v1::GetBulkSecretResponse;
 
 /// A response from getting metadata
 pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
