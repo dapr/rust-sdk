@@ -12,27 +12,28 @@ cargo build --examples
 2. Run the example with dapr using the following command:
 
 <!-- STEP
-name: Run client example
+name: Run app example
 output_match_mode: substring
+match_order: none
 expected_stdout_lines:
-  - '== APP == Successfully saved!'
-  - '== APP == Value is "world"'
-  - '== APP == Deleted value: []'
+  - '== APP == Found secret1 with value: TestSecret1'
+  - '== APP == Found secret2 with value: TestSecret2'
+  - '== APP == Found secret3 with value: TestSecret3'
 background: true
 sleep: 15
 timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3500 cargo run -- --example client
+dapr run --app-id=rustapp --dapr-grpc-port 3500 --resources-path ./resources/ cargo run -- --example secrets-bulk
 ```
 
 <!-- END_STEP -->
 
 If everything went well you should see the following output along with dapr logs:
 ```
-Successfully saved!
-Value is "world"
-Deleted value: []
+== APP == Found secret1 with value: TestSecret1
+== APP == Found secret2 with value: TestSecret2
+== APP == Found secret3 with value: TestSecret3
 ```
-
+_Note: The order of the secrets returned is not ordered_

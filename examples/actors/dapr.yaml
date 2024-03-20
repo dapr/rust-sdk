@@ -1,0 +1,15 @@
+version: 1
+common:
+  daprdLogDestination: console
+apps:
+  - appID: actor-server
+    appDirPath: ./
+    appProtocol: http
+    appPort: 50051
+    logLevel: debug
+    command: ["cargo", "run", "--example", "actor-server"]
+  - appID: actor-client
+    appDirPath: ./
+    daprGRPCPort: 3502
+    logLevel: debug
+    command: ["cargo", "run", "--example", "actor-client"]

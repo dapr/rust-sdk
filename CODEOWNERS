@@ -1,0 +1,5 @@
+# These owners are the maintainers and approvers of this repo
+*       @dapr/maintainers-rust-sdk @dapr/approvers-rust-sdk
+
+# IMPORTANT - This should be the last entry in the list.
+CODEOWNERS @dapr/maintainers-rust-sdk
