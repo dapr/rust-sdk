@@ -25,6 +25,8 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 Ensure you have Rust version 1.40 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
+You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
+
 ## How to use
 
 Add the following to your `Cargo.toml` file:

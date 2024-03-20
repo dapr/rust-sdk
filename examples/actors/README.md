@@ -88,7 +88,35 @@ Use the `DaprJson` extractor to deserialize the request from Json coming from a 
 > docker ps
 > ```
 
-To run this example:
+To run this example (using the multi-app run):
+
+
+<!-- STEP
+name: Run Multi-App
+output_match_mode: substring
+expected_stdout_lines:
+  - 'dapr::server::actor::runtime] registered actor MyActor'
+  - 'Request for actor_type: MyActor, actor_id: a1'
+  - '== APP - actor-server == on_activate a1'
+  - '== APP - actor-server == doing stuff with test'
+  - '== APP - actor-server == get_actor_state GetActorStateResponse { data: []'
+  - '== APP - actor-client == Response: Ok('
+  - '== APP - actor-client ==     MyResponse {'
+  - '== APP - actor-client ==         available: true,'
+  - '== APP - actor-client ==     },'
+  - '== APP - actor-client == )'
+background: true
+sleep: 30
+timeout_seconds: 30
+-->
+
+```bash
+dapr run -f .
+```
+
+<!-- END_STEP -->
+
+### What the multi-run app will achieve:
 
 1. Start actor host (expose Http server receiver on port 50051):
 ```bash
@@ -98,4 +126,5 @@ dapr run --app-id actor-host --app-protocol http --app-port 50051 cargo run -- -
 2. Start actor client:
 ```bash
 dapr run --app-id actor-client --dapr-grpc-port 3502 cargo run -- --example actor-client
+
 ```
