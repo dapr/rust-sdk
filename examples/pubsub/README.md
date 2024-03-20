@@ -23,12 +23,22 @@ name: Run Subscriber
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP - rust-subscriber == Message: 0 => hello from rust!'
-  - '== APP - rust-subscriber == Content-Type: text/plain'
-  - '== APP - rust-subscriber == Message: 1 => hello from rust!'
-  - '== APP - rust-subscriber == Content-Type: text/plain'
-  - '== APP - rust-subscriber == Message: 2 => hello from rust!'
-  - '== APP - rust-subscriber == Content-Type: text/plain'
+  - '== APP - rust-subscriber == Topic A - Order {'
+  - '== APP - rust-subscriber ==     order_number: 0,'
+  - '== APP - rust-subscriber ==     order_details: "Count is 0",'
+  - '== APP - rust-subscriber == }'
+  - '== APP - rust-subscriber == Topic A - Order {'
+  - '== APP - rust-subscriber ==     order_number: 9,'
+  - '== APP - rust-subscriber ==     order_details: "Count is 9",'
+  - '== APP - rust-subscriber == }'
+  - '== APP - rust-subscriber == Topic B - Refund {'
+  - '== APP - rust-subscriber ==     order_number: 0,'
+  - '== APP - rust-subscriber ==     refund_amount: 1200,'
+  - '== APP - rust-subscriber == }'
+  - '== APP - rust-subscriber == Topic B - Refund {'
+  - '== APP - rust-subscriber ==     order_number: 9,'
+  - '== APP - rust-subscriber ==     refund_amount: 1200,'
+  - '== APP - rust-subscriber == }'
   - '== APP - rust-publisher == messages published'
 background: true
 sleep: 30
