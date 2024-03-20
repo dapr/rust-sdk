@@ -85,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .await?;
 
-        // sleep for 2 secs to simulate delay b/w two events
+        // sleep for 2 seconds to simulate delay between two events
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
     println!("messages published");
