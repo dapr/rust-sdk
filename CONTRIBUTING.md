@@ -54,6 +54,7 @@ This section describes the guidelines for contributing code / docs to Dapr.
 All contributions come through pull requests. To submit a proposed change, we recommend following this workflow:
 
 1. Make sure there's an issue (bug or proposal) raised, which sets the expectations for the contribution you are about to make.
+   - Assign yourself to the issue by commenting with `/assign`
 1. Fork the relevant repo and create a new branch
 1. Create your change
    - Code changes require tests

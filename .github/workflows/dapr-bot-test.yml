@@ -1,0 +1,47 @@
+name: dapr-bot-test
+
+on:
+  push:
+    paths: # Explicitly declare which paths (could potentially be combined into dapr-bot*
+      - ".github/workflows/dapr-bot.yml"
+      - ".github/workflows/dapr-bot-test.yml"
+      - ".github/workflows/dapr-bot/*"
+  pull_request:
+    branches:
+      - main
+    paths: # Explicitly declare which paths (could potentially be combined into dapr-bot*
+      - ".github/workflows/dapr-bot.yml"
+      - ".github/workflows/dapr-bot-test.yml"
+      - ".github/workflows/dapr-bot/*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./.github/workflows/dapr-bot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+      - name: Cargo clippy
+        run: |
+          cargo clippy -- -W warnings
+
+      - name: Cargo fmt
+        run: |
+          cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
+
+      - name: Cargo test
+        run: |
+          cargo test
+
+      - name: Cargo build
+        run: |
+          cargo build
