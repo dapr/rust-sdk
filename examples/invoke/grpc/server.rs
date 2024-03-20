@@ -92,7 +92,7 @@ impl AppCallback for AppCallbackService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let server_address = "[::]:50052".parse().unwrap();
+    let server_address = "[::]:50051".parse().unwrap();
 
     let callback_service = AppCallbackService {};
 
