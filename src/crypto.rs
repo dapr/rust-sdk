@@ -1,13 +1,13 @@
 use futures::StreamExt;
-use tonic::{Request, Status};
 use tonic::codegen::tokio_stream;
+use tonic::{Request, Status};
 
-use crate::Client;
 use crate::client::TonicClient;
 use crate::dapr::dapr::proto::common::v1::StreamPayload;
 use crate::dapr::dapr::proto::runtime::v1::{
     DecryptRequest, DecryptRequestOptions, EncryptRequest, EncryptRequestOptions,
 };
+use crate::Client;
 
 impl Client<TonicClient> {
     pub async fn encrypt<T>(

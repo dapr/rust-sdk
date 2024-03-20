@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
-use tonic::{Request, transport::Channel as TonicChannel};
 use tonic::Streaming;
+use tonic::{transport::Channel as TonicChannel, Request};
 
 use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
