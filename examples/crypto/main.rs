@@ -40,7 +40,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(String::from_utf8(decrypted).unwrap().as_str(), "Test");
 
-    let image = fs::read("./examples/crypto/image.png").unwrap();
+    println!("Successfully Decrypted String");
+
+    let image = fs::read("./image.png").unwrap();
 
     let encrypted = client
         .encrypt(
@@ -69,6 +71,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
 
     assert_eq!(decrypted, image);
+
+    println!("Successfully Decrypted Image");
 
     Ok(())
 }
