@@ -1,0 +1,21 @@
+name: dapr-bot
+on:
+  issue_comment:
+    types: [created]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./.github/workflows/dapr-bot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+      - name: Cargo run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cargo run
