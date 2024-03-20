@@ -21,7 +21,7 @@ To run this example:
 <!-- STEP
 name: Run Subscriber
 output_match_mode: substring
-match_order: none
+match_order: sequential
 expected_stdout_lines:
   - '== APP - rust-subscriber == Topic A - Order {'
   - '== APP - rust-subscriber ==     order_number: 0,'
