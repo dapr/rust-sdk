@@ -11,9 +11,23 @@ cargo build --examples
 
 2. Run the example with dapr using the following command:
 
-```
+<!-- STEP
+name: Run client example
+output_match_mode: substring
+expected_stdout_lines:
+  - '== APP == Successfully saved!'
+  - '== APP == Value is "world"'
+  - '== APP == Deleted value: []'
+background: true
+sleep: 15
+timeout_seconds: 30
+-->
+
+```bash
 dapr run --app-id=rustapp --dapr-grpc-port 3500 cargo run -- --example client
 ```
+
+<!-- END_STEP -->
 
 If everything went well you should see the following output along with dapr logs:
 ```
