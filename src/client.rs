@@ -1,15 +1,16 @@
-use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use prost_types::Any;
 use std::collections::HashMap;
-use tonic::Streaming;
-use tonic::{transport::Channel as TonicChannel, Request};
 
-use crate::error::Error;
 use async_trait::async_trait;
+use prost_types::Any;
 use serde::{Deserialize, Serialize};
+use tonic::{Request, transport::Channel as TonicChannel};
+use tonic::Streaming;
+
+use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::error::Error;
 
 #[derive(Clone)]
-pub struct Client<T>(T);
+pub struct Client<T>(pub(crate) T);
 
 impl<T: DaprInterface> Client<T> {
     /// Connect to a Dapr enabled app.
