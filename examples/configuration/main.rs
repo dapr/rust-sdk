@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let key = String::from("hello");
 
-    // save key-value pair in the state store
+    // get key-value pair in the state store
     let response = client
         .get_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
         .await?;
@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 // Function to unsubscribe from configuration updates and exit the app
 async fn unsubscribe(client: &mut DaprClient, subscription_id: &str) {
     match client
-        .unsubscribe_configuration("CONFIGSTORE_NAME", subscription_id)
+        .unsubscribe_configuration(CONFIGSTORE_NAME, subscription_id)
         .await
     {
         Ok(_) => println!("App unsubscribed from config changes"),

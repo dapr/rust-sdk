@@ -1,3 +1,5 @@
+use std::{thread, time::Duration};
+
 use hello_world::{greeter_client::GreeterClient, HelloRequest};
 
 use tonic::metadata::MetadataValue;
@@ -8,6 +10,9 @@ pub mod hello_world {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Sleep to allow for the server to become available
+    thread::sleep(Duration::from_secs(5));
+
     // Get the Dapr port for gRPC connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
     let address = format!("https://127.0.0.1:{}", port);

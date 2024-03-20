@@ -36,7 +36,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // topic to publish message to
     let topic = "A".to_string();
-
     let topic_b = "B".to_string();
 
     for count in 0..10 {
@@ -61,10 +60,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .await?;
 
-        // sleep for 2 secs to simulate delay b/w two events
-        tokio::time::sleep(Duration::from_secs(2)).await;
+        // sleep for 1 second to simulate delay between each event
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
-
     for count in 0..10 {
         let refund = Refund {
             order_number: count,
@@ -90,6 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // sleep for 2 secs to simulate delay b/w two events
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
+    println!("messages published");
 
     Ok(())
 }

@@ -6,9 +6,9 @@
 
 ## Issue reference
 
-<!--We strive to have all PR being opened based on an issue, where the problem or feature have been discussed prior to implementation.-->
+<!--We strive to have all PR being opened based on an issue, where the problem or feature should be discussed prior to implementation.-->
 
-<!--Please reference the issue(s) with a hash tag for example #100 -->
+<!--Please reference the issue(s) with a hashtag for example #100 -->
 This PR will close #number
 
 ## Checklist
