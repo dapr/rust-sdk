@@ -43,7 +43,8 @@ async fn main() -> octocrab::Result<()> {
 
     if github_event_name != ISSUE_COMMENT_EVENT_NAME {
         println!("Event is not an issue_comment, the app will now exit.");
-        exit(exitcode::TEMPFAIL);
+        exit(exitcode::TEMPFAIL); // This failure is because the bot is not
+                                  // designed to process anything other than an issue_comment
     }
 
     // deserialize event payload
@@ -52,7 +53,7 @@ async fn main() -> octocrab::Result<()> {
     // check the issue body
     if !event.clone().comment.body.unwrap().starts_with("/assign") {
         println!("Event does not start with /assign");
-        exit(exitcode::TEMPFAIL);
+        exit(exitcode::OK);
     }
 
     let assignee: String = event.comment.user.login;
@@ -68,6 +69,7 @@ async fn main() -> octocrab::Result<()> {
         .await
     {
         Ok(_) => {
+            println!("Assigned issue to user successfully");
             match github_client
                 .create_comment(
                     OWNER,

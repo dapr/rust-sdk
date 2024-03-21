@@ -7,8 +7,6 @@ on:
       - ".github/workflows/dapr-bot-test.yml"
       - ".github/workflows/dapr-bot/*"
   pull_request:
-    branches:
-      - main
     paths: # Explicitly declare which paths (could potentially be combined into dapr-bot*
       - ".github/workflows/dapr-bot.yml"
       - ".github/workflows/dapr-bot-test.yml"
