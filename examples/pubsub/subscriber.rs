@@ -1,78 +1,43 @@
-use tonic::{transport::Server, Request, Response, Status};
+use dapr_macros::topic;
+use tonic::transport::Server;
 
+use dapr::appcallback::AppCallbackService;
+use dapr::serde::{Deserialize, Serialize};
 use dapr::{
-    appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
+    appcallback::*, dapr::dapr::proto::runtime::v1::app_callback_server::AppCallbackServer,
 };
 
-#[derive(Default)]
-pub struct AppCallbackService {}
+#[derive(Serialize, Deserialize, Debug)]
+struct Order {
+    pub order_number: i32,
+    pub order_details: String,
+}
 
-#[tonic::async_trait]
-impl AppCallback for AppCallbackService {
-    /// Invokes service method with InvokeRequest.
-    async fn on_invoke(
-        &self,
-        _request: Request<InvokeRequest>,
-    ) -> Result<Response<InvokeResponse>, Status> {
-        Ok(Response::new(InvokeResponse::default()))
-    }
+#[derive(Serialize, Deserialize, Debug)]
+struct Refund {
+    pub order_number: i32,
+    pub refund_amount: i32,
+}
 
-    /// Lists all topics subscribed by this app.
-    ///
-    /// NOTE: Dapr runtime will call this method to get
-    /// the list of topics the app wants to subscribe to.
-    /// In this example, the app is subscribing to topic `A`.
-    async fn list_topic_subscriptions(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<ListTopicSubscriptionsResponse>, Status> {
-        let topic = "A".to_string();
-        let pubsub_name = "pubsub".to_string();
+#[topic(pub_sub_name = "pubsub", topic = "A")]
+async fn handle_a_event(order: Order) {
+    println!("Topic A - {:#?}", order)
+}
 
-        let list_subscriptions = ListTopicSubscriptionsResponse::topic(pubsub_name, topic);
-
-        Ok(Response::new(list_subscriptions))
-    }
-
-    /// Subscribes events from Pubsub.
-    async fn on_topic_event(
-        &self,
-        request: Request<TopicEventRequest>,
-    ) -> Result<Response<TopicEventResponse>, Status> {
-        let r = request.into_inner();
-        let data = &r.data;
-        let data_content_type = &r.data_content_type;
-
-        let message = String::from_utf8_lossy(data);
-        println!("Message: {}", &message);
-        println!("Content-Type: {}", &data_content_type);
-
-        Ok(Response::new(TopicEventResponse::default()))
-    }
-
-    /// Lists all input bindings subscribed by this app.
-    async fn list_input_bindings(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<ListInputBindingsResponse>, Status> {
-        Ok(Response::new(ListInputBindingsResponse::default()))
-    }
-
-    /// Listens events from the input bindings.
-    async fn on_binding_event(
-        &self,
-        _request: Request<BindingEventRequest>,
-    ) -> Result<Response<BindingEventResponse>, Status> {
-        Ok(Response::new(BindingEventResponse::default()))
-    }
+#[topic(pub_sub_name = "pubsub", topic = "B")]
+async fn handle_b_event(refund: Refund) {
+    println!("Topic B - {:#?}", refund)
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::]:50051".parse().unwrap();
+    let addr = "127.0.0.1:50051".parse().unwrap();
 
-    let callback_service = AppCallbackService::default();
+    let mut callback_service = AppCallbackService::new();
+
+    callback_service.add_handler(HandleAEvent::default().get_handler());
+
+    callback_service.add_handler(HandleBEvent::default().get_handler());
 
     println!("AppCallback server listening on: {}", addr);
 
