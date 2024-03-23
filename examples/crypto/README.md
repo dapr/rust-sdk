@@ -32,6 +32,9 @@ timeout_seconds: 90
 -->
 
 ```bash
+mkdir -p keys
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out keys/rsa-private-key.pem
+openssl rand -out keys/symmetric-key-256 32
 dapr run -f .
 ```
 
