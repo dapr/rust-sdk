@@ -37,6 +37,9 @@ dapr = { path = "./" }
 tokio-test = "0.4.2"
 tokio-stream = { version = "0.1" }
 
+[workspace]
+members = ["durabletask"]
+
 [[example]]
 name = "actor-client"
 path = "examples/actors/client.rs"
