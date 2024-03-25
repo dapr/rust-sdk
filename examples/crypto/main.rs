@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let encrypted = client
         .encrypt(
             ReaderStream::new("Test".as_bytes()),
-            EncryptRequestOptions {
+            dapr::client::EncryptRequestOptions {
                 component_name: "localstorage".to_string(),
                 key_name: "rsa-private-key.pem".to_string(),
                 key_wrap_algorithm: "RSA".to_string(),
@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted = client
         .decrypt(
             encrypted,
-            DecryptRequestOptions {
+            dapr::client::DecryptRequestOptions {
                 component_name: "localstorage".to_string(),
                 key_name: "rsa-private-key.pem".to_string(),
             },
