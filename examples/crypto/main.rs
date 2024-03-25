@@ -4,7 +4,6 @@ use tokio::fs::File;
 use tokio::time::sleep;
 
 use dapr::client::ReaderStream;
-use dapr::dapr::dapr::proto::runtime::v1::{DecryptRequestOptions, EncryptRequestOptions};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
