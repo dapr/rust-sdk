@@ -741,16 +741,16 @@ pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationRes
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 /// Encryption gRPC request
-type EncryptRequest = crate::dapr::dapr::proto::runtime::v1::EncryptRequest;
+pub type EncryptRequest = crate::dapr::dapr::proto::runtime::v1::EncryptRequest;
 
 /// Decrypt gRPC request
-type DecryptRequest = crate::dapr::dapr::proto::runtime::v1::DecryptRequest;
+pub type DecryptRequest = crate::dapr::dapr::proto::runtime::v1::DecryptRequest;
 
 /// Encryption request options
-type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptRequestOptions;
+pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptRequestOptions;
 
 /// Decryption request options
-type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
+pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
 
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
