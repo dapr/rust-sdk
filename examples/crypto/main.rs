@@ -63,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted = client
         .decrypt(
             encrypted,
-            DecryptRequestOptions {
+            dapr::client::DecryptRequestOptions {
                 component_name: "localstorage".to_string(),
                 key_name: "rsa-private-key.pem".to_string(),
             },
