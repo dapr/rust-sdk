@@ -20,7 +20,24 @@ To run this example:
 1. Run the multi-app run template:
 
 <!-- STEP
-name: Run Subscriber
+name: Generate Keys
+output_match_mode: substring
+match_order: none
+background: true
+sleep: 30
+timeout_seconds: 90
+-->
+
+```bash
+mkdir -p keys
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out keys/rsa-private-key.pem
+openssl rand -out keys/symmetric-key-256 32
+```
+
+<!-- END_STEP -->
+
+<!-- STEP
+name: Run multi-run app
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
@@ -32,9 +49,6 @@ timeout_seconds: 90
 -->
 
 ```bash
-mkdir -p keys
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out keys/rsa-private-key.pem
-openssl rand -out keys/symmetric-key-256 32
 dapr run -f .
 ```
 

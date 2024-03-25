@@ -1,7 +1,9 @@
 use std::fs;
 
+use tokio::fs::File;
 use tokio::time::sleep;
 
+use dapr::client::ReaderStream;
 use dapr::dapr::dapr::proto::runtime::v1::{DecryptRequestOptions, EncryptRequestOptions};
 
 #[tokio::main]
@@ -14,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let encrypted = client
         .encrypt(
-            &"Test".to_string(),
+            ReaderStream::new("Test".as_bytes()),
             EncryptRequestOptions {
                 component_name: "localstorage".to_string(),
                 key_name: "rsa-private-key.pem".to_string(),
@@ -42,11 +44,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Successfully Decrypted String");
 
-    let image = fs::read("./image.png").unwrap();
+    let image = File::open("./image.png").await.unwrap();
 
     let encrypted = client
         .encrypt(
-            &image,
+            ReaderStream::new(image),
             EncryptRequestOptions {
                 component_name: "localstorage".to_string(),
                 key_name: "rsa-private-key.pem".to_string(),
@@ -69,6 +71,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .await
         .unwrap();
+
+    let image = fs::read("./image.png").unwrap();
 
     assert_eq!(decrypted, image);
 
