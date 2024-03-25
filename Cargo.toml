@@ -47,12 +47,16 @@ name = "actor-server"
 path = "examples/actors/server.rs"
 
 [[example]]
+name = "client"
+path = "examples/client/client.rs"
+
+[[example]]
 name = "configuration"
 path = "examples/configuration/main.rs"
 
 [[example]]
-name = "client"
-path = "examples/client/client.rs"
+name = "crypto"
+path = "examples/crypto/main.rs"
 
 [[example]]
 name = "invoke-grpc-client"
@@ -81,7 +85,3 @@ path = "examples/pubsub/subscriber.rs"
 [[example]]
 name = "secrets-bulk"
 path = "examples/secrets-bulk/app.rs"
-
-[[example]]
-name = "crypto"
-path = "examples/crypto/main.rs"
