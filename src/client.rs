@@ -7,9 +7,9 @@ use futures::StreamExt;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, ReadBuf};
-use tonic::{Request, transport::Channel as TonicChannel};
-use tonic::{Status, Streaming};
 use tonic::codegen::tokio_stream;
+use tonic::{transport::Channel as TonicChannel, Request};
+use tonic::{Status, Streaming};
 
 use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
