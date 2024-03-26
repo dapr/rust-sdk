@@ -12,7 +12,6 @@ use tonic::{Status, Streaming};
 use tonic::codegen::tokio_stream;
 
 use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use crate::dapr::dapr::proto::runtime::v1::{DecryptResponse, EncryptResponse};
 use crate::error::Error;
 
 #[derive(Clone)]
@@ -745,6 +744,10 @@ pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptR
 
 /// Decryption request options
 pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
+
+pub type EncryptResponse = crate::dapr::dapr::proto::runtime::v1::EncryptResponse;
+
+pub type DecryptResponse = crate::dapr::dapr::proto::runtime::v1::DecryptResponse;
 
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
