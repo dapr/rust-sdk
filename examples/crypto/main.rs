@@ -1,6 +1,7 @@
 use std::fs;
 
 use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 use tokio::time::sleep;
 
 use dapr::client::ReaderStream;
@@ -28,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let decrypted = client
+    let mut decrypted = client
         .decrypt(
             encrypted,
             dapr::client::DecryptRequestOptions {
@@ -39,7 +40,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    assert_eq!(String::from_utf8(decrypted).unwrap().as_str(), "Test");
+    let mut value = String::new();
+
+    decrypted.read_to_string(&mut value).await.unwrap();
+
+    assert_eq!(value.as_str(), "Test");
 
     println!("Successfully Decrypted String");
 
@@ -60,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let decrypted = client
+    let mut decrypted = client
         .decrypt(
             encrypted,
             dapr::client::DecryptRequestOptions {
@@ -73,7 +78,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let image = fs::read("./image.png").unwrap();
 
-    assert_eq!(decrypted, image);
+    let mut buf = bytes::BytesMut::with_capacity(image.len());
+
+    decrypted.read_buf(&mut buf).await.unwrap();
+
+    assert_eq!(buf.to_vec(), image);
 
     println!("Successfully Decrypted Image");
 

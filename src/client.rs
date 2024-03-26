@@ -1,10 +1,12 @@
 use std::collections::HashMap;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 use async_trait::async_trait;
 use futures::StreamExt;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
-use tokio::io::AsyncRead;
+use tokio::io::{AsyncRead, ReadBuf};
 use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
 use tonic::{Status, Streaming};
@@ -394,7 +396,7 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         payload: ReaderStream<R>,
         request_options: EncryptRequestOptions,
-    ) -> Result<Vec<StreamPayload>, Status>
+    ) -> Result<ResponseStream<EncryptResponse>, Status>
     where
         R: AsyncRead + Send,
     {
@@ -433,26 +435,27 @@ impl<T: DaprInterface> Client<T> {
     /// * `options` - Decryption request options.
     pub async fn decrypt(
         &mut self,
-        encrypted: Vec<StreamPayload>,
+        mut encrypted_stream: ResponseStream<EncryptResponse>,
         options: DecryptRequestOptions,
-    ) -> Result<Vec<u8>, Status> {
-        let requested_items: Vec<DecryptRequest> = encrypted
-            .iter()
-            .enumerate()
-            .map(|(i, item)| {
-                if i == 0 {
-                    DecryptRequest {
-                        options: Some(options.clone()),
-                        payload: Some(item.clone()),
-                    }
-                } else {
-                    DecryptRequest {
-                        options: None,
-                        payload: Some(item.clone()),
+    ) -> Result<ResponseStream<DecryptResponse>, Status> {
+        let mut requested_items = vec![];
+        while let Some(resp_result) = encrypted_stream.stream.next().await {
+            if let Ok(resp) = resp_result {
+                if let Some(payload) = resp.payload {
+                    if requested_items.len() == 0 {
+                        requested_items.push(DecryptRequest {
+                            options: Some(options.clone()),
+                            payload: Some(payload),
+                        })
+                    } else {
+                        requested_items.push(DecryptRequest {
+                            options: None,
+                            payload: Some(payload),
+                        })
                     }
                 }
-            })
-            .collect();
+            }
+        }
         self.0.decrypt(requested_items).await
     }
 }
@@ -497,10 +500,15 @@ pub trait DaprInterface: Sized {
         request: UnsubscribeConfigurationRequest,
     ) -> Result<UnsubscribeConfigurationResponse, Error>;
 
-    async fn encrypt(&mut self, payload: Vec<EncryptRequest>)
-        -> Result<Vec<StreamPayload>, Status>;
+    async fn encrypt(
+        &mut self,
+        payload: Vec<EncryptRequest>,
+    ) -> Result<ResponseStream<EncryptResponse>, Status>;
 
-    async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
+    async fn decrypt(
+        &mut self,
+        payload: Vec<DecryptRequest>,
+    ) -> Result<ResponseStream<DecryptResponse>, Status>;
 }
 
 #[async_trait]
@@ -626,19 +634,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn encrypt(
         &mut self,
         request: Vec<EncryptRequest>,
-    ) -> Result<Vec<StreamPayload>, Status> {
+    ) -> Result<ResponseStream<EncryptResponse>, Status> {
         let request = Request::new(tokio_stream::iter(request));
-        let stream = self.encrypt_alpha1(request).await?;
-        let mut stream = stream.into_inner();
-        let mut return_data = vec![];
-        while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp {
-                if let Some(data) = resp.payload {
-                    return_data.push(data)
-                }
-            }
-        }
-        Ok(return_data)
+        let stream = self.encrypt_alpha1(request).await?.into_inner();
+        Ok(ResponseStream { stream })
     }
 
     /// Decrypt binary data using Dapr. returns Vec<u8>.
@@ -647,19 +646,13 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     ///
     /// * `encrypted` - Encrypted data usually returned from encrypted, Vec<StreamPayload>
     /// * `options` - Decryption request options.
-    async fn decrypt(&mut self, request: Vec<DecryptRequest>) -> Result<Vec<u8>, Status> {
+    async fn decrypt(
+        &mut self,
+        request: Vec<DecryptRequest>,
+    ) -> Result<ResponseStream<DecryptResponse>, Status> {
         let request = Request::new(tokio_stream::iter(request));
-        let stream = self.decrypt_alpha1(request).await?;
-        let mut stream = stream.into_inner();
-        let mut data = vec![];
-        while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp {
-                if let Some(mut payload) = resp.payload {
-                    data.append(payload.data.as_mut())
-                }
-            }
-        }
-        Ok(data)
+        let stream = self.decrypt_alpha1(request).await?.into_inner();
+        Ok(ResponseStream { stream })
     }
 }
 
@@ -752,6 +745,10 @@ pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptR
 /// Decryption request options
 pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
 
+pub type EncryptResponse = crate::dapr::dapr::proto::runtime::v1::EncryptResponse;
+
+pub type DecryptResponse = crate::dapr::dapr::proto::runtime::v1::DecryptResponse;
+
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
@@ -771,5 +768,55 @@ pub struct ReaderStream<T>(tokio_util::io::ReaderStream<T>);
 impl<T: AsyncRead> ReaderStream<T> {
     pub fn new(data: T) -> Self {
         ReaderStream(tokio_util::io::ReaderStream::new(data))
+    }
+}
+
+pub struct ResponseStream<T> {
+    stream: Streaming<T>,
+}
+
+impl AsyncRead for ResponseStream<EncryptResponse> {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        match self.stream.poll_next_unpin(cx) {
+            Poll::Ready(Some(Ok(resp))) => {
+                if let Some(payload) = resp.payload {
+                    buf.put_slice(&payload.data);
+                }
+                Poll::Ready(Ok(()))
+            }
+            Poll::Ready(Some(Err(e))) => Poll::Ready(Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("{:?}", e),
+            ))),
+            Poll::Ready(None) => Poll::Ready(Ok(())),
+            Poll::Pending => Poll::Pending,
+        }
+    }
+}
+
+impl AsyncRead for ResponseStream<DecryptResponse> {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        match self.stream.poll_next_unpin(cx) {
+            Poll::Ready(Some(Ok(resp))) => {
+                if let Some(payload) = resp.payload {
+                    buf.put_slice(&payload.data);
+                }
+                Poll::Ready(Ok(()))
+            }
+            Poll::Ready(Some(Err(e))) => Poll::Ready(Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("{:?}", e),
+            ))),
+            Poll::Ready(None) => Poll::Ready(Ok(())),
+            Poll::Pending => Poll::Pending,
+        }
     }
 }
