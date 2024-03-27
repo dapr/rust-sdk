@@ -455,6 +455,24 @@ impl<T: DaprInterface> Client<T> {
             .collect();
         self.0.decrypt(requested_items).await
     }
+
+    /// Distributed lock request call
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Request to be made, TryLockRequest
+    pub async fn lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error> {
+        self.0.lock(request).await
+    }
+
+    /// Distributed lock request call
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Request to be made, TryLockRequest
+    pub async fn unlock(&mut self, request: UnlockRequest) -> Result<UnlockResponse, Error> {
+        self.0.unlock(request).await
+    }
 }
 
 #[async_trait]
@@ -501,6 +519,10 @@ pub trait DaprInterface: Sized {
         -> Result<Vec<StreamPayload>, Status>;
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
+
+    async fn lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error>;
+
+    async fn unlock(&mut self, request: UnlockRequest) -> Result<UnlockResponse, Error>;
 }
 
 #[async_trait]
@@ -661,6 +683,24 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         }
         Ok(data)
     }
+
+    /// Distributed lock request call
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Request to be made, TryLockRequest
+    async fn lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error> {
+        Ok(self.try_lock_alpha1(request).await?.into_inner())
+    }
+
+    /// Distributed unlock request call
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Request to be made, UnlockRequest
+    async fn unlock(&mut self, request: UnlockRequest) -> Result<UnlockResponse, Error> {
+        Ok(self.unlock_alpha1(request).await?.into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -751,6 +791,18 @@ pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptR
 
 /// Decryption request options
 pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
+
+/// Lock response
+pub type TryLockResponse = crate::dapr::dapr::proto::runtime::v1::TryLockResponse;
+
+/// Lock request
+pub type TryLockRequest = crate::dapr::dapr::proto::runtime::v1::TryLockRequest;
+
+/// Unlock request
+pub type UnlockRequest = crate::dapr::dapr::proto::runtime::v1::UnlockRequest;
+
+/// Unlock response
+pub type UnlockResponse = crate::dapr::dapr::proto::runtime::v1::UnlockResponse;
 
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
