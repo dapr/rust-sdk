@@ -15,8 +15,9 @@ name: Run multi-app
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP - distributed-lock-example == Successfully locked my-data'
-  - '== APP - distributed-lock-example == Successfully unlocked my-data'
+  - '== APP - distributed-lock-example == Successfully locked some-data'
+  - '== APP - distributed-lock-example == Unsuccessfully locked some-data'
+  - '== APP - distributed-lock-example == Successfully unlocked some-data'
 background: true
 sleep: 30
 timeout_seconds: 90
