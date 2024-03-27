@@ -8,14 +8,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
-    let files = vec![("my-data", b"some-data".to_vec())];
-
-    client.save_state("statestore", files).await.unwrap();
-
     let result = client
         .lock(dapr::client::TryLockRequest {
             store_name: "lockstore".to_string(),
-            resource_id: "my-data".to_string(),
+            resource_id: "some-data".to_string(),
             lock_owner: "some-random-id".to_string(),
             expiry_in_seconds: 60,
         })
@@ -24,12 +20,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(result.success);
 
-    println!("Successfully locked my-data");
+    println!("Successfully locked some-data");
+
+    let result = client
+        .lock(dapr::client::TryLockRequest {
+            store_name: "lockstore".to_string(),
+            resource_id: "some-data".to_string(),
+            lock_owner: "some-random-id".to_string(),
+            expiry_in_seconds: 60,
+        })
+        .await
+        .unwrap();
+
+    assert!(!result.success);
+
+    println!("Unsuccessfully locked some-data");
 
     let result = client
         .unlock(dapr::client::UnlockRequest {
             store_name: "lockstore".to_string(),
-            resource_id: "my-data".to_string(),
+            resource_id: "some-data".to_string(),
             lock_owner: "some-random-id".to_string(),
         })
         .await
@@ -37,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(0, result.status);
 
-    println!("Successfully unlocked my-data");
+    println!("Successfully unlocked some-data");
 
     Ok(())
 }
