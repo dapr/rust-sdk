@@ -793,17 +793,16 @@ pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptR
 pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
 
 /// Lock response
-pub type TryLockResponse = crate::dapr::dapr::proto::runtime::v1::TryLockResponse;
+pub type TryLockResponse = dapr_v1::TryLockResponse;
 
 /// Lock request
-pub type TryLockRequest = crate::dapr::dapr::proto::runtime::v1::TryLockRequest;
+pub type TryLockRequest = dapr_v1::TryLockRequest;
 
 /// Unlock request
-pub type UnlockRequest = crate::dapr::dapr::proto::runtime::v1::UnlockRequest;
+pub type UnlockRequest = dapr_v1::UnlockRequest;
 
 /// Unlock response
-pub type UnlockResponse = crate::dapr::dapr::proto::runtime::v1::UnlockResponse;
-
+pub type UnlockResponse = dapr_v1::UnlockResponse;
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
