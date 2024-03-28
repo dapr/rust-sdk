@@ -13,11 +13,12 @@ To run this example:
 <!-- STEP
 name: Run multi-app
 output_match_mode: substring
-match_order: none
+match_order: sequential
 expected_stdout_lines:
-  - '== APP - distributed-lock-example == Successfully locked some-data'
-  - '== APP - distributed-lock-example == Unsuccessfully locked some-data'
-  - '== APP - distributed-lock-example == Successfully unlocked some-data'
+  - '== APP - distributed-lock-example == Successfully acquired lock on: resource'
+  - '== APP - distributed-lock-example == Unsuccessfully acquired lock on: resource'
+  - '== APP - distributed-lock-example == Successfully released lock on: resource'
+  - '== APP - distributed-lock-example == Successfully acquired lock on: resource'
 background: true
 sleep: 30
 timeout_seconds: 90

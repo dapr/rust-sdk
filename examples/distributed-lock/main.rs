@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result = client
         .lock(dapr::client::TryLockRequest {
             store_name: "lockstore".to_string(),
-            resource_id: "some-data".to_string(),
+            resource_id: "resource".to_string(),
             lock_owner: "some-random-id".to_string(),
             expiry_in_seconds: 60,
         })
@@ -20,12 +20,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(result.success);
 
-    println!("Successfully locked some-data");
+    println!("Successfully acquired lock on: resource");
 
     let result = client
         .lock(dapr::client::TryLockRequest {
             store_name: "lockstore".to_string(),
-            resource_id: "some-data".to_string(),
+            resource_id: "resource".to_string(),
             lock_owner: "some-random-id".to_string(),
             expiry_in_seconds: 60,
         })
@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(!result.success);
 
-    println!("Unsuccessfully locked some-data");
+    println!("Unsuccessfully acquired a lock on: resource");
 
     let result = client
         .unlock(dapr::client::UnlockRequest {
@@ -47,7 +47,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert_eq!(0, result.status);
 
-    println!("Successfully unlocked some-data");
+    println!("Successfully released lock on: resource");
+    
+    let result = client
+        .lock(dapr::client::TryLockRequest {
+            store_name: "lockstore".to_string(),
+            resource_id: "resource".to_string(),
+            lock_owner: "some-random-id".to_string(),
+            expiry_in_seconds: 60,
+        })
+        .await
+        .unwrap();
+
+    assert!(result.success);
+
+    println!("Successfully acquired lock on: resource");
 
     Ok(())
 }
