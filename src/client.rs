@@ -520,7 +520,7 @@ pub trait DaprInterface: Sized {
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
 
-    async fn lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error>;
+    async fn try_lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error>;
 
     async fn unlock(&mut self, request: UnlockRequest) -> Result<UnlockResponse, Error>;
 }
