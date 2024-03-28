@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result = client
         .unlock(dapr::client::UnlockRequest {
             store_name: "lockstore".to_string(),
-            resource_id: "some-data".to_string(),
+            resource_id: "resource".to_string(),
             lock_owner: "some-random-id".to_string(),
         })
         .await
