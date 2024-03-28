@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(!result.success);
 
-    println!("Unsuccessfully acquired a lock on: resource");
+    println!("Unsuccessfully acquired lock on: resource");
 
     let result = client
         .unlock(dapr::client::UnlockRequest {
