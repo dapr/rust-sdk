@@ -683,21 +683,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         }
         Ok(data)
     }
-
-    /// Distributed lock request call
-    ///
-    /// # Arguments
-    ///
-    /// * `request` - Request to be made, TryLockRequest
     async fn lock(&mut self, request: TryLockRequest) -> Result<TryLockResponse, Error> {
         Ok(self.try_lock_alpha1(request).await?.into_inner())
     }
 
-    /// Distributed unlock request call
-    ///
-    /// # Arguments
-    ///
-    /// * `request` - Request to be made, UnlockRequest
     async fn unlock(&mut self, request: UnlockRequest) -> Result<UnlockResponse, Error> {
         Ok(self.unlock_alpha1(request).await?.into_inner())
     }
