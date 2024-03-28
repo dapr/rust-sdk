@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(0, result.status);
 
     println!("Successfully released lock on: resource");
-    
+
     let result = client
         .lock(dapr::client::TryLockRequest {
             store_name: "lockstore".to_string(),
