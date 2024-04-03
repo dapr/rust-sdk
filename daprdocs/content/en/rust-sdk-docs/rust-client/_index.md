@@ -9,7 +9,9 @@ no_list: true
 
 The Dapr client package allows you to interact with other Dapr applications from a Rust application.
 
-> **Note:** The Rust SDK is currently in Alpha/WIP state and is constantly evolving.
+{{% alert title="Note" color="primary" %}}
+The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a stable release and will likely involve breaking changes.
+{{% /alert %}}
 
 ## Prerequisites
 
