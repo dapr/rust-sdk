@@ -12,7 +12,11 @@ cascade:
   github_branch: main
 ---
 
-A client library to help build Dapr applications using Rust. This client is targeting support of all public Dapr APIs while focusing on idiomatic Rust experiences and developer productivity.
+{{% alert title="Note" color="primary" %}}
+The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a stable release and will likely involve breaking changes.
+{{% /alert %}}
+
+A client library to help build Dapr applications using Rust. This client is targeting support for all public Dapr APIs while focusing on idiomatic Rust experiences and developer productivity.
 
 {{< cardpane >}}
 {{< card title="**Client**">}}
