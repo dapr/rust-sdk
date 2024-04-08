@@ -2,6 +2,8 @@
 name = "dapr-macros"
 version = "0.14.0"
 edition = "2021"
+description = "Dapr Rust SDK"
+license = "Apache-2.0"
 
 [lib]
 proc-macro = true
@@ -9,6 +11,7 @@ proc-macro = true
 [dependencies]
 async-trait = "0.1"
 log = "0.4"
-axum = "0.6.19"
-syn = {version="2.0.29",features=["full"]}
+axum = "0.7.4"
+syn = { version = "2.0.29", features = ["full"] }
 quote = "1.0.8"
+proc-macro2 = "1.0"

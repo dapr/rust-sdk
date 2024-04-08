@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: myresiliency
+spec:
+  policies:
+    retries:
+      DaprBuiltInInitializationRetries:
+        policy: constant
+        maxInterval: 5s
+        maxRetries: 10

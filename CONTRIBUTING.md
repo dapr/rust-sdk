@@ -54,6 +54,7 @@ This section describes the guidelines for contributing code / docs to Dapr.
 All contributions come through pull requests. To submit a proposed change, we recommend following this workflow:
 
 1. Make sure there's an issue (bug or proposal) raised, which sets the expectations for the contribution you are about to make.
+   - Assign yourself to the issue by commenting with `/assign`
 1. Fork the relevant repo and create a new branch
 1. Create your change
    - Code changes require tests
@@ -106,17 +107,6 @@ git checkout <branch-name>
 git commit --amend --no-edit --signoff
 git push --force-with-lease <remote-name> <branch-name>
 ```
-
-### Use of Third-party code
-
-- All third-party code must be placed in the `vendor/` folder.
-- `vendor/` folder is managed by Go modules and stores the source code of third-party Go dependencies. - The `vendor/` folder should not be modified manually.
-- Third-party code must include licenses.
-
-A non-exclusive list of code that must be places in `vendor/`:
-
-- Open source, free software, or commercially-licensed code.
-- Tools or libraries or protocols that are open source, free software, or commercially licensed.
 
 **Thank You!** - Your contributions to open source, large or small, make projects like this possible. Thank you for taking the time to contribute.
 

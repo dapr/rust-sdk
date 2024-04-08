@@ -1,13 +1,17 @@
-use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use prost_types::Any;
 use std::collections::HashMap;
-use tonic::Streaming;
-use tonic::{transport::Channel as TonicChannel, Request};
 use serde_json::Value;
 
-use crate::error::Error;
 use async_trait::async_trait;
+use futures::StreamExt;
+use prost_types::Any;
 use serde::{Deserialize, Serialize};
+use tokio::io::AsyncRead;
+use tonic::codegen::tokio_stream;
+use tonic::{transport::Channel as TonicChannel, Request};
+use tonic::{Status, Streaming};
+
+use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::error::Error;
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -125,6 +129,27 @@ impl<T: DaprInterface> Client<T> {
                 store_name: store_name.into(),
                 key: key.into(),
                 ..Default::default()
+            })
+            .await
+    }
+
+    /// Get all secrets for a given store
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of the secret store.
+    pub async fn get_bulk_secret<S>(
+        &mut self,
+        store_name: S,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<GetBulkSecretResponse, Error>
+    where
+        S: Into<String>,
+    {
+        self.0
+            .get_bulk_secret(GetBulkSecretRequest {
+                store_name: store_name.into(),
+                metadata: metadata.unwrap_or_default(),
             })
             .await
     }
@@ -341,6 +366,7 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         store_name: S,
         keys: Vec<K>,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<GetConfigurationResponse, Error>
     where
         S: Into<String>,
@@ -349,7 +375,7 @@ impl<T: DaprInterface> Client<T> {
         let request = GetConfigurationRequest {
             store_name: store_name.into(),
             keys: keys.into_iter().map(|key| key.into()).collect(),
-            metadata: Default::default(),
+            metadata: metadata.unwrap_or_default(),
         };
         self.0.get_configuration(request).await
     }
@@ -359,6 +385,7 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         store_name: S,
         keys: Vec<S>,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<Streaming<SubscribeConfigurationResponse>, Error>
     where
         S: Into<String>,
@@ -366,7 +393,7 @@ impl<T: DaprInterface> Client<T> {
         let request = SubscribeConfigurationRequest {
             store_name: store_name.into(),
             keys: keys.into_iter().map(|key| key.into()).collect(),
-            metadata: Default::default(),
+            metadata: metadata.unwrap_or_default(),
         };
         self.0.subscribe_configuration(request).await
     }
@@ -386,6 +413,78 @@ impl<T: DaprInterface> Client<T> {
         };
         self.0.unsubscribe_configuration(request).await
     }
+
+    /// Encrypt binary data using Dapr. returns Vec<StreamPayload> to be used in decrypt method
+    ///
+    /// # Arguments
+    ///
+    /// * `payload` - ReaderStream to the data to encrypt
+    /// * `request_option` - Encryption request options.
+    pub async fn encrypt<R>(
+        &mut self,
+        payload: ReaderStream<R>,
+        request_options: EncryptRequestOptions,
+    ) -> Result<Vec<StreamPayload>, Status>
+    where
+        R: AsyncRead + Send,
+    {
+        // have to have it as a reference for the async move below
+        let request_options = &Some(request_options);
+        let requested_items: Vec<EncryptRequest> = payload
+            .0
+            .enumerate()
+            .fold(vec![], |mut init, (i, bytes)| async move {
+                let stream_payload = StreamPayload {
+                    data: bytes.unwrap().to_vec(),
+                    seq: 0,
+                };
+                if i == 0 {
+                    init.push(EncryptRequest {
+                        options: request_options.clone(),
+                        payload: Some(stream_payload),
+                    });
+                } else {
+                    init.push(EncryptRequest {
+                        options: None,
+                        payload: Some(stream_payload),
+                    });
+                }
+                init
+            })
+            .await;
+        self.0.encrypt(requested_items).await
+    }
+
+    /// Decrypt binary data using Dapr. returns Vec<u8>.
+    ///
+    /// # Arguments
+    ///
+    /// * `encrypted` - Encrypted data usually returned from encrypted, Vec<StreamPayload>
+    /// * `options` - Decryption request options.
+    pub async fn decrypt(
+        &mut self,
+        encrypted: Vec<StreamPayload>,
+        options: DecryptRequestOptions,
+    ) -> Result<Vec<u8>, Status> {
+        let requested_items: Vec<DecryptRequest> = encrypted
+            .iter()
+            .enumerate()
+            .map(|(i, item)| {
+                if i == 0 {
+                    DecryptRequest {
+                        options: Some(options.clone()),
+                        payload: Some(item.clone()),
+                    }
+                } else {
+                    DecryptRequest {
+                        options: None,
+                        payload: Some(item.clone()),
+                    }
+                }
+            })
+            .collect();
+        self.0.decrypt(requested_items).await
+    }
 }
 
 #[async_trait]
@@ -401,6 +500,10 @@ pub trait DaprInterface: Sized {
         request: InvokeBindingRequest,
     ) -> Result<InvokeBindingResponse, Error>;
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error>;
+    async fn get_bulk_secret(
+        &mut self,
+        request: GetBulkSecretRequest,
+    ) -> Result<GetBulkSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
     async fn query_state_alpha1(&mut self, request: QueryStateRequest) -> Result<QueryStateResponse, Error>;
@@ -424,6 +527,11 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: UnsubscribeConfigurationRequest,
     ) -> Result<UnsubscribeConfigurationResponse, Error>;
+
+    async fn encrypt(&mut self, payload: Vec<EncryptRequest>)
+        -> Result<Vec<StreamPayload>, Status>;
+
+    async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
 }
 
 #[async_trait]
@@ -463,6 +571,16 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(self.get_secret(Request::new(request)).await?.into_inner())
     }
 
+    async fn get_bulk_secret(
+        &mut self,
+        request: GetBulkSecretRequest,
+    ) -> Result<GetBulkSecretResponse, Error> {
+        Ok(self
+            .get_bulk_secret(Request::new(request))
+            .await?
+            .into_inner())
+    }
+
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
     }
@@ -494,7 +612,7 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     }
 
     async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
-        Ok(self.get_metadata(Request::new(())).await?.into_inner())
+        Ok(self.get_metadata(GetMetadataRequest {}).await?.into_inner())
     }
 
     async fn invoke_actor(
@@ -532,6 +650,51 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .unsubscribe_configuration(Request::new(request))
             .await?
             .into_inner())
+    }
+
+    /// Encrypt binary data using Dapr. returns Vec<StreamPayload> to be used in decrypt method
+    ///
+    /// # Arguments
+    ///
+    /// * `payload` - ReaderStream to the data to encrypt
+    /// * `request_option` - Encryption request options.
+    async fn encrypt(
+        &mut self,
+        request: Vec<EncryptRequest>,
+    ) -> Result<Vec<StreamPayload>, Status> {
+        let request = Request::new(tokio_stream::iter(request));
+        let stream = self.encrypt_alpha1(request).await?;
+        let mut stream = stream.into_inner();
+        let mut return_data = vec![];
+        while let Some(resp) = stream.next().await {
+            if let Ok(resp) = resp {
+                if let Some(data) = resp.payload {
+                    return_data.push(data)
+                }
+            }
+        }
+        Ok(return_data)
+    }
+
+    /// Decrypt binary data using Dapr. returns Vec<u8>.
+    ///
+    /// # Arguments
+    ///
+    /// * `encrypted` - Encrypted data usually returned from encrypted, Vec<StreamPayload>
+    /// * `options` - Decryption request options.
+    async fn decrypt(&mut self, request: Vec<DecryptRequest>) -> Result<Vec<u8>, Status> {
+        let request = Request::new(tokio_stream::iter(request));
+        let stream = self.decrypt_alpha1(request).await?;
+        let mut stream = stream.into_inner();
+        let mut data = vec![];
+        while let Some(resp) = stream.next().await {
+            if let Ok(resp) = resp {
+                if let Some(mut payload) = resp.payload {
+                    data.append(payload.data.as_mut())
+                }
+            }
+        }
+        Ok(data)
     }
 }
 
@@ -577,8 +740,17 @@ pub type GetSecretRequest = dapr_v1::GetSecretRequest;
 /// A response from getting secret
 pub type GetSecretResponse = dapr_v1::GetSecretResponse;
 
+/// A request for getting bulk secrets
+pub type GetBulkSecretRequest = dapr_v1::GetBulkSecretRequest;
+
+/// A response for getting bulk secrets
+pub type GetBulkSecretResponse = dapr_v1::GetBulkSecretResponse;
+
 /// A response from getting metadata
 pub type GetMetadataResponse = dapr_v1::GetMetadataResponse;
+
+/// A request for getting metadata
+pub type GetMetadataRequest = dapr_v1::GetMetadataRequest;
 
 /// A request for setting metadata
 pub type SetMetadataRequest = dapr_v1::SetMetadataRequest;
@@ -609,6 +781,19 @@ pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationRes
 /// A tonic based gRPC client
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
+/// Encryption gRPC request
+pub type EncryptRequest = crate::dapr::dapr::proto::runtime::v1::EncryptRequest;
+
+/// Decrypt gRPC request
+pub type DecryptRequest = crate::dapr::dapr::proto::runtime::v1::DecryptRequest;
+
+/// Encryption request options
+pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptRequestOptions;
+
+/// Decryption request options
+pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
+
+type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
     K: Into<String>,
@@ -619,5 +804,13 @@ where
             value,
             ..Default::default()
         }
+    }
+}
+
+pub struct ReaderStream<T>(tokio_util::io::ReaderStream<T>);
+
+impl<T: AsyncRead> ReaderStream<T> {
+    pub fn new(data: T) -> Self {
+        ReaderStream(tokio_util::io::ReaderStream::new(data))
     }
 }
