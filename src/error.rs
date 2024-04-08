@@ -1,4 +1,4 @@
-use std::{convert::From, fmt, fmt::Display, num::ParseIntError, env::VarError};
+use std::{convert::From, env::VarError, fmt, fmt::Display, num::ParseIntError};
 
 use tonic::{transport::Error as TonicError, Status as TonicStatus};
 
@@ -20,13 +20,13 @@ impl Display for Error {
 impl std::error::Error for Error {}
 
 impl From<ParseIntError> for Error {
-    fn from(_error: ParseIntError) -> Self { 
+    fn from(_error: ParseIntError) -> Self {
         Error::ParseIntError
     }
 }
 
 impl From<VarError> for Error {
-    fn from(_error: VarError) -> Self { 
+    fn from(_error: VarError) -> Self {
         Error::VarError
     }
 }
