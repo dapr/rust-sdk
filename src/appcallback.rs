@@ -114,7 +114,8 @@ impl AppCallback for AppCallbackService {
         let topic_name = request_inner.topic.clone();
         let handler = self
             .handlers
-            .iter().find(|x| x.pub_sub_name == pub_sub_name && x.topic == topic_name);
+            .iter()
+            .find(|x| x.pub_sub_name == pub_sub_name && x.topic == topic_name);
         if let Some(handler) = handler {
             return handler.handler.handler(request_inner).await;
         }
