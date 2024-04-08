@@ -8,8 +8,7 @@ use dapr::client::ReaderStream;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sleep(std::time::Duration::new(2, 0)).await;
-    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-    let addr = format!("https://127.0.0.1:{}", port);
+    let addr = "https://127.0.0.1".to_string();
 
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 
