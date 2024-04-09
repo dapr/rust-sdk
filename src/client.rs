@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde_json::Value;
+use std::collections::HashMap;
 
 use async_trait::async_trait;
 use futures::StreamExt;
@@ -218,9 +218,9 @@ impl<T: DaprInterface> Client<T> {
         store_name: S,
         query: Value,
         metadata: Option<HashMap<String, String>>,
-    ) -> Result<QueryStateResponse, Error> 
+    ) -> Result<QueryStateResponse, Error>
     where
-        S: Into<String>
+        S: Into<String>,
     {
         let mut mdata = HashMap::<String, String>::new();
         if let Some(m) = metadata {
@@ -510,7 +510,10 @@ pub trait DaprInterface: Sized {
     ) -> Result<GetBulkSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
-    async fn query_state_alpha1(&mut self, request: QueryStateRequest) -> Result<QueryStateResponse, Error>;
+    async fn query_state_alpha1(
+        &mut self,
+        request: QueryStateRequest,
+    ) -> Result<QueryStateResponse, Error>;
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
@@ -589,8 +592,14 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
     }
 
-    async fn query_state_alpha1(&mut self, request: QueryStateRequest) -> Result<QueryStateResponse, Error> {
-        Ok(self.query_state_alpha1(Request::new(request)).await?.into_inner())
+    async fn query_state_alpha1(
+        &mut self,
+        request: QueryStateRequest,
+    ) -> Result<QueryStateResponse, Error> {
+        Ok(self
+            .query_state_alpha1(Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {

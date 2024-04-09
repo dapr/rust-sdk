@@ -6,12 +6,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::sleep(std::time::Duration::new(5, 0));
 
     // Get the Dapr port and create a connection
-    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;  
+    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
     let addr = format!("https://127.0.0.1:{}", port);
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
-
 
     let query_condition = json!({
         "filter": {
@@ -19,7 +18,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
     });
 
-    let response = match client.query_state_alpha1("statestore", query_condition, None).await {
+    let response = match client
+        .query_state_alpha1("statestore", query_condition, None)
+        .await
+    {
         Ok(response) => response.results,
         Err(e) => {
             println!("Error: {:?}", e);
