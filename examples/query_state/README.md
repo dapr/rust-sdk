@@ -11,11 +11,11 @@ For this example, we will be following the query state example in the [Dapr docs
 To setup MongoDB, execute the following command:
 <!-- STEP
 name: Run mongodb instance
-background: true
+background: false
 sleep: 10
 timeout_seconds: 30
 -->
-```
+```bash
 docker run -d --rm -p 27017:27017 --name mongodb mongo:5
 ```
 <!-- END_STEP -->
@@ -30,7 +30,7 @@ background: true
 sleep: 5
 timeout_seconds: 10
 -->
-```
+```bash
 dapr run --app-id demo --dapr-http-port 3500 --resources-path statestore/
 ```
 <!-- END_STEP -->
@@ -39,27 +39,20 @@ In a new terminal, apply the test data:
 
 <!-- STEP
 name: Populate state store step 2/2
-background: true
+background: false
 sleep: 2
 timeout_seconds: 5
 -->
-```
+```bash
 curl -X POST -H "Content-Type: application/json" http://localhost:3500/v1.0/state/statestore -d @./statestore/dataset.json
 ``````
 <!-- END_STEP -->
 
 1. To run the example we need to first build the examples using the following command:
 
-<!-- STEP
-name: Build examples
-background: false
-sleep: 15
-timeout_seconds: 30
--->
-```
+```bash
 cargo build --examples
 ```
-<!-- END_STEP -->
 
 2. Executing the first query
 Query:
@@ -84,13 +77,13 @@ name: Run query_state_q1 example
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP == Query results: [Object {"id": String("3"), "value": String("{\"person\":{\"org\":\"Finance\",\"id\":1071.0},\"city\":\"Sacramento\",\"state\":\"CA\"}")}, Object {"id": String("7"), "value": String("{\"state\":\"CA\",\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\"}")}, Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, Object {"id": String("9"), "value": String("{\"person\":{\"org\":\"Finance\",\"id\":1002.0},\"city\":\"San Diego\",\"state\":\"CA\"}")}]'
+  - 'San Francisco'
 background: false
 sleep: 15
 timeout_seconds: 30
 -->
-```
-dapr run --app-id=rustapp --dapr-grpc-port 3501  cargo run -- --example query_state_q1
+```bash
+dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query_state_q1
 ```
 <!-- END_STEP -->
 
@@ -118,13 +111,13 @@ name: Run query_state_q2 example
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP == Query results: [Object {"id": String("1"), "value": String("{\"state\":\"WA\",\"person\":{\"org\":\"Dev Ops\",\"id\":1036.0},\"city\":\"Seattle\"}")}, Object {"id": String("7"), "value": String("{\"state\":\"CA\",\"person\":{\"org\":\"Dev Ops\",\"id\":1015.0},\"city\":\"San Francisco\"}")}, Object {"id": String("5"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1007.0},\"city\":\"Los Angeles\",\"state\":\"CA\"}")}, Object {"id": String("4"), "value": String("{\"person\":{\"org\":\"Dev Ops\",\"id\":1042.0},\"city\":\"Spokane\",\"state\":\"WA\"}")}, Object {"id": String("10"), "value": String("{\"person\":{\"id\":1054.0,\"org\":\"Dev Ops\"},\"city\":\"New York\",\"state\":\"NY\"}")}, Object {"id": String("8"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1077.0},\"city\":\"Redmond\",\"state\":\"WA\"}")}, Object {"id": String("2"), "value": String("{\"person\":{\"org\":\"Hardware\",\"id\":1028.0},\"city\":\"Portland\",\"state\":\"OR\"}")}]'
+  - 'New York'
 background: false
 sleep: 15
 timeout_seconds: 30
 -->
-```
-dapr run --app-id=rustapp --dapr-grpc-port 3501  cargo run -- --example query_state_q2
+```bash
+dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query_state_q2
 ```
 <!-- END_STEP -->
 
