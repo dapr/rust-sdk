@@ -17,10 +17,6 @@ struct Refund {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // TODO: Handle this issue in the sdk
-    // Introduce delay so that dapr grpc port is assigned before app tries to connect
-    thread::sleep(Duration::from_secs(2));
-
     // Set address for Dapr connection
     let addr = "https://127.0.0.1".to_string();
 
