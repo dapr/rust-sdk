@@ -1,5 +1,3 @@
-use std::{thread, time::Duration};
-
 use hello_world::{HelloReply, HelloRequest};
 use prost::Message;
 

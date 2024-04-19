@@ -1,7 +1,6 @@
 use std::fs;
 
 use tokio::fs::File;
-use tokio::time::sleep;
 
 use dapr::client::ReaderStream;
 

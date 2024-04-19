@@ -1,4 +1,4 @@
-use std::{collections::HashMap, thread, time::Duration};
+use std::{collections::HashMap, time::Duration};
 
 use dapr::serde::{Deserialize, Serialize};
 use dapr::serde_json;

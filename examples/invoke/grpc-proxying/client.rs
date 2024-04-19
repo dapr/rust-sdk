@@ -1,5 +1,3 @@
-use std::{thread, time::Duration};
-
 use hello_world::{greeter_client::GreeterClient, HelloRequest};
 
 use tonic::metadata::MetadataValue;
