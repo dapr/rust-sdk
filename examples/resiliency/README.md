@@ -27,13 +27,13 @@ docker exec dapr_redis redis-cli MSET hello "world"
 name: Run configuration app (expecting a fail)
 env:
   DAPR_GRPC_PORT: "3500"
-  DAPR_API_MAX_RETRIES: "10"
+  DAPR_API_MAX_RETRIES: "1"
   DAPR_API_TIMEOUT_MILLISECONDS: "10000"
 output_match_mode: substring
 expected_stdout_lines:
   - ''
 expected_stderr_lines:
-  - 'TransportError'
+  - 'ConnectError'
 expected_return_code: 101
 background: false
 sleep: 30
@@ -58,7 +58,7 @@ env:
   DAPR_API_TIMEOUT_MILLISECONDS: "10000"
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Configuration value: ConfigurationItem { value: "world"'
+  - 'Configuration value: ConfigurationItem { value: "world"'
 background: true
 sleep: 30
 timeout_seconds: 30
@@ -80,8 +80,8 @@ output_match_mode: substring
 expected_stdout_lines:
   - ''
 background: true
-sleep: 10
-timeout_seconds: 10
+sleep: 15
+timeout_seconds: 15
 -->
 
 ```bash

@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 const CONFIGSTORE_NAME: &str = "configstore";
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
 
@@ -7,6 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "https://127.0.0.1".to_string();
 
     // Create the client
+    let start_time = Instant::now();
     let mut client = match DaprClient::connect(addr).await {
         Ok(client) => {
             println!("connected to dapr sidecar");
@@ -16,7 +19,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             panic!("failed to connect to dapr sidecar: {:?}", error)
         }
     };
-    println!("debug");
+    let client_start_duration = start_time.elapsed();
+    println!("Client connection took: {:?}", client_start_duration);
 
     let key = String::from("hello");
 
