@@ -1,5 +1,6 @@
+use backon::{ExponentialBuilder, Retryable};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::{collections::HashMap, env, time::Duration};
 
 use async_trait::async_trait;
 use futures::StreamExt;
@@ -544,7 +545,22 @@ pub trait DaprInterface: Sized {
 #[async_trait]
 impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
     async fn connect(addr: String) -> Result<Self, Error> {
-        Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
+        const ENV_DAPR_API_MAX_RETRIES: &str = "DAPR_API_MAX_RETRIES";
+        let dapr_api_max_retries =
+            env::var(ENV_DAPR_API_MAX_RETRIES).unwrap_or_else(|_| "0".to_owned());
+
+        let retry_policy = ExponentialBuilder::default()
+            .with_jitter()
+            .with_min_delay(Duration::from_secs(1))
+            .with_max_delay(Duration::from_secs(5))
+            .with_max_times(dapr_api_max_retries.parse::<usize>().unwrap());
+
+        let client = (|| dapr_v1::dapr_client::DaprClient::connect(addr.to_owned()))
+            .retry(&retry_policy)
+            .await
+            .expect("client connection");
+
+        Ok(client)
     }
 
     async fn invoke_service(

@@ -25,6 +25,7 @@ axum = "0.7.4"
 tokio = { version = "1.29", features = ["sync"] }
 tokio-util = { version = "0.7.10", features = ["io"] }
 chrono = "0.4.24"
+backon = "0.4.4"
 
 [build-dependencies]
 tonic-build = "0.11.0"
