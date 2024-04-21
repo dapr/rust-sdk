@@ -144,7 +144,7 @@ jobs:
       fail-fast: false
       matrix:
         examples:
-          [ "actors", "client", "configuration", "crypto", "invoke/grpc", "invoke/grpc-proxying", "pubsub", "query_state", "resiliency", "secrets-bulk" ]
+          [ "actors", "client", "configuration", "crypto", "invoke/grpc", "invoke/grpc-proxying", "pubsub", "query_state", "resiliency/instance", "resiliency/simple", "secrets-bulk" ]
     steps:
       - name: Check out code
         uses: actions/checkout@v4

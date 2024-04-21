@@ -1,4 +1,7 @@
-use std::time::Instant;
+use std::{
+    thread,
+    time::{Duration, Instant},
+};
 
 const CONFIGSTORE_NAME: &str = "configstore";
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
@@ -25,6 +28,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let key = String::from("hello");
 
     // get key-value pair in the state store
+    let response = client
+        .get_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
+        .await?;
+    let val = response.items.get("hello").unwrap();
+    println!("Configuration value: {val:?}");
+
+    thread::sleep(Duration::from_secs(10));
+    println!("app slept for 15 seconds");
+
     let response = client
         .get_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
         .await?;

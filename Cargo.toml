@@ -92,8 +92,12 @@ name = "query_state_q2"
 path = "examples/query_state/query2.rs"
 
 [[example]]
-name = "resiliency"
-path = "examples/resiliency/main.rs"
+name = "resiliency-instance"
+path = "examples/resiliency/instance/main.rs"
+
+[[example]]
+name = "resiliency-simple"
+path = "examples/resiliency/simple/main.rs"
 
 [[example]]
 name = "secrets-bulk"
