@@ -35,6 +35,16 @@ You can either reference `dapr::Client` or bind the full path to a new name as f
 use dapr::Client as DaprClient
 ```
 
+## Instantiating the Dapr client
+
+```rust
+const addr: String = "https://127.0.0.1";
+const port: String = "50001";
+
+let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr,
+    port).await?;
+```
+
 
 ## Building blocks
 
