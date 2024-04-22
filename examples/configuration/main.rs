@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "https://127.0.0.1".to_string();
 
     // Create the client
-    let mut client = DaprClient::connect(addr).await?;
+    let mut client = DaprClient::connect(addr, None).await?;
 
     let key = String::from("hello");
 
