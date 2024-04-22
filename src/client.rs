@@ -1,3 +1,4 @@
+use serde_json::Value;
 use std::collections::HashMap;
 
 use async_trait::async_trait;
@@ -22,7 +23,11 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `addr` - Address of gRPC server to connect to.
     pub async fn connect(addr: String) -> Result<Self, Error> {
-        Ok(Client(T::connect(addr).await?))
+        // Get the Dapr port to create a connection
+        let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
+        let address = format!("{}:{}", addr, port);
+
+        Ok(Client(T::connect(address).await?))
     }
 
     /// Invoke a method in a Dapr enabled app.
@@ -198,6 +203,35 @@ impl<T: DaprInterface> Client<T> {
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
                 states: states.into_iter().map(|pair| pair.into()).collect(),
+            })
+            .await
+    }
+
+    /// Query state objects based on specific query conditions
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `query` - The query request (json)
+    pub async fn query_state_alpha1<S>(
+        &mut self,
+        store_name: S,
+        query: Value,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<QueryStateResponse, Error>
+    where
+        S: Into<String>,
+    {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
+        self.0
+            .query_state_alpha1(QueryStateRequest {
+                store_name: store_name.into(),
+                query: serde_json::to_string(&query).unwrap(),
+                metadata: mdata,
             })
             .await
     }
@@ -476,6 +510,10 @@ pub trait DaprInterface: Sized {
     ) -> Result<GetBulkSecretResponse, Error>;
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error>;
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error>;
+    async fn query_state_alpha1(
+        &mut self,
+        request: QueryStateRequest,
+    ) -> Result<QueryStateResponse, Error>;
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error>;
     async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error>;
     async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error>;
@@ -552,6 +590,16 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
 
     async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
+    }
+
+    async fn query_state_alpha1(
+        &mut self,
+        request: QueryStateRequest,
+    ) -> Result<QueryStateResponse, Error> {
+        Ok(self
+            .query_state_alpha1(Request::new(request))
+            .await?
+            .into_inner())
     }
 
     async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
@@ -686,6 +734,12 @@ pub type GetStateResponse = dapr_v1::GetStateResponse;
 
 /// A request for saving state
 pub type SaveStateRequest = dapr_v1::SaveStateRequest;
+
+/// A request for querying state
+pub type QueryStateRequest = dapr_v1::QueryStateRequest;
+
+/// A response from querying state
+pub type QueryStateResponse = dapr_v1::QueryStateResponse;
 
 /// A request for deleting state
 pub type DeleteStateRequest = dapr_v1::DeleteStateRequest;
