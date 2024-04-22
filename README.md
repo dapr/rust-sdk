@@ -42,12 +42,14 @@ Here's a basic example to create a client:
 use dapr;
 
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Get the Dapr port and create a connection
-    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-    let addr = format!("https://127.0.0.1:{}", port);
+    // Dapr GRPC Address
+    let addr = "https://127.0.0.1";
+
+    // Dapr GRPC Port (optional)
+    let port = "50001";
 
     // Create the client
-    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
+    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr, port).await?;
 ```
 
 ## Explore more examples
