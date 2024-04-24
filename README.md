@@ -2,6 +2,7 @@
 
 [![Crates.io][crates-badge]][crates-url]
 [![Build Status][actions-badge]][actions-url]
+[![discord][discord-badge][discord-url]
 [![License: Apache 2.0][apache-badge]][apache-url]
 [![FOSSA Status][fossa-badge]][fossa-url]
 
@@ -13,6 +14,8 @@
 [actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
 [fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
 [fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
+[discord-badge]: https://img.shields.io/discord/778680217417809931
+[discord-url]: https://discord.com/channels/778680217417809931/778680217417809934
 
 Dapr is a portable, event-driven, serverless runtime for building distributed applications across cloud and edge.
 
@@ -94,3 +97,9 @@ By default, the script fetches the latest proto updates from the master branch o
 ```bash
 ./update-protos.sh -v v1.12.0
 ```
+
+### Contact Us
+Reach out with any questions you may have and we'll be sure to answer them as
+soon as possible!
+
+[![Discord Banner](https://discord.com/api/guilds/778680217417809931/widget.png?style=banner2)](https://aka.ms/dapr-discord)
