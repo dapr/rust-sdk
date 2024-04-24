@@ -2,7 +2,7 @@
 
 [![Crates.io][crates-badge]][crates-url]
 [![Build Status][actions-badge]][actions-url]
-[![discord][discord-badge][discord-url]
+[![discord][discord-badge]][discord-url]
 [![License: Apache 2.0][apache-badge]][apache-url]
 [![FOSSA Status][fossa-badge]][fossa-url]
 
