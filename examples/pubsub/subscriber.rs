@@ -35,9 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut callback_service = AppCallbackService::new();
 
-    callback_service.add_handler(HandleAEvent::default().get_handler());
+    callback_service.add_handler(HandleAEvent.get_handler());
 
-    callback_service.add_handler(HandleBEvent::default().get_handler());
+    callback_service.add_handler(HandleBEvent.get_handler());
 
     println!("AppCallback server listening on: {}", addr);
 
