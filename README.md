@@ -1,21 +1,23 @@
 # Dapr SDK for Rust (Alpha)
 
-[![Crates.io][crates-badge]][crates-url]
-[![Build Status][actions-badge]][actions-url]
-[![discord][discord-badge]][discord-url]
-[![License: Apache 2.0][apache-badge]][apache-url]
-[![FOSSA Status][fossa-badge]][fossa-url]
+[![Crates.io][crates-badge]][crates-url] [![Build Status][actions-badge]][actions-url] [![License: Apache 2.0][apache-badge]][apache-url] [![FOSSA Status][fossa-badge]][fossa-url] [![Good First Issues][gfi-badge]][gfi-url] [![discord][discord-badge]][discord-url] [![YouTube][youtube-badge]][youtube-link] [![X/Twitter][x-badge]][x-link]
 
-[crates-badge]: https://img.shields.io/crates/v/dapr.svg
+[crates-badge]: https://img.shields.io/crates/v/dapr.svg?style=flat
 [crates-url]: https://crates.io/crates/dapr
-[apache-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
+[apache-badge]: https://img.shields.io/github/license/dapr/rust-sdk?style=flat&label=License&logo=github
 [apache-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
 [actions-badge]: https://github.com/dapr/rust-sdk/workflows/dapr-rust-sdk/badge.svg
 [actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
 [fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
 [fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
-[discord-badge]: https://img.shields.io/discord/778680217417809931
-[discord-url]: https://discord.com/channels/778680217417809931/778680217417809934
+[gfi-badge]:https://img.shields.io/github/issues-search/dapr/rust-sdk?query=type%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22&label=Good%20first%20issues&style=flat&logo=github
+[gfi-url]:https://github.com/dapr/rust-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
+[discord-badge]: https://img.shields.io/discord/778680217417809931?label=Discord&style=flat&logo=discord
+[discord-url]: http://bit.ly/dapr-discord
+[youtube-badge]:https://img.shields.io/youtube/channel/views/UCtpSQ9BLB_3EXdWAUQYwnRA?style=flat&label=YouTube%20views&logo=youtube
+[youtube-link]:https://youtube.com/@daprdev
+[x-badge]:https://img.shields.io/twitter/follow/daprdev?logo=x&style=flat
+[x-link]:https://twitter.com/daprdev
 
 Dapr is a portable, event-driven, serverless runtime for building distributed applications across cloud and edge.
 
