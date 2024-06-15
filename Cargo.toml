@@ -59,6 +59,10 @@ name = "crypto"
 path = "examples/crypto/main.rs"
 
 [[example]]
+name = "distributed-lock"
+path = "examples/distributed-lock/main.rs"
+
+[[example]]
 name = "invoke-grpc-client"
 path = "examples/invoke/grpc/client.rs"
 

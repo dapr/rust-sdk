@@ -1,0 +1,10 @@
+version: 1
+common:
+  daprdLogDestination: console
+apps:
+  - appID: distributed-lock-example
+    appDirPath: ./
+    daprGRPCPort: 35002
+    logLevel: debug
+    command: [ "cargo", "run", "--example", "distributed-lock" ]
+    resourcesPath: ./components
