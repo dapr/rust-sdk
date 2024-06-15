@@ -1,3 +1,4 @@
+use log::error;
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -21,10 +22,31 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// # Arguments
     ///
-    /// * `addr` - Address of gRPC server to connect to.
-    pub async fn connect(addr: String) -> Result<Self, Error> {
+    /// * `addr` - Address of the gRPC server to connect to.
+    /// * `port` - Port of the gRPC server to connect to.
+    pub async fn connect(addr: String, port: Option<String>) -> Result<Self, Error> {
+        const DEFAULT_DAPR_GRPC_PORT: u16 = 50001;
+
         // Get the Dapr port to create a connection
-        let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
+        let port: u16 = match port {
+            Some(port) => {
+                // Handle port
+                let port = port.parse::<u16>().unwrap();
+                match port {
+                    1..=65535 => port,
+                    _ => {
+                        panic!("invalid port specified: {port:?}")
+                    }
+                }
+            }
+            None => match std::env::var("DAPR_GRPC_PORT")?.parse::<u16>() {
+                Ok(port) => port,
+                Err(e) => {
+                    error!("error retrieving port from the env var DAPR_GRPC_PORT, using default: {e:?}");
+                    DEFAULT_DAPR_GRPC_PORT
+                }
+            },
+        };
         let address = format!("{}:{}", addr, port);
 
         Ok(Client(T::connect(address).await?))

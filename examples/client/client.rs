@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "https://127.0.0.1".to_string();
 
     // Create the client
-    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
+    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr, None).await?;
 
     let key = String::from("hello");
 
