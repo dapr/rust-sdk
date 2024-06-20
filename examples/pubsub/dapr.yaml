@@ -1,0 +1,16 @@
+version: 1
+common:
+  resourcesPath: ./resources/
+  daprdLogDestination: console
+apps:
+  - appID: rust-subscriber
+    appDirPath: ./
+    appProtocol: grpc
+    appPort: 50051
+    logLevel: debug
+    command: ["cargo", "run", "--example", "subscriber"]
+  - appID: rust-publisher
+    appDirPath: ./
+    appProtocol: grpc
+    logLevel: debug
+    command: ["cargo", "run", "--example", "publisher"]

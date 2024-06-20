@@ -1,14 +1,28 @@
 use std::{collections::HashMap, thread, time::Duration};
 
+use dapr::serde::{Deserialize, Serialize};
+use dapr::serde_json;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Order {
+    pub order_number: i32,
+    pub order_details: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Refund {
+    pub order_number: i32,
+    pub refund_amount: i32,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
     thread::sleep(Duration::from_secs(2));
 
-    // Get the Dapr port and create a connection
-    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-    let addr = format!("https://127.0.0.1:{}", port);
+    // Set address for Dapr connection
+    let addr = "https://127.0.0.1".to_string();
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
@@ -21,14 +35,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // topic to publish message to
     let topic = "A".to_string();
+    let topic_b = "B".to_string();
 
-    for count in 0..100 {
+    for count in 0..10 {
+        let order = Order {
+            order_number: count,
+            order_details: format!("Count is {}", count),
+        };
         // message metadata
         let mut metadata = HashMap::<String, String>::new();
         metadata.insert("count".to_string(), count.to_string());
 
         // message
-        let message = format!("{} => hello from rust!", &count).into_bytes();
+        let message = serde_json::to_string(&order).unwrap().into_bytes();
 
         client
             .publish_event(
@@ -40,9 +59,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .await?;
 
-        // sleep for 2 secs to simulate delay b/w two events
+        // sleep for 1 second to simulate delay between each event
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    }
+    for count in 0..10 {
+        let refund = Refund {
+            order_number: count,
+            refund_amount: 1200,
+        };
+        // message metadata
+        let mut metadata = HashMap::<String, String>::new();
+        metadata.insert("count".to_string(), count.to_string());
+
+        // message
+        let message = serde_json::to_string(&refund).unwrap().into_bytes();
+
+        client
+            .publish_event(
+                &pubsub_name,
+                &topic_b,
+                &data_content_type,
+                message,
+                Some(metadata),
+            )
+            .await?;
+
+        // sleep for 2 seconds to simulate delay between two events
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
+    println!("messages published");
 
     Ok(())
 }

@@ -3,25 +3,37 @@ name: dapr-rust-sdk
 on:
   push:
     branches:
-      - master
+      - main
       - release-*
     tags:
       - v*
   pull_request:
     branches:
-      - master
+      - main
       - release-*
 
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+  PROTOC_VERSION: 3.x
+  RUST_TOOLCHAIN: 1.76.0
 
 jobs:
   lint:
-    name: Lint 
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_TOOLCHAIN }}
+        override: true
+        components: rustfmt, clippy
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
@@ -30,10 +42,20 @@ jobs:
 
 
   build:
-    name: Build 
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_TOOLCHAIN }}
+        override: true
+        components: rustfmt, clippy
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build
@@ -41,7 +63,7 @@ jobs:
       run: cargo build --examples
     - name: Run Tests
       run: cargo test --all-targets
-   
+
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -49,6 +71,18 @@ jobs:
     if: startswith(github.ref, 'refs/tags/v')
 
     steps:
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_TOOLCHAIN }}
+        override: true
+        components: rustfmt, clippy
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v2
+    - name: cargo publish macros
+      run: cargo publish --manifest-path macros/Cargo.toml --token ${{ env.CARGO_TOKEN }}
     - name: cargo publish
       run: cargo publish --token ${{ env.CARGO_TOKEN }}

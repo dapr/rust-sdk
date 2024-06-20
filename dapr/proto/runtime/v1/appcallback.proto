@@ -1,7 +1,15 @@
-// ------------------------------------------------------------
-// Copyright (c) Microsoft Corporation and Dapr Contributors.
-// Licensed under the MIT License.
-// ------------------------------------------------------------
+/*
+Copyright 2021 The Dapr Authors
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 syntax = "proto3";
 
@@ -9,6 +17,7 @@ package dapr.proto.runtime.v1;
 
 import "google/protobuf/empty.proto";
 import "dapr/proto/common/v1/common.proto";
+import "google/protobuf/struct.proto";
 
 option csharp_namespace = "Dapr.AppCallback.Autogen.Grpc.v1";
 option java_outer_classname = "DaprAppCallbackProtos";
@@ -36,6 +45,20 @@ service AppCallback {
   // User application can save the states or send the events to the output
   // bindings optionally by returning BindingEventResponse.
   rpc OnBindingEvent(BindingEventRequest) returns (BindingEventResponse) {}
+}
+
+// AppCallbackHealthCheck V1 is an optional extension to AppCallback V1 to implement
+// the HealthCheck method.
+service AppCallbackHealthCheck {
+  // Health check.
+  rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse) {}
+}
+
+// AppCallbackAlpha V1 is an optional extension to AppCallback V1 to opt
+// for Alpha RPCs.
+service AppCallbackAlpha {
+    // Subscribes bulk events from Pubsub
+  rpc OnBulkTopicEventAlpha1(TopicEventBulkRequest) returns (TopicEventBulkResponse) {}
 }
 
 // TopicEventRequest message is compatible with CloudEvent spec v1.0
@@ -74,6 +97,9 @@ message TopicEventRequest {
   // The matching path from TopicSubscription/routes (if specified) for this event.
   // This value is used by OnTopicEvent to "switch" inside the handler.
   string path = 9;
+
+  // The map of additional custom properties to be sent to the app. These are considered to be cloud event extensions.
+  google.protobuf.Struct extensions = 10;
 }
 
 // TopicEventResponse is response from app on published message
@@ -90,6 +116,90 @@ message TopicEventResponse {
 
   // The list of output bindings.
   TopicEventResponseStatus status = 1;
+}
+
+// TopicEventCERequest message is compatible with CloudEvent spec v1.0
+message TopicEventCERequest {
+  // The unique identifier of this cloud event.
+  string id = 1;
+
+  // source identifies the context in which an event happened.
+  string source = 2;
+
+  // The type of event related to the originating occurrence. 
+  string type = 3;
+
+  // The version of the CloudEvents specification. 
+  string spec_version = 4;
+
+  // The content type of data value.
+  string data_content_type = 5;
+
+  // The content of the event.
+  bytes data = 6;
+
+  // Custom attributes which includes cloud event extensions.
+  google.protobuf.Struct extensions = 7;
+}
+
+// TopicEventBulkRequestEntry represents a single message inside a bulk request
+message TopicEventBulkRequestEntry {
+  // Unique identifier for the message.
+  string entry_id = 1;
+
+  // The content of the event.
+  oneof event {
+    bytes bytes = 2;
+    TopicEventCERequest cloud_event = 3;
+  }
+
+  // content type of the event contained.
+  string content_type = 4;
+  
+  // The metadata associated with the event.
+  map<string,string> metadata = 5;
+}
+
+// TopicEventBulkRequest represents request for bulk message
+message TopicEventBulkRequest {
+    // Unique identifier for the bulk request.
+  string id = 1;
+
+  // The list of items inside this bulk request.
+  repeated TopicEventBulkRequestEntry entries = 2;
+
+  // The metadata associated with the this bulk request.
+  map<string,string> metadata = 3;
+
+  // The pubsub topic which publisher sent to.
+  string topic = 4;
+    
+  // The name of the pubsub the publisher sent to.
+  string pubsub_name = 5;
+  
+  // The type of event related to the originating occurrence. 
+  string type = 6;
+
+  // The matching path from TopicSubscription/routes (if specified) for this event.
+  // This value is used by OnTopicEvent to "switch" inside the handler.
+  string path = 7;
+}
+
+// TopicEventBulkResponseEntry Represents single response, as part of TopicEventBulkResponse, to be
+// sent by subscibed App for the corresponding single message during bulk subscribe
+message TopicEventBulkResponseEntry {
+  // Unique identifier associated the message.
+  string entry_id = 1;
+
+  // The status of the response.
+  TopicEventResponse.TopicEventResponseStatus status = 2;
+}
+
+// AppBulkResponse is response from app on published message
+message TopicEventBulkResponse {
+
+  // The list of all responses for the bulk request.
+  repeated TopicEventBulkResponseEntry statuses = 1;
 }
 
 // BindingEventRequest represents input bindings event.
@@ -152,6 +262,12 @@ message TopicSubscription {
   // The optional routing rules to match against. In the gRPC interface, OnTopicEvent
   // is still invoked but the matching path is sent in the TopicEventRequest.
   TopicRoutes routes = 5;
+
+  // The optional dead letter queue for this topic to send events to.
+  string dead_letter_topic = 6;
+
+  // The optional bulk subscribe settings for this topic.
+  BulkSubscribeConfig bulk_subscribe = 7;
 }
 
 message TopicRoutes {
@@ -174,8 +290,24 @@ message TopicRule {
   string path = 2;
 }
 
+// BulkSubscribeConfig is the message to pass settings for bulk subscribe
+message BulkSubscribeConfig {
+  // Required. Flag to enable/disable bulk subscribe
+  bool enabled = 1;
+
+  // Optional. Max number of messages to be sent in a single bulk request
+  int32 max_messages_count = 2;
+
+  // Optional. Max duration to wait for messages to be sent in a single bulk request
+  int32 max_await_duration_ms  = 3;
+}
+
 // ListInputBindingsResponse is the message including the list of input bindings.
 message ListInputBindingsResponse {
   // The list of input bindings.
   repeated string bindings = 1;
 }
+
+// HealthCheckResponse is the message with the response to the health check.
+// This message is currently empty as used as placeholder.
+message HealthCheckResponse {}

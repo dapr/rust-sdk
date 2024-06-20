@@ -1,4 +1,4 @@
-use std::{convert::From, fmt, fmt::Display};
+use std::{convert::From, env::VarError, fmt, fmt::Display, num::ParseIntError};
 
 use tonic::{transport::Error as TonicError, Status as TonicStatus};
 
@@ -6,6 +6,9 @@ use tonic::{transport::Error as TonicError, Status as TonicStatus};
 pub enum Error {
     TransportError,
     GrpcError(GrpcError),
+    ParseIntError,
+    VarError,
+    SerializationError,
 }
 
 impl Display for Error {
@@ -16,6 +19,18 @@ impl Display for Error {
 
 impl std::error::Error for Error {}
 
+impl From<ParseIntError> for Error {
+    fn from(_error: ParseIntError) -> Self {
+        Error::ParseIntError
+    }
+}
+
+impl From<VarError> for Error {
+    fn from(_error: VarError) -> Self {
+        Error::VarError
+    }
+}
+
 impl From<TonicError> for Error {
     fn from(_error: TonicError) -> Self {
         Error::TransportError
@@ -24,13 +39,13 @@ impl From<TonicError> for Error {
 
 impl From<TonicStatus> for Error {
     fn from(error: TonicStatus) -> Self {
-        Error::GrpcError(GrpcError { status: error })
+        Error::GrpcError(GrpcError { _status: error })
     }
 }
 
 #[derive(Debug)]
 pub struct GrpcError {
-    status: TonicStatus,
+    _status: TonicStatus,
 }
 
 impl Display for GrpcError {
