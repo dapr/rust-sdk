@@ -90,6 +90,7 @@ path = "examples/bindings/output.rs"
 name = "input-bindings"
 path = "examples/bindings/input.rs"
 
+[[example]]
 name = "query_state_q1"
 path = "examples/query_state/query1.rs"
 
