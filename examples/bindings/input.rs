@@ -23,7 +23,6 @@ impl AppCallback for AppCallbackService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<ListTopicSubscriptionsResponse>, Status> {
-       
         Ok(Response::new(ListTopicSubscriptionsResponse::default()))
     }
 
@@ -43,7 +42,7 @@ impl AppCallback for AppCallbackService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<ListInputBindingsResponse>, Status> {
-        let binding_name ="binding-example".to_string();
+        let binding_name = "binding-example".to_string();
 
         let list_bindings = ListInputBindingsResponse::binding(binding_name);
 
@@ -58,7 +57,7 @@ impl AppCallback for AppCallbackService {
         let r = request.into_inner();
         let name = &r.name;
         let data = &r.data;
-    
+
         let message = String::from_utf8_lossy(&data);
         println!("Binding Name: {}", &name);
         println!("Message: {}", &message);

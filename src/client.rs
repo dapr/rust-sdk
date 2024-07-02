@@ -87,7 +87,6 @@ impl<T: DaprInterface> Client<T> {
                 data,
                 operation: operation.into(),
                 metadata: mdata,
-                ..Default::default()
             })
             .await
     }
