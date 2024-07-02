@@ -66,6 +66,14 @@ impl TopicSubscription {
     }
 }
 
+impl ListInputBindingsResponse {
+    pub fn binding(binding_name: String) -> Self {
+        Self {
+            bindings: vec![binding_name],
+        }
+    }
+}
+
 pub struct AppCallbackService {
     handlers: Vec<Handler>,
 }
