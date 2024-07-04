@@ -115,8 +115,7 @@ impl AppCallback for AppCallbackService {
         let handler = self
             .handlers
             .iter()
-            .filter(|x| x.pub_sub_name == pub_sub_name && x.topic == topic_name)
-            .next();
+            .find(|x| x.pub_sub_name == pub_sub_name && x.topic == topic_name);
         if let Some(handler) = handler {
             return handler.handler.handler(request_inner).await;
         }
@@ -135,6 +134,12 @@ impl AppCallback for AppCallbackService {
         _request: Request<runtime::v1::BindingEventRequest>,
     ) -> Result<Response<runtime::v1::BindingEventResponse>, Status> {
         Ok(Response::new(BindingEventResponse::default()))
+    }
+}
+
+impl Default for AppCallbackService {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
