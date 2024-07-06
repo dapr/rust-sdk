@@ -1,10 +1,11 @@
 use tonic::{transport::Server, Request, Response, Status};
 
-use dapr::{
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
-};
 use dapr::dapr::dapr::proto::common::v1::{InvokeRequest, InvokeResponse};
-use dapr::dapr::dapr::proto::runtime::v1::{BindingEventRequest, BindingEventResponse, ListInputBindingsResponse, ListTopicSubscriptionsResponse, TopicEventRequest, TopicEventResponse};
+use dapr::dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer};
+use dapr::dapr::dapr::proto::runtime::v1::{
+    BindingEventRequest, BindingEventResponse, ListInputBindingsResponse,
+    ListTopicSubscriptionsResponse, TopicEventRequest, TopicEventResponse,
+};
 
 #[derive(Default)]
 pub struct AppCallbackService {}
@@ -44,8 +45,8 @@ impl AppCallback for AppCallbackService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<ListInputBindingsResponse>, Status> {
-        let list_bindings = ListInputBindingsResponse{
-            bindings:vec![String::from("binding-example")],
+        let list_bindings = ListInputBindingsResponse {
+            bindings: vec![String::from("binding-example")],
         };
 
         Ok(Response::new(list_bindings))
@@ -79,8 +80,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a gRPC server with the callback_service.
     Server::builder()
         .add_service(AppCallbackServer::new(callback_service))
-        .serve(addr).await?;
-
+        .serve(addr)
+        .await?;
 
     Ok(())
 }
