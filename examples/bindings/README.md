@@ -14,12 +14,56 @@ In order to have both examples working with the same binding configuration Servi
 
 To run this example:
 
-1. Start Input bindings listener (expose gRPC server receiver on port 50051):
+1. Run a kafka container
+
+<!-- STEP
+name: Run kafka instance
+background: true
+sleep: 60
+timeout_seconds: 60
+expected_stderr_lines:
+-->
+
 ```bash
-dapr run --components-path ./examples/bindings/components --app-id rust-input-b --app-protocol grpc --app-port 50051 cargo run -- --example input-bindings
+docker run -p 9092:9092 apache/kafka:3.7.1
 ```
 
-2. Start Output binding:
+<!-- END_STEP -->
+
+2. Run the multi-app run template (`dapr.yaml`)
+
+<!-- STEP
+name: Run Multi-app Run
+output_match_mode: substring
+match_order: sequential
+expected_stdout_lines:
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 0 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 1 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 2 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 3 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 4 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 5 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 6 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 7 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 8 => hello from rust!'
+  - '== APP - rust-input-b == Binding Name: binding-example'
+  - '== APP - rust-input-b == Message: 9 => hello from rust!'
+background: true
+sleep: 30
+timeout_seconds: 60
+-->
+
 ```bash
-dapr run --components-path ./examples/bindings/components --app-id rust-output-b --app-protocol grpc cargo run -- --example output-bindings
+dapr run -f .
 ```
+
+<!-- END_STEP -->

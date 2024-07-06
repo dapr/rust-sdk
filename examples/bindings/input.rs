@@ -1,9 +1,10 @@
 use tonic::{transport::Server, Request, Response, Status};
 
 use dapr::{
-    appcallback::*,
     dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
 };
+use dapr::dapr::dapr::proto::common::v1::{InvokeRequest, InvokeResponse};
+use dapr::dapr::dapr::proto::runtime::v1::{BindingEventRequest, BindingEventResponse, ListInputBindingsResponse, ListTopicSubscriptionsResponse, TopicEventRequest, TopicEventResponse};
 
 #[derive(Default)]
 pub struct AppCallbackService {}
@@ -37,14 +38,15 @@ impl AppCallback for AppCallbackService {
     /// Lists all input bindings subscribed by this app.
     /// NOTE: Dapr runtime will call this method to get
     /// the list of bindings the app wants to subscribe to.
-    /// In this example, the app is subscribing to a local storage binding named "binding-example"
+    /// In this example, the app is subscribing to a local pubsub binding named "binding-example"
+
     async fn list_input_bindings(
         &self,
         _request: Request<()>,
     ) -> Result<Response<ListInputBindingsResponse>, Status> {
-        let binding_name = "binding-example".to_string();
-
-        let list_bindings = ListInputBindingsResponse::binding(binding_name);
+        let list_bindings = ListInputBindingsResponse{
+            bindings:vec![String::from("binding-example")],
+        };
 
         Ok(Response::new(list_bindings))
     }
@@ -77,8 +79,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a gRPC server with the callback_service.
     Server::builder()
         .add_service(AppCallbackServer::new(callback_service))
-        .serve(addr)
-        .await?;
+        .serve(addr).await?;
+
 
     Ok(())
 }
