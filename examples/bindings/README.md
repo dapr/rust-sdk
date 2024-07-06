@@ -18,9 +18,10 @@ To run this example:
 
 <!-- STEP
 name: Run kafka instance
-background: true
-sleep: 90
+background: false
+sleep: 60
 timeout_seconds: 120
+expected_return_code:
 expected_stderr_lines:
 -->
 
