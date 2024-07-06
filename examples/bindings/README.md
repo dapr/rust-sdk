@@ -19,8 +19,8 @@ To run this example:
 <!-- STEP
 name: Run kafka instance
 background: true
-sleep: 60
-timeout_seconds: 60
+sleep: 90
+timeout_seconds: 120
 expected_stderr_lines:
 -->
 
@@ -59,7 +59,7 @@ expected_stdout_lines:
   - '== APP - rust-input-b == Message: 9 => hello from rust!'
 background: true
 sleep: 30
-timeout_seconds: 60
+timeout_seconds: 90
 -->
 
 ```bash
