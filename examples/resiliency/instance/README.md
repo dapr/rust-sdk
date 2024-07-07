@@ -58,7 +58,7 @@ timeout_seconds: 10
 -->
 
 ```bash
-dapr run --app-id=rustapp --resources-path .../components --dapr-grpc-port 3500
+dapr run --app-id=rustapp --resources-path ../../components --dapr-grpc-port 3500
 ```
 
 <!-- END_STEP -->
@@ -95,7 +95,7 @@ timeout_seconds: 10
 -->
 
 ```bash
-dapr run --app-id=rustapp --resources-path ../components --dapr-grpc-port 3500
+dapr run --app-id=rustapp --resources-path ../../components --dapr-grpc-port 3500
 ```
 
 <!-- END_STEP -->
