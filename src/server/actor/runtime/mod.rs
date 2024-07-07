@@ -168,7 +168,7 @@ impl ActorTypeRegistration {
     pub fn register_method<T>(
         mut self,
         method_name: &str,
-        handler: impl Handler<T, ActorState> + Send + Sync,
+        handler: impl Handler<T, ActorState> + Sync,
     ) -> Self
     where
         T: 'static,

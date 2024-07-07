@@ -1,0 +1,16 @@
+version: 1
+common:
+  resourcesPath: ./components/
+  daprdLogDestination: console
+apps:
+  - appID: rust-input-b
+    appDirPath: ./
+    appProtocol: grpc
+    appPort: 50051
+    logLevel: debug
+    command: ["cargo", "run", "--example", "input-bindings"]
+  - appID: rust-output-b
+    appDirPath: ./
+    appProtocol: grpc
+    logLevel: debug
+    command: ["cargo", "run", "--example", "output-bindings"]

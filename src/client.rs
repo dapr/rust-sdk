@@ -71,15 +71,23 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         name: S,
         data: Vec<u8>,
+        operation: S,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<InvokeBindingResponse, Error>
     where
         S: Into<String>,
     {
+        let mut mdata = HashMap::<String, String>::new();
+        if let Some(m) = metadata {
+            mdata = m;
+        }
+
         self.0
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
                 data,
-                ..Default::default()
+                operation: operation.into(),
+                metadata: mdata,
             })
             .await
     }
