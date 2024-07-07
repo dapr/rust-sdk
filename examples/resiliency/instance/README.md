@@ -72,8 +72,8 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'OK'
 background: false
-sleep: 5
-timeout_seconds: 5
+sleep: 1
+timeout_seconds: 1
 -->
 
 ```bash
@@ -90,8 +90,8 @@ output_match_mode: substring
 expected_stdout_lines:
   - ''
 background: true
-sleep: 10
-timeout_seconds: 10
+sleep: 30
+timeout_seconds: 30
 -->
 
 ```bash
