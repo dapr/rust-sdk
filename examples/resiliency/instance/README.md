@@ -52,7 +52,7 @@ name: Run Dapr sidecar
 output_match_mode: substring
 expected_stdout_lines:
   - ''
-background: true
+background: false
 sleep: 10
 timeout_seconds: 10
 -->
