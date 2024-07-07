@@ -53,7 +53,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - ''
 background: false
-sleep: 10
+sleep: 5
 timeout_seconds: 10
 -->
 
