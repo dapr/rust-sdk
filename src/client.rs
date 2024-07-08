@@ -72,8 +72,8 @@ impl<T: DaprInterface> Client<T> {
         &mut self,
         name: S,
         data: Vec<u8>,
-        metadata: Option<HashMap<String, String>>,
         operation: S,
+        metadata: Option<HashMap<String, String>>,
     ) -> Result<InvokeBindingResponse, Error>
     where
         S: Into<String>,
@@ -82,8 +82,8 @@ impl<T: DaprInterface> Client<T> {
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
                 data,
-                metadata: metadata.unwrap_or_default(),
                 operation: operation.into(),
+                metadata: metadata.unwrap_or_default(),
             })
             .await
     }

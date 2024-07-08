@@ -1,0 +1,23 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: binding-example
+spec:
+  type: bindings.kafka
+  metadata:
+    - name: direction
+      value: "input, output"
+    # Kafka broker connection setting
+    - name: brokers
+      value: localhost:9092
+    # consumer configuration: topic and consumer group
+    - name: topics
+      value: sample
+    - name: consumerGroup
+      value: group1
+    # publisher configuration: topic
+    - name: publishTopic
+      value: sample
+    - name: authType
+      value: "none"
+
