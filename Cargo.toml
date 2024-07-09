@@ -12,7 +12,7 @@ keywords = ["microservices", "dapr"]
 [dependencies]
 dapr-macros = { version = "0.14.0", path = "macros" }
 futures = "0.3"
-tonic = "0.11.0"
+tonic = "0.12.0"
 prost = "0.12.3"
 bytes = "1"
 prost-types = "0.12.3"
