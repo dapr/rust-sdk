@@ -11,7 +11,7 @@
 [apache-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
 [apache-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
 [actions-badge]: https://github.com/dapr/rust-sdk/workflows/dapr-rust-sdk/badge.svg
-[actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
+[actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk+branch%3Amain
 [fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
 [fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
 [discord-badge]: https://img.shields.io/discord/778680217417809931
