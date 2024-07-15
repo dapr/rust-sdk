@@ -13,12 +13,20 @@ on:
       - release-*
   workflow_dispatch:
     inputs:
-      daprdapr_commit:
+      dapr_commit:
         description: "Dapr/Dapr commit to build custom daprd from"
         required: false
         default: ""
       daprcli_commit:
         description: "Dapr/CLI commit to build custom dapr CLI from"
+        required: false
+        default: ""
+      dapr_version:
+        description: "Dapr/Dapr version to use"
+        required: false
+        default: ""
+      daprcli_version:
+        description: "Dapr/CLI version to use"
         required: false
         default: ""
   repository_dispatch:
@@ -32,14 +40,16 @@ jobs:
       GOARCH: amd64
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
-      DAPR_CLI_REF: 4881ca11d7f0ab70217761d93834df0139625dc7
-      DAPR_REF: a04348b0099df1890a88627333d0b1ecb3534e70
+      DAPR_CLI_REF: 19b9de05611ade540b06d2c061f32f6c37093a17
+      DAPR_CLI_VERSION: ${{ github.event.inputs.daprcli_version }}
+      DAPR_REF: ${{ github.event.inputs.dapr_commit }}
+      DAPR_RUNTIME_VERSION: 1.14.0-rc.2
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
-      DAPR_RUNTIME_VER: ${{ steps.outputs.outputs.DAPR_RUNTIME_VER }}
+      DAPR_CLI_VERSION: ${{ steps.outputs.outputs.DAPR_CLI_VERSION }}
+      DAPR_RUNTIME_VERSION: ${{ steps.outputs.outputs.DAPR_RUNTIME_VERSION }}
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       GITHUB_SHA: ${{ steps.outputs.outputs.GITHUB_SHA }}
@@ -65,15 +75,17 @@ jobs:
           go-version: "stable"
 
       - name: Determine latest Dapr Runtime version
+        if: env.DAPR_RUNTIME_VERSION == ''
         run: |
           RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
-          echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
+          echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Found $RUNTIME_VERSION"
 
       - name: Determine latest Dapr Cli version
+        if: env.DAPR_CLI_VERSION == ''
         run: |
           CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
-          echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
+          echo "DAPR_CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
 
       - name: Checkout Dapr CLI repo to override dapr command.
@@ -101,7 +113,7 @@ jobs:
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
           cp dist/linux_amd64/release/dapr $HOME/artifacts/$GITHUB_SHA/dapr
           CLI_VERSION=edge
-          echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
+          echo "DAPR_CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
 
       - name: Build daprd and placement with referenced commit and override version
         if: env.DAPR_REF != ''
@@ -110,7 +122,7 @@ jobs:
           make
           echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
           RUNTIME_VERSION=edge
-          echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
+          echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> $GITHUB_ENV
 
       - name: Build Docker Image
         if: env.DAPR_REF != ''
@@ -124,7 +136,7 @@ jobs:
         run: |
           mkdir -p cli/dist/linux_amd64/release
           cd cli/dist/linux_amd64/release/
-          curl -L --remote-name https://github.com/dapr/cli/releases/download/v$DAPR_CLI_VER/dapr_linux_amd64.tar.gz
+          curl -L --remote-name https://github.com/dapr/cli/releases/download/v$DAPR_CLI_VERSION/dapr_linux_amd64.tar.gz
           tar xvzf dapr_linux_amd64.tar.gz
           ls -la
 
@@ -176,8 +188,8 @@ jobs:
         id: outputs
         run: |
           echo "DAPR_INSTALL_URL=$DAPR_INSTALL_URL"
-          echo "DAPR_CLI_VER=$DAPR_CLI_VER" >> "$GITHUB_OUTPUT"
-          echo "DAPR_RUNTIME_VER=$DAPR_RUNTIME_VER" >> "$GITHUB_OUTPUT"
+          echo "DAPR_CLI_VERSION=$DAPR_CLI_VERSION" >> "$GITHUB_OUTPUT"
+          echo "DAPR_RUNTIME_VERSION=$DAPR_RUNTIME_VERSION" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REPO=$CHECKOUT_REPO" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
           echo "GITHUB_SHA=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
@@ -188,8 +200,8 @@ jobs:
     env:
       PYTHON_VER: 3.12
       DAPR_INSTALL_URL: ${{ needs.setup.outputs.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: ${{ needs.setup.outputs.DAPR_CLI_VER }}
-      DAPR_RUNTIME_VER: ${{ needs.setup.outputs.DAPR_RUNTIME_VER }}
+      DAPR_CLI_VERSION: ${{ needs.setup.outputs.DAPR_CLI_VERSION }}
+      DAPR_RUNTIME_VERSION: ${{ needs.setup.outputs.DAPR_RUNTIME_VERSION }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
       GITHUB_SHA: ${{ needs.setup.outputs.GITHUB_SHA }}
@@ -208,19 +220,19 @@ jobs:
           ref: ${{ env.CHECKOUT_REF }}
 
       - name: Make Artifacts destination folder
-        if: env.DAPR_CLI_VER == 'edge' || env.DAPR_RUNTIME_VER == 'edge'
+        if: env.DAPR_CLI_VERSION == 'edge' || env.DAPR_RUNTIME_VERSION == 'edge'
         run: |
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
 
       - name: Retrieve dapr-artifacts
-        if: env.DAPR_CLI_VER == 'edge' || env.DAPR_RUNTIME_VER == 'edge'
+        if: env.DAPR_CLI_VERSION == 'edge' || env.DAPR_RUNTIME_VERSION == 'edge'
         uses: actions/download-artifact@v4
         with:
           name: dapr-artifacts
           path: ~/artifacts/${{ env.GITHUB_SHA }}
 
       - name: Display downloaded artifacts
-        if: env.DAPR_CLI_VER == 'edge' || env.DAPR_RUNTIME_VER == 'edge'
+        if: env.DAPR_CLI_VERSION == 'edge' || env.DAPR_RUNTIME_VERSION == 'edge'
         run: |
           ls -la $HOME/artifacts/$GITHUB_SHA/
 
@@ -232,24 +244,24 @@ jobs:
         with:
           version: "25.2"
 
-      - name: Set up Dapr CLI
-        if: env.DAPR_CLI_VER != 'edge'
-        run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
+      - name: Set up Dapr CLI ${{ env.DAPR_CLI_VERSION }}
+        if: env.DAPR_CLI_VERSION != 'edge'
+        run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VERSION }}
 
       - name: Set up Dapr CLI (edge)
-        if: env.DAPR_CLI_VER == 'edge'
+        if: env.DAPR_CLI_VERSION == 'edge'
         run: |
           sudo cp $HOME/artifacts/$GITHUB_SHA/dapr /usr/local/bin/dapr
           sudo chmod +x /usr/local/bin/dapr
 
-      - name: Initialize Dapr runtime ${{ env.DAPR_RUNTIME_VER }}
-        if: env.DAPR_RUNTIME_VER != 'edge'
+      - name: Initialize Dapr runtime ${{ env.DAPR_RUNTIME_VERSION }}
+        if: env.DAPR_RUNTIME_VERSION != 'edge'
         run: |
           dapr uninstall --all
-          dapr init --runtime-version ${{ env.DAPR_RUNTIME_VER }}
+          dapr init --runtime-version ${{ env.DAPR_RUNTIME_VERSION }}
 
-      - name: Initialize Dapr runtime EDGE
-        if: env.DAPR_RUNTIME_VER == 'edge'
+      - name: Initialize Dapr runtime with installer bundle - EDGE
+        if: env.DAPR_RUNTIME_VERSION == 'edge'
         run: |
           : # Unpack Bundle
           mkdir ~/daprbundle
@@ -263,6 +275,8 @@ jobs:
           docker run --name "dapr_redis" --restart always -d -p 6379:6379 redislabs/rejson
           docker run --name "dapr_zipkin" --restart always -d -p 9411:9411 openzipkin/zipkin
 
+      - name: List running containers
+        run: |
           docker ps -a
 
       - name: Set up Python ${{ env.PYTHON_VER }}
@@ -277,6 +291,11 @@ jobs:
 
       - name: Cargo Build Examples
         run: cargo build --examples
+
+      - name: Dapr version
+        run: |
+          dapr version
+          docker ps -a   
 
       - name: Check Example
         run: |
