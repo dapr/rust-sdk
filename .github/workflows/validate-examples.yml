@@ -292,10 +292,11 @@ jobs:
       - name: Cargo Build Examples
         run: cargo build --examples
 
-      - name: Dapr version
+      - name: Dapr version (debug)
         run: |
           dapr version
           docker ps -a
+          docker logs dapr_scheduler
 
       - name: Check Example
         run: |
