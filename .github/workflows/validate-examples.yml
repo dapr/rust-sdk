@@ -40,10 +40,10 @@ jobs:
       GOARCH: amd64
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
-      DAPR_CLI_REF: 19b9de05611ade540b06d2c061f32f6c37093a17
+      DAPR_CLI_REF: ad3442b252fa475f7d55499ae441348dfaf09f27
       DAPR_CLI_VERSION: ${{ github.event.inputs.daprcli_version }}
-      DAPR_REF: ${{ github.event.inputs.dapr_commit }}
-      DAPR_RUNTIME_VERSION: 1.14.0-rc.2
+      DAPR_REF: ed698d07d587cd9fb48d22ca5647eecc2f84d357
+      DAPR_RUNTIME_VERSION: ${{ github.event.inputs.dapr_version }}
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
@@ -164,7 +164,7 @@ jobs:
           : # Add docker image
           mkdir ~/daprbundle/docker
           docker save daprio/dapr:0.0.0-dev | gzip > ~/daprbundle/docker/daprio-dapr-0.0.0-dev.tar.gz
-          
+
           : # Bundle
           cd ~/daprbundle
           tar czvf $HOME/artifacts/$GITHUB_SHA/daprbundle.tar.gz .
@@ -295,7 +295,7 @@ jobs:
       - name: Dapr version
         run: |
           dapr version
-          docker ps -a   
+          docker ps -a
 
       - name: Check Example
         run: |
