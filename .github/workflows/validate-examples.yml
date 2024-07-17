@@ -134,14 +134,15 @@ jobs:
       - name: Download Install Bundle CLI
         if: env.DAPR_REF != '' && env.DAPR_CLI_REF == ''
         run: |
-          mkdir -p cli/dist/linux_amd64/release
-          cd cli/dist/linux_amd64/release/
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          mkdir -p $HOME/artifacts/$GITHUB_SHA/
+          cd ~/artifacts/$GITHUB_SHA/
           curl -L --remote-name https://github.com/dapr/cli/releases/download/v$DAPR_CLI_VERSION/dapr_linux_amd64.tar.gz
           tar xvzf dapr_linux_amd64.tar.gz
           ls -la
 
       - name: Build Custom Install Bundle
-        if: env.DAPR_REF != '' && env.DAPR_CLI_REF != ''
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         run: |
           : # Create daprbundle directory
           mkdir ~/daprbundle
