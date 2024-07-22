@@ -1,0 +1,24 @@
+[package]
+name = "durabletask"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tonic = "0.11.0"
+prost = "0.12.3"
+bytes = "1"
+prost-types = "0.12.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0.81"
+thiserror = "1.0.58"
+uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
+chrono = "0.4.35"
+gethostname = "0.4.3"
+opentelemetry = "0.22.0"
+
+[build-dependencies]
+tonic-build = "0.11.0"
+prost-build = "0.12.3"
