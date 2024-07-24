@@ -25,6 +25,7 @@ axum = "0.7.4"
 tokio = { version = "1.29", features = ["sync"] }
 tokio-util = { version = "0.7.10", features = ["io"] }
 chrono = "0.4.24"
+backon = "0.4.4"
 
 [build-dependencies]
 tonic-build = "0.11.0"
@@ -97,6 +98,14 @@ path = "examples/query_state/query1.rs"
 [[example]]
 name = "query_state_q2"
 path = "examples/query_state/query2.rs"
+
+[[example]]
+name = "resiliency-instance"
+path = "examples/resiliency/instance/main.rs"
+
+[[example]]
+name = "resiliency-simple"
+path = "examples/resiliency/simple/main.rs"
 
 [[example]]
 name = "secrets-bulk"
