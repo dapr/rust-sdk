@@ -50,12 +50,35 @@ impl AppCallbackAlpha for AppCallbackServiceAlpha {
         if let Some(handler) = self.job_handlers.get(&job_name) {
             let handle_response = handler.handler(request_inner).await;
             handle_response
-                .map(|job_event_response| Response::new(job_event_response))
-                .map_err(|status| status)
+                .map(Response::new)
         } else {
             Err(Status::new(Code::Internal, "Job Handler Not Found"))
         }
     }
+}
+
+#[macro_export]
+macro_rules! add_job_handler_alpha {
+    ($app_callback_service:expr, $handler_name:ident, $handler_fn:expr) => {
+        pub struct $handler_name {}
+
+        #[async_trait::async_trait]
+        impl JobHandlerMethod for $handler_name {
+            async fn handler(&self, request: JobEventRequest) -> Result<JobEventResponse, Status> {
+                $handler_fn(request).await
+            }
+        }
+
+        impl $handler_name {
+            pub fn new() -> Self {
+                $handler_name {}
+            }
+        }
+
+        let handler_name = $handler_name.to_string();
+
+        $app_callback_service.add_job_handler(handler_name, Box::new($handler_name::new()));
+    };
 }
 
 #[tonic::async_trait]
