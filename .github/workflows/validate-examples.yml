@@ -41,9 +41,9 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ${{ github.event.inputs_daprcli_commit }}
-      DAPR_CLI_VERSION: 1.14.0-rc.6
+      DAPR_CLI_VERSION: 1.14.0-rc.8
       DAPR_REF: ${{ github.event.inputs.dapr_commit }}
-      DAPR_RUNTIME_VERSION: 1.14.0-rc.4
+      DAPR_RUNTIME_VERSION: 1.14.0-rc.11
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
