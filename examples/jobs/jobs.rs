@@ -33,8 +33,6 @@ struct JsonAny {
 }
 
 async fn ping_pong_handler(_request: JobEventRequest) -> Result<JobEventResponse, Status> {
-    // Implement the logic for handling the backup job request
-    // ...
     println!("received job on ping_pong_handler");
 
     Ok(JobEventResponse::default())
