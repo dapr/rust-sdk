@@ -1,16 +1,16 @@
 use std::time::Duration;
 
 use base64::prelude::*;
+use dapr::add_job_handler_alpha;
+use dapr::client::JobBuilder;
+use dapr::dapr::dapr::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlphaServer;
+use dapr::dapr::dapr::proto::runtime::v1::{JobEventRequest, JobEventResponse};
+use dapr::server::appcallbackalpha::{AppCallbackServiceAlpha, JobHandlerMethod};
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
-use tonic::Status;
 use tonic::transport::Server;
-use dapr::add_job_handler_alpha;
-use dapr::client::JobBuilder;
-use dapr::dapr::dapr::proto::runtime::v1::{JobEventRequest, JobEventResponse};
-use dapr::dapr::dapr::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlphaServer;
-use dapr::server::appcallbackalpha::{AppCallbackServiceAlpha, JobHandlerMethod};
+use tonic::Status;
 
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
 
@@ -32,18 +32,14 @@ struct JsonAny {
     value: String,
 }
 
-async fn ping_pong_handler(
-    _request: JobEventRequest,
-) -> Result<JobEventResponse, Status> {
+async fn ping_pong_handler(_request: JobEventRequest) -> Result<JobEventResponse, Status> {
     // Implement the logic for handling the backup job request
     // ...
     println!("received job on ping_pong_handler");
 
     Ok(JobEventResponse::default())
 }
-async fn backup_job_handler(
-    request: JobEventRequest,
-) -> Result<JobEventResponse, Status> {
+async fn backup_job_handler(request: JobEventRequest) -> Result<JobEventResponse, Status> {
     // The logic for handling the backup job request
 
     if request.data.is_some() {
@@ -76,15 +72,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut alpha_callback_service = AppCallbackServiceAlpha::new();
 
         let backup_job_handler_name = "prod-db-backup";
-        add_job_handler_alpha!(alpha_callback_service, backup_job_handler_name, backup_job_handler);
+        add_job_handler_alpha!(
+            alpha_callback_service,
+            backup_job_handler_name,
+            backup_job_handler
+        );
 
         let ping_pong_handler_name = "ping-pong";
-        add_job_handler_alpha!(alpha_callback_service, ping_pong_handler_name, ping_pong_handler);
+        add_job_handler_alpha!(
+            alpha_callback_service,
+            ping_pong_handler_name,
+            ping_pong_handler
+        );
 
         Server::builder()
             .add_service(AppCallbackAlphaServer::new(alpha_callback_service))
             .serve(server_addr)
-            .await.unwrap();
+            .await
+            .unwrap();
     });
 
     sleep(Duration::from_secs(5)).await;
@@ -117,7 +122,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         value: serde_json::to_vec(&job).unwrap(),
     };
 
-    let job = JobBuilder::new("prod-db-backup").with_schedule("@every 1s").with_data(any).build();
+    let job = JobBuilder::new("prod-db-backup")
+        .with_schedule("@every 1s")
+        .with_data(any)
+        .build();
 
     let _schedule_resp = client.schedule_job_alpha1(job).await?;
 
@@ -127,7 +135,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let get_resp = client.get_job_alpha1("prod-db-backup").await?;
 
-    let get_resp_backup: Backup = serde_json::from_slice(&get_resp.clone().job.unwrap().data.unwrap().value).unwrap();
+    let get_resp_backup: Backup =
+        serde_json::from_slice(&get_resp.clone().job.unwrap().data.unwrap().value).unwrap();
 
     println!("job retrieved: {:?}", get_resp_backup);
 
@@ -139,11 +148,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Second handler
 
-    let ping_pong_job = JobBuilder::new("ping-pong").with_schedule("@every 1s").with_repeats(5).build();
+    let ping_pong_job = JobBuilder::new("ping-pong")
+        .with_schedule("@every 1s")
+        .with_repeats(5)
+        .build();
     let _schedule_resp = client.schedule_job_alpha1(ping_pong_job).await?;
 
     sleep(Duration::from_secs(10)).await;
-
 
     Ok(())
 }

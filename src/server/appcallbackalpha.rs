@@ -49,8 +49,7 @@ impl AppCallbackAlpha for AppCallbackServiceAlpha {
 
         if let Some(handler) = self.job_handlers.get(&job_name) {
             let handle_response = handler.handler(request_inner).await;
-            handle_response
-                .map(Response::new)
+            handle_response.map(Response::new)
         } else {
             Err(Status::new(Code::Internal, "Job Handler Not Found"))
         }
