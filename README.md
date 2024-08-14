@@ -43,7 +43,7 @@ resiliency.
 
 ## Prerequisites
 
-Ensure you have Rust version 1.56 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
+Ensure you have Rust version 1.79 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
 You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
 
