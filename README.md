@@ -11,7 +11,7 @@
 [apache-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
 [apache-url]: https://github.com/dapr/rust-sdk/blob/master/LICENSE
 [actions-badge]: https://github.com/dapr/rust-sdk/workflows/dapr-rust-sdk/badge.svg
-[actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk
+[actions-url]: https://github.com/dapr/rust-sdk/actions?query=workflow%3Adapr-rust-sdk+branch%3Amain
 [fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
 [fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
 [discord-badge]: https://img.shields.io/discord/778680217417809931
@@ -43,7 +43,7 @@ resiliency.
 
 ## Prerequisites
 
-Ensure you have Rust version 1.56 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
+Ensure you have Rust version 1.79 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
 You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
 
@@ -53,7 +53,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.13.0"
+dapr = "0.15.0"
 ```
 
 Here's a basic example to create a client:
@@ -95,7 +95,7 @@ To fetch the latest .proto files from Dapr execute the script `update-protos.sh`
 By default, the script fetches the latest proto updates from the master branch of the Dapr repository. If you need to choose a specific release or version, use the -v flag:
 
 ```bash
-./update-protos.sh -v v1.12.0
+./update-protos.sh -v v1.14.0
 ```
 
 ### Contact Us

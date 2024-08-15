@@ -13,6 +13,8 @@ Cargo.lock
 # Ignore logs from dapr runs
 .dapr/
 
-
 # OSX cruft
 .DS_Store
+
+# IDE configs
+/.idea/
