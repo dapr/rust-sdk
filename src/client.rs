@@ -1,10 +1,11 @@
-use serde_json::Value;
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use async_trait::async_trait;
 use futures::StreamExt;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tokio::io::AsyncRead;
 use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
@@ -518,6 +519,42 @@ impl<T: DaprInterface> Client<T> {
             .collect();
         self.0.decrypt(requested_items).await
     }
+
+    /// Schedules a job with the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * job - The job to schedule
+    pub async fn schedule_job_alpha1(&mut self, job: Job) -> Result<ScheduleJobResponse, Error> {
+        let request = ScheduleJobRequest {
+            job: Some(job.clone()),
+        };
+        self.0.schedule_job_alpha1(request).await
+    }
+
+    /// Retrieves a scheduled job from the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * name - The name of the job to retrieve
+    pub async fn get_job_alpha1(&mut self, name: &str) -> Result<GetJobResponse, Error> {
+        let request = GetJobRequest {
+            name: name.to_string(),
+        };
+        self.0.get_job_alpha1(request).await
+    }
+
+    /// Deletes a scheduled job from the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * name - The name of the job to delete
+    pub async fn delete_job_alpha1(&mut self, name: &str) -> Result<DeleteJobResponse, Error> {
+        let request = DeleteJobRequest {
+            name: name.to_string(),
+        };
+        self.0.delete_job_alpha1(request).await
+    }
 }
 
 #[async_trait]
@@ -568,6 +605,18 @@ pub trait DaprInterface: Sized {
         -> Result<Vec<StreamPayload>, Status>;
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
+
+    async fn schedule_job_alpha1(
+        &mut self,
+        request: ScheduleJobRequest,
+    ) -> Result<ScheduleJobResponse, Error>;
+
+    async fn get_job_alpha1(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error>;
+
+    async fn delete_job_alpha1(
+        &mut self,
+        request: DeleteJobRequest,
+    ) -> Result<DeleteJobResponse, Error>;
 }
 
 #[async_trait]
@@ -738,6 +787,30 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         }
         Ok(data)
     }
+
+    async fn schedule_job_alpha1(
+        &mut self,
+        request: ScheduleJobRequest,
+    ) -> Result<ScheduleJobResponse, Error> {
+        Ok(self.schedule_job_alpha1(request).await?.into_inner())
+    }
+
+    async fn get_job_alpha1(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error> {
+        Ok(self
+            .get_job_alpha1(Request::new(request))
+            .await?
+            .into_inner())
+    }
+
+    async fn delete_job_alpha1(
+        &mut self,
+        request: DeleteJobRequest,
+    ) -> Result<DeleteJobResponse, Error> {
+        Ok(self
+            .delete_job_alpha1(Request::new(request))
+            .await?
+            .into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -835,6 +908,27 @@ pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptR
 /// Decryption request options
 pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
 
+/// The basic job structure
+pub type Job = crate::dapr::dapr::proto::runtime::v1::Job;
+
+/// A request to schedule a job
+pub type ScheduleJobRequest = crate::dapr::dapr::proto::runtime::v1::ScheduleJobRequest;
+
+/// A response from a schedule job request
+pub type ScheduleJobResponse = crate::dapr::dapr::proto::runtime::v1::ScheduleJobResponse;
+
+/// A request to get a job
+pub type GetJobRequest = crate::dapr::dapr::proto::runtime::v1::GetJobRequest;
+
+/// A response from a get job request
+pub type GetJobResponse = crate::dapr::dapr::proto::runtime::v1::GetJobResponse;
+
+/// A request to delete a job
+pub type DeleteJobRequest = crate::dapr::dapr::proto::runtime::v1::DeleteJobRequest;
+
+/// A response from a delete job request
+pub type DeleteJobResponse = crate::dapr::dapr::proto::runtime::v1::DeleteJobResponse;
+
 type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
@@ -854,5 +948,65 @@ pub struct ReaderStream<T>(tokio_util::io::ReaderStream<T>);
 impl<T: AsyncRead> ReaderStream<T> {
     pub fn new(data: T) -> Self {
         ReaderStream(tokio_util::io::ReaderStream::new(data))
+    }
+}
+
+#[derive(Debug)]
+pub struct JobBuilder {
+    schedule: Option<String>,
+    data: Option<Any>,
+    name: String,
+    ttl: Option<String>,
+    repeats: Option<u32>,
+    due_time: Option<String>,
+}
+
+impl JobBuilder {
+    /// Create a new Job to be scheduled
+    pub fn new(name: &str) -> Self {
+        JobBuilder {
+            schedule: None,
+            data: None,
+            name: name.to_string(),
+            ttl: None,
+            repeats: None,
+            due_time: None,
+        }
+    }
+
+    pub fn with_schedule(mut self, schedule: &str) -> Self {
+        self.schedule = Some(schedule.into());
+        self
+    }
+
+    pub fn with_data(mut self, data: Any) -> Self {
+        self.data = Some(data);
+        self
+    }
+
+    pub fn with_ttl(mut self, ttl: &str) -> Self {
+        self.ttl = Some(ttl.into());
+        self
+    }
+
+    pub fn with_repeats(mut self, repeats: u32) -> Self {
+        self.repeats = Some(repeats);
+        self
+    }
+
+    pub fn with_due_time(mut self, due_time: &str) -> Self {
+        self.due_time = Some(due_time.into());
+        self
+    }
+
+    pub fn build(self) -> Job {
+        Job {
+            schedule: self.schedule,
+            data: self.data,
+            name: self.name,
+            ttl: self.ttl,
+            repeats: self.repeats,
+            due_time: self.due_time,
+        }
     }
 }

@@ -24,7 +24,7 @@ timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3500 cargo run -- --example client
+dapr run --app-id=rustapp --dapr-grpc-port 3500 --resources-path ./resources cargo run -- --example client
 ```
 
 <!-- END_STEP -->

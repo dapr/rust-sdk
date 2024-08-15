@@ -16,7 +16,7 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
   PROTOC_VERSION: 3.x
-  RUST_TOOLCHAIN: 1.76.0
+  RUST_TOOLCHAIN: 1.79.0
 
 jobs:
   lint:
