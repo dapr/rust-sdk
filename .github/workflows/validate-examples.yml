@@ -34,6 +34,8 @@ on:
   merge_group:
 jobs:
   setup:
+    permissions:
+      packages: read
     runs-on: ubuntu-latest
     env:
       GOOS: linux
@@ -195,6 +197,8 @@ jobs:
           echo "GITHUB_SHA=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
 
   validate-example:
+    permissions:
+      packages: read
     needs: setup
     runs-on: ubuntu-latest
     env:
@@ -243,6 +247,7 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: "25.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Dapr CLI ${{ env.DAPR_CLI_VERSION }}
         if: env.DAPR_CLI_VERSION != 'edge'
