@@ -8,9 +8,9 @@ apps:
     appProtocol: grpc
     appPort: 50051
     logLevel: debug
-    command: ["cargo", "run", "--example", "input-bindings"]
+    command: ["cargo", "run", "--example", "bindings-input"]
   - appID: rust-output-b
     appDirPath: ./
     appProtocol: grpc
     logLevel: debug
-    command: ["cargo", "run", "--example", "output-bindings"]
+    command: ["cargo", "run", "--example", "bindings-output"]

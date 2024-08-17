@@ -8,9 +8,9 @@ apps:
     appProtocol: http
     appPort: 50051
     logLevel: debug
-    command: ["cargo", "run", "--example", "actor-server"]
+    command: ["cargo", "run", "--example", "actors-server"]
   - appID: actor-client
     appDirPath: ./
     daprGRPCPort: 3502
     logLevel: debug
-    command: ["cargo", "run", "--example", "actor-client"]
+    command: ["cargo", "run", "--example", "actors-client"]

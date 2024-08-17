@@ -83,7 +83,7 @@ sleep: 15
 timeout_seconds: 30
 -->
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query_state_q1
+dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query-state-1
 ```
 <!-- END_STEP -->
 
@@ -117,7 +117,7 @@ sleep: 15
 timeout_seconds: 30
 -->
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query_state_q2
+dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ cargo run -- --example query-state-2
 ```
 <!-- END_STEP -->
 

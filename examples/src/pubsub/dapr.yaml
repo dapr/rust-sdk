@@ -8,9 +8,9 @@ apps:
     appProtocol: grpc
     appPort: 50051
     logLevel: debug
-    command: ["cargo", "run", "--example", "subscriber"]
+    command: ["cargo", "run", "--example", "pubsub-subscriber"]
   - appID: rust-publisher
     appDirPath: ./
     appProtocol: grpc
     logLevel: debug
-    command: ["cargo", "run", "--example", "publisher"]
+    command: ["cargo", "run", "--example", "pubsub-publisher"]
