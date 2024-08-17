@@ -1,6 +1,6 @@
 use std::env;
 
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 fn main() {
     let root_dir = {
@@ -33,12 +33,8 @@ fn main() {
         true,
         true,
         "examples/src/invoke/protos/",
-        &[
-            "examples/proto/helloworld/helloworld.proto"
-        ],
-        &[
-            "examples/proto/helloworld",
-        ],
+        &["examples/proto/helloworld/helloworld.proto"],
+        &["examples/proto/helloworld"],
     );
 }
 

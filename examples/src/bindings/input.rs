@@ -1,7 +1,8 @@
 use tonic::{transport::Server, Request, Response, Status};
 
 use dapr::dapr::proto::common::v1::{InvokeRequest, InvokeResponse};
-use dapr::dapr::proto::runtime::v1::{app_callback_server::{AppCallback, AppCallbackServer},
+use dapr::dapr::proto::runtime::v1::{
+    app_callback_server::{AppCallback, AppCallbackServer},
     BindingEventRequest, BindingEventResponse, ListInputBindingsResponse,
     ListTopicSubscriptionsResponse, TopicEventRequest, TopicEventResponse,
 };

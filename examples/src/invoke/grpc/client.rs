@@ -1,5 +1,5 @@
-use std::{thread, time::Duration};
 use crate::hello_world::HelloReply;
+use std::{thread, time::Duration};
 
 use prost::Message;
 
