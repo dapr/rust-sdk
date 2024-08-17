@@ -1,10 +1,10 @@
 use std::{thread, time::Duration};
+use crate::hello_world::HelloReply;
 
-use hello_world::{HelloReply, HelloRequest};
 use prost::Message;
 
 pub mod hello_world {
-    tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
+    include!("../protos/helloworld.rs");
 }
 
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut client = DaprClient::connect(address).await?;
 
-    let request = HelloRequest {
+    let request = hello_world::HelloRequest {
         name: "Test".to_string(),
     };
     let data = request.encode_to_vec();

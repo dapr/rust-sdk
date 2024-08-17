@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use base64::prelude::*;
-use dapr::add_job_handler_alpha;
+use dapr::{add_job_handler_alpha, serde_json};
 use dapr::client::JobBuilder;
-use dapr::dapr::dapr::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlphaServer;
-use dapr::dapr::dapr::proto::runtime::v1::{JobEventRequest, JobEventResponse};
+use dapr::dapr::proto::runtime::v1::{app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse};
 use dapr::server::appcallbackalpha::{AppCallbackServiceAlpha, JobHandlerMethod};
 use prost_types::Any;
 use serde::{Deserialize, Serialize};

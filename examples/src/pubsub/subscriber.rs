@@ -1,10 +1,9 @@
 use dapr_macros::topic;
 use tonic::transport::Server;
 
-use dapr::appcallback::AppCallbackService;
 use dapr::serde::{Deserialize, Serialize};
 use dapr::{
-    appcallback::*, dapr::dapr::proto::runtime::v1::app_callback_server::AppCallbackServer,
+    appcallback::*, dapr::proto::runtime::v1::app_callback_server::AppCallbackServer,
 };
 
 #[derive(Serialize, Deserialize, Debug)]

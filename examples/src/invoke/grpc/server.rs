@@ -1,14 +1,15 @@
 use dapr::{
     appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
+    dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
 };
-use prost::Message;
 use tonic::{transport::Server, Request, Response, Status};
+
+use prost::Message;
 
 use hello_world::{HelloReply, HelloRequest};
 
 pub mod hello_world {
-    tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
+    include!("../protos/helloworld.rs");
 }
 
 pub struct AppCallbackService {}

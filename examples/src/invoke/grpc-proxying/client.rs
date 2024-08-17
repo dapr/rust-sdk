@@ -5,7 +5,7 @@ use hello_world::{greeter_client::GreeterClient, HelloRequest};
 use tonic::metadata::MetadataValue;
 
 pub mod hello_world {
-    tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
+    include!("../protos/helloworld.rs");
 }
 
 #[tokio::main]

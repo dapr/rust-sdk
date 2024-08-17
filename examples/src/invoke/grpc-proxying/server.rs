@@ -3,7 +3,7 @@ use crate::hello_world::{HelloReply, HelloRequest};
 use tonic::{transport::Server, Request, Response, Status};
 
 pub mod hello_world {
-    tonic::include_proto!("helloworld"); // The string specified here must match the proto package name
+    include!("../protos/helloworld.rs");
 }
 
 #[derive(Debug, Default)]

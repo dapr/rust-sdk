@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
 
 use async_trait::async_trait;
 use futures::StreamExt;
@@ -11,7 +10,7 @@ use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
 use tonic::{Status, Streaming};
 
-use crate::dapr::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
 
 #[derive(Clone)]
@@ -876,39 +875,39 @@ pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationRes
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 /// Encryption gRPC request
-pub type EncryptRequest = crate::dapr::dapr::proto::runtime::v1::EncryptRequest;
+pub type EncryptRequest = crate::dapr::proto::runtime::v1::EncryptRequest;
 
 /// Decrypt gRPC request
-pub type DecryptRequest = crate::dapr::dapr::proto::runtime::v1::DecryptRequest;
+pub type DecryptRequest = crate::dapr::proto::runtime::v1::DecryptRequest;
 
 /// Encryption request options
-pub type EncryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::EncryptRequestOptions;
+pub type EncryptRequestOptions = crate::dapr::proto::runtime::v1::EncryptRequestOptions;
 
 /// Decryption request options
-pub type DecryptRequestOptions = crate::dapr::dapr::proto::runtime::v1::DecryptRequestOptions;
+pub type DecryptRequestOptions = crate::dapr::proto::runtime::v1::DecryptRequestOptions;
 
 /// The basic job structure
-pub type Job = crate::dapr::dapr::proto::runtime::v1::Job;
+pub type Job = crate::dapr::proto::runtime::v1::Job;
 
 /// A request to schedule a job
-pub type ScheduleJobRequest = crate::dapr::dapr::proto::runtime::v1::ScheduleJobRequest;
+pub type ScheduleJobRequest = crate::dapr::proto::runtime::v1::ScheduleJobRequest;
 
 /// A response from a schedule job request
-pub type ScheduleJobResponse = crate::dapr::dapr::proto::runtime::v1::ScheduleJobResponse;
+pub type ScheduleJobResponse = crate::dapr::proto::runtime::v1::ScheduleJobResponse;
 
 /// A request to get a job
-pub type GetJobRequest = crate::dapr::dapr::proto::runtime::v1::GetJobRequest;
+pub type GetJobRequest = crate::dapr::proto::runtime::v1::GetJobRequest;
 
 /// A response from a get job request
-pub type GetJobResponse = crate::dapr::dapr::proto::runtime::v1::GetJobResponse;
+pub type GetJobResponse = crate::dapr::proto::runtime::v1::GetJobResponse;
 
 /// A request to delete a job
-pub type DeleteJobRequest = crate::dapr::dapr::proto::runtime::v1::DeleteJobRequest;
+pub type DeleteJobRequest = crate::dapr::proto::runtime::v1::DeleteJobRequest;
 
 /// A response from a delete job request
-pub type DeleteJobResponse = crate::dapr::dapr::proto::runtime::v1::DeleteJobResponse;
+pub type DeleteJobResponse = crate::dapr::proto::runtime::v1::DeleteJobResponse;
 
-type StreamPayload = crate::dapr::dapr::proto::common::v1::StreamPayload;
+type StreamPayload = crate::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
     K: Into<String>,
@@ -930,7 +929,6 @@ impl<T: AsyncRead> ReaderStream<T> {
     }
 }
 
-#[derive(Debug)]
 pub struct JobBuilder {
     schedule: Option<String>,
     data: Option<Any>,

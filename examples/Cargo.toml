@@ -1,0 +1,90 @@
+[package]
+name = "examples"
+authors = ["Mike Nguyen <hey@mike.ee>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+dapr = { path = "../dapr" }
+dapr-macros = { path = "../dapr-macros" }
+serde = { version = "1.0.208", features = ["derive"] }
+tokio = { version = "1.39.2", features = ["full"] }
+tokio-stream = "0.1.15"
+async-trait = "0.1.81"
+env_logger = "0.11.5"
+log = "0.4.22"
+tonic = "0.11.0"
+prost = "0.12.3"
+prost-types = "0.12.3"
+base64 = "0.21.7"
+serde_json = "1.0.125"
+
+[[example]]
+name = "actors-client"
+path = "src/actors/client.rs"
+
+[[example]]
+name = "actors-server"
+path = "src/actors/server.rs"
+
+[[example]]
+name = "bindings-input"
+path = "src/bindings/input.rs"
+
+[[example]]
+name = "bindings-output"
+path = "src/bindings/output.rs"
+
+[[example]]
+name = "client"
+path = "src/client/client.rs"
+
+[[example]]
+name = "configuration"
+path = "src/configuration/main.rs"
+
+[[example]]
+name = "crypto"
+path = "src/crypto/main.rs"
+
+[[example]]
+name = "invoke-grpc-client"
+path = "src/invoke/grpc/client.rs"
+
+[[example]]
+name = "invoke-grpc-server"
+path = "src/invoke/grpc/server.rs"
+
+[[example]]
+name = "invoke-grpc-proxying-client"
+path = "src/invoke/grpc-proxying/client.rs"
+
+[[example]]
+name = "invoke-grpc-proxying-server"
+path = "src/invoke/grpc-proxying/server.rs"
+
+[[example]]
+name = "jobs"
+path = "src/jobs/jobs.rs"
+
+[[example]]
+name = "pubsub-publisher"
+path = "src/pubsub/publisher.rs"
+
+[[example]]
+name = "pubsub-subscriber"
+path = "src/pubsub/subscriber.rs"
+
+[[example]]
+name = "query-state-1"
+path = "src/query_state/query1.rs"
+
+[[example]]
+name = "query-state-2"
+path = "src/query_state/query2.rs"
+
+[[example]]
+name = "secrets-bulk"
+path = "src/secrets-bulk/app.rs"
