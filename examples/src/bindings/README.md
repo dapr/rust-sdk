@@ -12,9 +12,22 @@ In order to have both examples working with the same binding configuration Servi
 
 ## Running
 
-To run this example:
+1. To run the example we need to first build the examples using the following command:
 
-1. Run a kafka container
+<!-- STEP
+name: Build
+background: false
+sleep: 30
+timeout: 60
+-->
+
+```bash
+cargo build --examples
+```
+
+<!-- END_STEP -->
+
+2Run a kafka container
 
 <!-- STEP
 name: Run kafka instance
@@ -31,7 +44,7 @@ docker run -p 9092:9092 apache/kafka:3.7.1
 
 <!-- END_STEP -->
 
-2. Run the multi-app run template (`dapr.yaml`)
+3. Run the multi-app run template (`dapr.yaml`)
 
 <!-- STEP
 name: Run Multi-app Run

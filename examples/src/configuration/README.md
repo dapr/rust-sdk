@@ -5,9 +5,18 @@ docker ps
 
 1. To run the example we need to first build the examples using the following command:
 
+<!-- STEP
+name: Build
+background: false
+sleep: 30
+timeout: 60
+-->
+
 ```bash
 cargo build --examples
 ```
+
+<!-- END_STEP -->
 
 2. Insert a key with the value `hello` to redis using the following command:
 
