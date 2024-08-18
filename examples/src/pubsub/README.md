@@ -117,9 +117,9 @@ expected_stdout_lines:
   - '== APP - rust-subscriber ==     refund_amount: 1200,'
   - '== APP - rust-subscriber == }'
   - '== APP - rust-publisher == messages published'
-background: true
+background: false
 sleep: 30
-timeout_seconds: 90
+timeout_seconds: 60
 -->
 
 

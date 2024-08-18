@@ -50,9 +50,18 @@ curl -X POST -H "Content-Type: application/json" http://localhost:3500/v1.0/stat
 
 1. To run the example we need to first build the examples using the following command:
 
+<!-- STEP
+name: Build
+background: false
+sleep: 30
+timeout: 60
+-->
+
 ```bash
 cargo build --examples
 ```
+
+<!-- END_STEP -->
 
 2. Executing the first query
 Query:
