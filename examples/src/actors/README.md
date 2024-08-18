@@ -88,7 +88,22 @@ Use the `DaprJson` extractor to deserialize the request from Json coming from a 
 > docker ps
 > ```
 
-To run this example (using the multi-app run):
+1. To run the example we need to first build the examples using the following command:
+
+<!-- STEP
+name: Build
+background: false
+sleep: 30
+timeout: 60
+-->
+
+```bash
+cargo build --examples
+```
+
+<!-- END_STEP -->
+
+2. Run this example (using the multi-app run):
 
 
 <!-- STEP

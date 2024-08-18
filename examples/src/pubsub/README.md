@@ -14,9 +14,22 @@ This is a simple example that demonstrates Dapr's pub/sub capabilities. To imple
 > docker ps
 > ```
 
-To run this example:
+1. To run the example we need to first build the examples using the following command:
 
-1. Run the multi-app run template:
+<!-- STEP
+name: Build
+background: false
+sleep: 30
+timeout: 60
+-->
+
+```bash
+cargo build --examples
+```
+
+<!-- END_STEP -->
+
+2. Run the multi-app run template:
 
 <!-- STEP
 name: Run Subscriber
@@ -116,7 +129,7 @@ dapr run -f .
 
 <!-- END_STEP -->
 
-2. Stop with `ctrl + c`
+3. Stop with `ctrl + c`
 
 ### Running without multi-app
 
