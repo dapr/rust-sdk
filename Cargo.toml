@@ -1,6 +1,6 @@
 [package]
 name = "dapr"
-version = "0.15.0"
+version = "0.15.1-rc.1"
 authors = ["dapr.io"]
 edition = "2021"
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ readme = "README.md"
 keywords = ["microservices", "dapr"]
 
 [dependencies]
-dapr-macros = { version = "0.15.0", path = "macros" }
+dapr-macros = { version = "0.15.1-rc.1", path = "macros" }
 futures = "0.3"
 tonic = "0.11.0"
 prost = "0.12.3"
