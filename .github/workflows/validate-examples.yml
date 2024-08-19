@@ -71,11 +71,6 @@ jobs:
           repository: ${{ env.CHECKOUT_REPO }}
           ref: ${{ env.CHECKOUT_REF }}
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "stable"
-
       - name: Determine latest Dapr Runtime version
         if: env.DAPR_RUNTIME_VERSION == ''
         run: |
@@ -105,6 +100,33 @@ jobs:
           repository: dapr/dapr
           ref: ${{ env.DAPR_REF }}
           path: dapr_runtime
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
+        with:
+          cache: false
+          go-version: "stable"
+
+      - name: Install Dapr CLI
+        if: env.DAPR_CLI_REF != ''
+        run: |
+          cd cli
+          sh ${{ env.DAPR_INSTALL_URL }} -v ${{ env.DAPR_CLI_VERSION }} -n
+
+      - name: Install Dapr Runtime
+        if: env.DAPR_REF != ''
+        run: |
+          cd dapr_runtime
+          make install
+
+      - name: Build dapr cli with latest stable version
+        if: env.DAPR_CLI_REF == ''
+        run: |
+          cd cli
+          make
+        with:
+          go-version: "stable"
 
       - name: Build dapr cli with referenced commit and override version
         if: env.DAPR_CLI_REF != ''
