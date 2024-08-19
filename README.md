@@ -68,6 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
+}
 ```
 
 ## Explore more examples
