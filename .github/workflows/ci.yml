@@ -15,8 +15,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
-  PROTOC_VERSION: 3.x
-  RUST_TOOLCHAIN: 1.79.0
+  PROTOC_VERSION: 24.4
+  RUSTUP_TOOLCHAIN: stable
 
 jobs:
   lint:
@@ -24,17 +24,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: ${{ env.RUST_TOOLCHAIN }}
-        override: true
-        components: rustfmt, clippy
+        toolchain: stable
+        components: clippy, rustfmt
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
+      uses: arduino/setup-protoc@v3
       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ env.PROTOC_VERSION }}
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
     - name: cargo clippy
@@ -46,21 +46,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: ${{ env.RUST_TOOLCHAIN }}
-        override: true
-        components: rustfmt, clippy
+        toolchain: stable
+        components: clippy, rustfmt
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
+      uses: arduino/setup-protoc@v3
       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ env.PROTOC_VERSION }}
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build
       run: cargo build
     - name: Build examples
-      run: cargo build --examples
+      run: |
+        cd examples
+        cargo build --examples
+    - name: Build proto-gen
+      run: |
+        cd proto-gen
+        cargo build
     - name: Run Tests
       run: cargo test --all-targets
 
@@ -71,17 +77,17 @@ jobs:
     if: startswith(github.ref, 'refs/tags/v')
 
     steps:
-    - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: ${{ env.RUST_TOOLCHAIN }}
-        override: true
-        components: rustfmt, clippy
+        toolchain: stable
+        components: clippy, rustfmt
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
+      uses: arduino/setup-protoc@v3
       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ env.PROTOC_VERSION }}
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: cargo publish dapr-macros
       run: cargo publish --manifest-path dapr-macros/Cargo.toml --token ${{ env.CARGO_TOKEN }}
     - name: cargo publish dapr
