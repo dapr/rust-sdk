@@ -14,8 +14,9 @@ pub struct HelloReply {
 /// Generated client implementations.
 pub mod greeter_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
+
     #[derive(Debug, Clone)]
     pub struct GreeterClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -59,9 +60,8 @@ pub mod greeter_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + Send + Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + Send + Sync,
         {
             GreeterClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -100,19 +100,14 @@ pub mod greeter_client {
             &mut self,
             request: impl tonic::IntoRequest<super::HelloRequest>,
         ) -> std::result::Result<tonic::Response<super::HelloReply>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/helloworld.Greeter/SayHello",
-            );
+            let path = http::uri::PathAndQuery::from_static("/helloworld.Greeter/SayHello");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("helloworld.Greeter", "SayHello"));
@@ -124,6 +119,7 @@ pub mod greeter_client {
 pub mod greeter_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
+
     /// Generated trait containing gRPC methods that should be implemented for use with GreeterServer.
     #[async_trait]
     pub trait Greeter: Send + Sync + 'static {
@@ -134,19 +130,17 @@ pub mod greeter_server {
     }
     #[derive(Debug)]
     pub struct GreeterServer<T: Greeter> {
-        inner: _Inner<T>,
+        inner: Arc<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
         max_decoding_message_size: Option<usize>,
         max_encoding_message_size: Option<usize>,
     }
-    struct _Inner<T>(Arc<T>);
     impl<T: Greeter> GreeterServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
         pub fn from_arc(inner: Arc<T>) -> Self {
-            let inner = _Inner(inner);
             Self {
                 inner,
                 accept_compression_encodings: Default::default(),
@@ -155,10 +149,7 @@ pub mod greeter_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -209,26 +200,20 @@ pub mod greeter_server {
             Poll::Ready(Ok(()))
         }
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
-            let inner = self.inner.clone();
             match req.uri().path() {
                 "/helloworld.Greeter/SayHello" => {
                     #[allow(non_camel_case_types)]
                     struct SayHelloSvc<T: Greeter>(pub Arc<T>);
-                    impl<T: Greeter> tonic::server::UnaryService<super::HelloRequest>
-                    for SayHelloSvc<T> {
+                    impl<T: Greeter> tonic::server::UnaryService<super::HelloRequest> for SayHelloSvc<T> {
                         type Response = super::HelloReply;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::HelloRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Greeter>::say_hello(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Greeter>::say_hello(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -238,7 +223,6 @@ pub mod greeter_server {
                     let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
-                        let inner = inner.0;
                         let method = SayHelloSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
@@ -255,18 +239,17 @@ pub mod greeter_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        Ok(
-                            http::Response::builder()
-                                .status(200)
-                                .header("grpc-status", "12")
-                                .header("content-type", "application/grpc")
-                                .body(empty_body())
-                                .unwrap(),
+                _ => Box::pin(async move {
+                    Ok(http::Response::builder()
+                        .status(200)
+                        .header("grpc-status", tonic::Code::Unimplemented as i32)
+                        .header(
+                            http::header::CONTENT_TYPE,
+                            tonic::metadata::GRPC_CONTENT_TYPE,
                         )
-                    })
-                }
+                        .body(empty_body())
+                        .unwrap())
+                }),
             }
         }
     }
@@ -280,16 +263,6 @@ pub mod greeter_server {
                 max_decoding_message_size: self.max_decoding_message_size,
                 max_encoding_message_size: self.max_encoding_message_size,
             }
-        }
-    }
-    impl<T: Greeter> Clone for _Inner<T> {
-        fn clone(&self) -> Self {
-            Self(Arc::clone(&self.0))
-        }
-    }
-    impl<T: std::fmt::Debug> std::fmt::Debug for _Inner<T> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "{:?}", self.0)
         }
     }
     impl<T: Greeter> tonic::server::NamedService for GreeterServer<T> {
