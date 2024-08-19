@@ -2,9 +2,9 @@
 
 These examples demonstrates how to use Dapr rust sdk.
 
-* [client](./client)
+* [client](src/client)
   * Simple dapr client example that saves, gets, and deletes state from the state stores
-* [pubsub](./pubsub)
+* [pubsub](src/pubsub)
   * Publishes and subscribes to events
 
 ## Adding new examples

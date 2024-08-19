@@ -2,5 +2,5 @@
 set -e
 echo "Home: $HOME"
 
-cd $1
+cd src/$1
 mm.py README.md

@@ -294,9 +294,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install mechanical-markdown
 
-      - name: Cargo Build Examples
-        run: cargo build --examples
-
       - name: Dapr version
         run: |
           dapr version
