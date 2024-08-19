@@ -13,17 +13,20 @@ pub mod appcallback;
 /// Module containing the 'Client' implementation.
 pub mod client;
 /// Module importing the Dapr runtime implementation.
-pub mod dapr {
-    pub mod proto {
-        pub mod common {
-            pub mod v1 {
-                include!("dapr/dapr.proto.common.v1.rs");
-            }
+pub mod proto {
+    /// Module containing the common implementations.
+
+    pub mod common {
+        /// Module containing the v1 implementations.
+        pub mod v1 {
+            include!("dapr/dapr.proto.common.v1.rs");
         }
-        pub mod runtime {
-            pub mod v1 {
-                include!("dapr/dapr.proto.runtime.v1.rs");
-            }
+    }
+    /// Module containing the runtime implementations.
+    pub mod runtime {
+        /// Module containing the v1 implementations.
+        pub mod v1 {
+            include!("dapr/dapr.proto.runtime.v1.rs");
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::client::TonicClient;
-use crate::dapr::proto::runtime::v1 as dapr_v1;
+use crate::proto::runtime::v1 as dapr_v1;
 use crate::error::Error as DaprError;
 use prost_types::Any;
 use std::collections::HashMap;
