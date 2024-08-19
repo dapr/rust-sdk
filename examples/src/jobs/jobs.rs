@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use base64::prelude::*;
 use dapr::client::JobBuilder;
-use dapr::dapr::proto::runtime::v1::{
+use dapr::proto::runtime::v1::{
     app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse,
 };
 use dapr::server::appcallbackalpha::{AppCallbackServiceAlpha, JobHandlerMethod};

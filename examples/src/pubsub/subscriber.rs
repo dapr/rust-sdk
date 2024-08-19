@@ -2,7 +2,7 @@ use dapr_macros::topic;
 use tonic::transport::Server;
 
 use dapr::serde::{Deserialize, Serialize};
-use dapr::{appcallback::*, dapr::proto::runtime::v1::app_callback_server::AppCallbackServer};
+use dapr::{appcallback::*, proto::runtime::v1::app_callback_server::AppCallbackServer};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Order {
