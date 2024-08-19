@@ -1,6 +1,6 @@
 [package]
 name = "dapr-macros"
-version = "0.15.1-rc.1"
+version = "0.15.1"
 edition = "2021"
 description = "Dapr Rust SDK"
 license = "Apache-2.0"
