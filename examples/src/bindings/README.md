@@ -73,7 +73,7 @@ expected_stdout_lines:
   - '== APP - rust-input-b == Message: 9 => hello from rust!'
 background: true
 sleep: 30
-timeout_seconds: 90
+timeout_seconds: 30
 -->
 
 ```bash

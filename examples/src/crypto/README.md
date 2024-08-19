@@ -51,7 +51,7 @@ expected_stdout_lines:
   - '== APP - crypto-example == Successfully Decrypted Image'
 background: true
 sleep: 30
-timeout_seconds: 90
+timeout_seconds: 30
 -->
 
 ```bash

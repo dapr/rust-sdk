@@ -54,7 +54,7 @@ expected_stdout_lines:
   - '== APP - invoke-grpc-client == }'
 background: true
 sleep: 30
-timeout_seconds: 90
+timeout_seconds: 30
 -->
 == APP - invoke-grpc-server == Method: say_hello
 		== APP - invoke-grpc-server == Name: "Test"

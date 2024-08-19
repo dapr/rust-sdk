@@ -1,5 +1,7 @@
 use std::{collections::HashMap, thread, time::Duration};
 
+use tokio::time;
+
 use dapr::serde::{Deserialize, Serialize};
 use dapr::serde_json;
 
@@ -36,6 +38,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // topic to publish message to
     let topic = "A".to_string();
     let topic_b = "B".to_string();
+
+    // Delay to wait for the subscriber to fully start
+    time::sleep(Duration::from_secs(5)).await;
 
     for count in 0..10 {
         let order = Order {

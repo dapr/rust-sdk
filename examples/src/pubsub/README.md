@@ -32,7 +32,7 @@ cargo build --examples
 2. Run the multi-app run template:
 
 <!-- STEP
-name: Run Subscriber
+name: Run PubSub example
 output_match_mode: substring
 match_order: sequential
 expected_stdout_lines:
@@ -119,7 +119,7 @@ expected_stdout_lines:
   - '== APP - rust-publisher == messages published'
 background: false
 sleep: 30
-timeout_seconds: 60
+timeout_seconds: 30
 -->
 
 
