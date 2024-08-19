@@ -21,7 +21,7 @@ RUNTIME="runtime"
 RUNTIME_RELEASE_TAG="master"
 
 # Path to store output
-PROTO_PATH="dapr/proto"
+PROTO_PATH="proto/dapr/proto"
 
 # Http request CLI
 HTTP_REQUEST_CLI=curl

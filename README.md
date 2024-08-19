@@ -84,7 +84,7 @@ cargo build
 
 >Note: The protobuf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the protobuf client.
 
-## Updating .proto files from upstream Dapr
+## Developing (Updating .proto files from upstream Dapr)
 
 To fetch the latest .proto files from Dapr execute the script `update-protos.sh`:
 
@@ -96,6 +96,12 @@ By default, the script fetches the latest proto updates from the master branch o
 
 ```bash
 ./update-protos.sh -v v1.14.0
+```
+
+Protos can then be compiled using:
+
+```bash
+cargo run proto-gen
 ```
 
 ### Contact Us
