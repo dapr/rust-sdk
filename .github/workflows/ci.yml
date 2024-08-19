@@ -15,7 +15,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
-  PROTOC_VERSION: 3.x
+  PROTOC_VERSION: 24.4
   RUSTUP_TOOLCHAIN: stable
 
 jobs:
