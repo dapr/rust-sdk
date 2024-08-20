@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Explore more examples
 
-Browse through more examples to understand the SDK better: [View examples](./examples)
+Browse through more examples to understand the SDK better: [View examples](https://github.com/dapr/rust-sdk/tree/main/examples)
 
 ## Building
 

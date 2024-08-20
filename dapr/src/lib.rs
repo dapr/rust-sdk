@@ -1,4 +1,4 @@
-#![doc = include_str!("../../../../README.md")]
+#![doc = include_str!("../README.md")]
 
 extern crate dapr_macros;
 
