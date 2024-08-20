@@ -1,10 +1,11 @@
-use proc_macro::TokenStream;
 use std::iter;
 
 use proc_macro2::TokenTree;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::{parse_macro_input, Ident, LitStr};
+
+use proc_macro::TokenStream;
 
 macro_rules! derive_parse {(
     @derive_only
