@@ -13,7 +13,6 @@ resolver = "2"
 [workspace.dependencies]
 async-trait = "0.1"
 
-dapr = { version = "0.16.0-rc.0", path = "./dapr" }
 dapr-macros = { version = "0.16.0-rc.0", path = "./dapr-macros" }
 
 prost = "0.13.1"

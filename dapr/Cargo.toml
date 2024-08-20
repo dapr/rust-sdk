@@ -32,6 +32,5 @@ axum-test = "15.3"
 once_cell = "1.19"
 tokio = { workspace = true, features = ["full"] }
 uuid = { version = "1.10", features = ["v4"] }
-dapr = { workspace = true }
 tokio-test = { workspace = true }
 tokio-stream = { workspace = true }
