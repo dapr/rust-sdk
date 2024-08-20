@@ -17,6 +17,7 @@ env:
   CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
   PROTOC_VERSION: 24.4
   RUSTUP_TOOLCHAIN: stable
+  RUSTFLAGS: "-D warnings"
 
 jobs:
   lint:
@@ -38,7 +39,7 @@ jobs:
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
     - name: cargo clippy
-      run: cargo clippy -- -W warnings
+      run: cargo clippy
 
 
   build:
