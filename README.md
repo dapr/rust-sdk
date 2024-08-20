@@ -43,7 +43,7 @@ resiliency.
 
 ## Prerequisites
 
-Ensure you have Rust version 1.79 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
+Ensure you have Rust version 1.78 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
 You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
 
@@ -58,9 +58,10 @@ dapr = "0.15.0"
 
 Here's a basic example to create a client:
 
-```rust
+```Rust
 use dapr;
 
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the Dapr port and create a connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;

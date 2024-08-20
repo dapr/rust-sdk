@@ -1,12 +1,12 @@
 [package]
 name = "proto-gen"
-authors = ["Mike Nguyen <hey@mike.ee>"]
-license = "Apache-2.0"
-edition = "2021"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
 publish = false
-version = "0.0.1"
+repository.workspace = true
+version.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-tonic-build = "0.11.0"
-prost-types = "0.12.3"
-prost-build = "0.13.1"
+tonic-build = { workspace = true }

@@ -43,14 +43,21 @@ jobs:
 
 
   build:
-    name: Build
+    name: Build on rust-${{ matrix.rust-version}}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-version:
+          - "stable"
+          - "nightly"
+          - "1.78.0" # MSRV
 
     steps:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: stable
+        toolchain: ${{ matrix.rust-version }}
         components: clippy, rustfmt
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
@@ -59,17 +66,9 @@ jobs:
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v4
     - name: Build
-      run: cargo build
-    - name: Build examples
-      run: |
-        cd examples
-        cargo build --examples
-    - name: Build proto-gen
-      run: |
-        cd proto-gen
-        cargo build
+      run: cargo build --workspace --all-targets --all-features
     - name: Run Tests
-      run: cargo test --all-targets
+      run: cargo test --workspace --all-targets --all-features
 
   publish:
     name: Publish

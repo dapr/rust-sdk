@@ -2,9 +2,43 @@
 members = [
     "dapr",
     "dapr-macros",
-]
-exclude = [
     "proto-gen",
     "examples",
 ]
+exclude = [
+    ".github/workflows/dapr-bot" # Bot used in GitHub workflow
+]
 resolver = "2"
+
+[workspace.dependencies]
+async-trait = "0.1"
+
+dapr = { version = "0.15.1", path = "./dapr" }
+dapr-macros = { version = "0.15.1", path = "./dapr-macros" }
+
+prost = "0.13.1"
+prost-build = "0.13.1"
+prost-types = "0.13.1"
+
+serde = "1.0"
+serde_json = "1.0"
+
+tokio = "1.39"
+tokio-stream = "0.1"
+tokio-test = "0.4"
+tokio-util = "0.7"
+
+tonic = "0.12.1"
+tonic-build = "0.12.1"
+
+[workspace.package]
+version = "0.15.1"
+authors = [
+    "Mike Nguyen <hey@mike.ee>",
+    "The Dapr Authors <dapr@dapr.io>"
+]
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/dapr/rust-sdk"
+
+rust-version = "1.78.0" # MSRV
