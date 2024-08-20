@@ -152,7 +152,6 @@ pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
     let struct_name = name
         .to_string()
         .split('_')
-        .into_iter()
         .map(|i| {
             let mut chars: Vec<char> = i.chars().collect();
             chars[0] = chars[0].to_ascii_uppercase();
@@ -172,7 +171,6 @@ pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_string()
         .replace(['(', ')'], "")
         .split(':')
-        .into_iter()
         .enumerate()
         .filter(|&(i, _)| i % 2 != 0)
         .map(|(_, i)| i.trim().to_string())
