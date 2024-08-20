@@ -58,9 +58,10 @@ dapr = "0.15.0"
 
 Here's a basic example to create a client:
 
-```rust
+```Rust
 use dapr;
 
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the Dapr port and create a connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
