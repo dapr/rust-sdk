@@ -112,4 +112,4 @@ jobs:
     - name: cargo publish dapr-macros
       run: cargo publish --manifest-path dapr-macros/Cargo.toml --token ${{ env.CARGO_TOKEN }}
     - name: cargo publish dapr
-      run: cargo publish --token ${{ env.CARGO_TOKEN }}
+      run: cargo publish --manifest-path dapr/Cargo.toml --token ${{ env.CARGO_TOKEN }}
