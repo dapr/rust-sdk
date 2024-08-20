@@ -3,7 +3,7 @@
 /// when Dapr runtime delivers HTTP content.
 ///
 /// For example, when callers calls http invoke api
-/// POST <http://localhost:3500/v1.0/invoke/<app_id>/method/<method>?query1=value1&query2=value2>
+/// `POST <http://localhost:3500/v1.0/invoke/<app_id>/method/<method>?query1=value1&query2=value2`>
 ///
 /// Dapr runtime will parse POST as a verb and extract querystring to quersytring map.
 #[allow(clippy::derive_partial_eq_without_eq)]

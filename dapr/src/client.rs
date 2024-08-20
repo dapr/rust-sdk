@@ -426,7 +426,7 @@ impl<T: DaprInterface> Client<T> {
         self.0.unsubscribe_configuration(request).await
     }
 
-    /// Encrypt binary data using Dapr. returns Vec<StreamPayload> to be used in decrypt method
+    /// Encrypt binary data using Dapr. returns `Vec<StreamPayload>` to be used in decrypt method
     ///
     /// # Arguments
     ///
@@ -467,11 +467,11 @@ impl<T: DaprInterface> Client<T> {
         self.0.encrypt(requested_items).await
     }
 
-    /// Decrypt binary data using Dapr. returns Vec<u8>.
+    /// Decrypt binary data using Dapr. returns `Vec<u8>`.
     ///
     /// # Arguments
     ///
-    /// * `encrypted` - Encrypted data usually returned from encrypted, Vec<StreamPayload>
+    /// * `encrypted` - Encrypted data usually returned from encrypted, `Vec<StreamPayload>`
     /// * `options` - Decryption request options.
     pub async fn decrypt(
         &mut self,
@@ -721,7 +721,7 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .into_inner())
     }
 
-    /// Encrypt binary data using Dapr. returns Vec<StreamPayload> to be used in decrypt method
+    /// Encrypt binary data using Dapr. returns `Vec<StreamPayload>` to be used in decrypt method
     ///
     /// # Arguments
     ///
@@ -745,11 +745,11 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(return_data)
     }
 
-    /// Decrypt binary data using Dapr. returns Vec<u8>.
+    /// Decrypt binary data using Dapr. returns `Vec<u8>`.
     ///
     /// # Arguments
     ///
-    /// * `encrypted` - Encrypted data usually returned from encrypted, Vec<StreamPayload>
+    /// * `encrypted` - Encrypted data usually returned from encrypted, `Vec<StreamPayload>`
     /// * `options` - Decryption request options.
     async fn decrypt(&mut self, request: Vec<DecryptRequest>) -> Result<Vec<u8>, Status> {
         let request = Request::new(tokio_stream::iter(request));
