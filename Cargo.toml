@@ -6,7 +6,7 @@ members = [
     "examples",
 ]
 exclude = [
-    ".github/workflows/dapr-bot" # Bot used in github workflow
+    ".github/workflows/dapr-bot" # Bot used in GitHub workflow
 ]
 resolver = "2"
 
@@ -41,4 +41,4 @@ edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/dapr/rust-sdk"
 
-rust-version = "1.70.0" # MSRV
+rust-version = "1.78.0" # MSRV
