@@ -43,14 +43,20 @@ jobs:
 
 
   build:
-    name: Build
+    name: Build on rust-${{ matrix.rust-version}}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust-version:
+          - "stable"
+          - "nightly"
+          - "1.70.0"
 
     steps:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: stable
+        toolchain: ${{ matrix.rust-version }}
         components: clippy, rustfmt
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
@@ -69,7 +75,7 @@ jobs:
         cd proto-gen
         cargo build
     - name: Run Tests
-      run: cargo test --all-targets
+      run: cargo test --workspace
 
   publish:
     name: Publish
