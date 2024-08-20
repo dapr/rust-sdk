@@ -1,17 +1,20 @@
 [package]
 name = "dapr-macros"
-version = "0.15.0"
-edition = "2021"
-description = "Dapr Rust SDK"
-license = "Apache-2.0"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+description = "Dapr Rust SDK (Macros)"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [lib]
 proc-macro = true
 
 [dependencies]
-async-trait = "0.1"
-log = "0.4"
+async-trait = { workspace = true }
 axum = "0.7"
-syn = { version = "2.0", features = ["full"] }
-quote = "1.0"
+log = "0.4"
 proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
