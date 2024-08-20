@@ -91,7 +91,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap();
     });
 
-    sleep(Duration::from_secs(5)).await;
+    // Sleep to allow the scheduler to initialise - remove once resiliency is implemented
+    sleep(Duration::from_secs(10)).await;
 
     // Client
 
