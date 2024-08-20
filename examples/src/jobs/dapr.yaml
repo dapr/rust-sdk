@@ -7,4 +7,5 @@ apps:
     appProtocol: grpc
     appPort: 50051
     logLevel: debug
+    schedulerHostAddress: localhost
     command: [ "cargo", "run", "--example", "jobs" ]
