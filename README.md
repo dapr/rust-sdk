@@ -45,8 +45,6 @@ resiliency.
 
 Ensure you have Rust version 1.78 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
-You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
-
 ## How to use
 
 Add the following to your `Cargo.toml` file:
@@ -84,8 +82,6 @@ To build the SDK run:
 cargo build
 ```
 
->Note: The protobuf client generation is built into `cargo build` process so updating the proto files under `dapr/` is enough to update the protobuf client.
-
 ## Developing (Updating .proto files from upstream Dapr)
 
 To fetch the latest .proto files from Dapr execute the script `update-protos.sh`:
@@ -99,6 +95,8 @@ By default, the script fetches the latest proto updates from the master branch o
 ```bash
 ./update-protos.sh -v v1.14.0
 ```
+
+You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
 
 Protos can then be compiled using:
 
