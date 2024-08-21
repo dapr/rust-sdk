@@ -6,7 +6,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Rust SDK for dapr"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["microservices", "dapr"]
 rust-version.workspace = true
 
