@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use tonic::{Code, Request, Response, Status};
 
-use crate::dapr::proto::runtime;
-use crate::dapr::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlpha;
+use crate::proto::runtime;
+use crate::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlpha;
 
 pub struct AppCallbackServiceAlpha {
     pub job_handlers: HashMap<String, Box<dyn JobHandlerMethod + Send + Sync + 'static>>,
