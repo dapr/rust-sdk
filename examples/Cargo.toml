@@ -44,6 +44,10 @@ name = "client"
 path = "src/client/client.rs"
 
 [[example]]
+name = "client-new"
+path = "src/client-new/main.rs"
+
+[[example]]
 name = "configuration"
 path = "src/configuration/main.rs"
 

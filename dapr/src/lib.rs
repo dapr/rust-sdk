@@ -10,8 +10,10 @@ pub use dapr_macros::actor;
 
 /// Module containing the Dapr Callback SDK.
 pub mod appcallback;
-/// Module containing the 'Client' implementation.
+/// Module containing the 'Client' implementation - replaced in 0.17 by `client_new`.
 pub mod client;
+/// Module containing the new client implementation.
+pub mod client_new;
 /// Module importing the Dapr runtime implementation.
 pub mod dapr {
     pub mod proto {

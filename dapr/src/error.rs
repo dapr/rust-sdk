@@ -9,6 +9,7 @@ pub enum Error {
     ParseIntError,
     VarError,
     SerializationError,
+    UnimplementedError,
 }
 
 impl Display for Error {
