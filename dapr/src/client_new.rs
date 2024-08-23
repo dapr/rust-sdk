@@ -1,3 +1,5 @@
+use std::convert::Into;
+use std::string::ToString;
 use std::time::Duration;
 
 use tonic::transport::{Channel, Uri};
@@ -5,10 +7,20 @@ use tonic::transport::{Channel, Uri};
 use crate::dapr::proto::{common::v1::*, runtime::v1::dapr_client::DaprClient, runtime::v1::*};
 use crate::error::Error;
 
+/// The Rust SDK version populated in the compiler environment
+const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
+const SDK_USER_AGENT: &str = format!("dapr-sdk-rust/{}", SDK_VERSION).as_str();
+
 /// Dapr env var constants
 //const DAPR_GRPC_ENDPOINT_ENV_VAR_NAME:  &str = "DAPR_GRPC_ENDPOINT";
+
 //const DAPR_API_MAX_RETRIES_ENV_VAR_NAME: &str = "DAPR_API_MAX_RETRIES";
+//const DAPR_API_MAX_RETRIES_DEFAULT: u8 = 0;
+
 //const DAPR_API_TIMEOUT_SECONDS_ENV_VAR_NAME: &str = "DAPR_API_TIMEOUT_SECONDS";
+//const DAPR_API_TIMEOUT_SECONDS_DEFAULT: u8 = 0;
+
+//const DAPR_API_TOKEN_ENV_VAR_NAME: &str = "DAPR_API_TOKEN";
 
 /// Client implementation for interfacing with Dapr
 #[derive(Clone, Debug)]
@@ -19,6 +31,7 @@ pub struct Client {
 impl Client {
     async fn new_internal(addr: Uri, keep_alive: Option<Duration>) -> Result<Self, Error> {
         let builder = Channel::builder(addr)
+            .user_agent(SDK_USER_AGENT)
             .connect_timeout(Duration::from_secs(60))
             .keep_alive_timeout(keep_alive.unwrap_or_else(|| Duration::from_secs(60)));
 
