@@ -7,8 +7,10 @@ use tonic::transport::{Channel, Uri};
 use crate::dapr::proto::{common::v1::*, runtime::v1::dapr_client::DaprClient, runtime::v1::*};
 use crate::error::Error;
 
-/// The Rust SDK version populated in the compiler environment
+/// The Rust SDK version populated in the compiler environment.
 const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The user agent string to send with requests to Dapr.
 const SDK_USER_AGENT: &str = format!("dapr-sdk-rust/{}", SDK_VERSION).as_str();
 
 /// Dapr env var constants
@@ -22,7 +24,7 @@ const SDK_USER_AGENT: &str = format!("dapr-sdk-rust/{}", SDK_VERSION).as_str();
 
 //const DAPR_API_TOKEN_ENV_VAR_NAME: &str = "DAPR_API_TOKEN";
 
-/// Client implementation for interfacing with Dapr
+/// Client implementation for interfacing with Dapr.
 #[derive(Clone, Debug)]
 pub struct Client {
     client: DaprClient<Channel>,
@@ -44,7 +46,7 @@ impl Client {
         })
     }
 
-    /// Create a dapr instance with the endpoint from env var or default
+    /// Create a dapr instance with the endpoint from env var or default.
     pub async fn new() -> Result<Self, Error> {
         let addr: Uri = format!("{}:{}", "http://localhost", "50051")
             .parse()
