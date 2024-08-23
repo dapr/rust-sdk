@@ -1,5 +1,3 @@
-use std::convert::Into;
-use std::string::ToString;
 use std::time::Duration;
 
 use tonic::transport::{Channel, Uri};
@@ -9,9 +7,6 @@ use crate::error::Error;
 
 /// The Rust SDK version populated in the compiler environment.
 const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-/// The user agent string to send with requests to Dapr.
-const SDK_USER_AGENT: &str = format!("dapr-sdk-rust/{}", SDK_VERSION).as_str();
 
 /// Dapr env var constants
 //const DAPR_GRPC_ENDPOINT_ENV_VAR_NAME:  &str = "DAPR_GRPC_ENDPOINT";
@@ -32,8 +27,9 @@ pub struct Client {
 
 impl Client {
     async fn new_internal(addr: Uri, keep_alive: Option<Duration>) -> Result<Self, Error> {
+        let user_agent = format!("dapr-sdk-rust/{}", SDK_VERSION);
         let builder = Channel::builder(addr)
-            .user_agent(SDK_USER_AGENT)
+            .user_agent(user_agent)?
             .connect_timeout(Duration::from_secs(60))
             .keep_alive_timeout(keep_alive.unwrap_or_else(|| Duration::from_secs(60)));
 
