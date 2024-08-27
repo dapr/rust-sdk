@@ -1,5 +1,7 @@
+use std::env;
 use std::time::Duration;
 
+use log::error;
 use tonic::transport::{Channel, Uri};
 
 use crate::dapr::proto::{common::v1::*, runtime::v1::dapr_client::DaprClient, runtime::v1::*};
@@ -8,8 +10,11 @@ use crate::error::Error;
 /// The Rust SDK version populated in the compiler environment.
 const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Dapr env var constants
-//const DAPR_GRPC_ENDPOINT_ENV_VAR_NAME:  &str = "DAPR_GRPC_ENDPOINT";
+// Dapr env var constants
+/// Primary env var for initializing a default client`DAPR_GRPC_ENDPOINT`
+const DAPR_GRPC_ENDPOINT_ENV_VAR_NAME: &str = "DAPR_GRPC_ENDPOINT";
+/// Secondary env var for initializing a default client `DAPR_GRPC_PORT`
+const DAPR_GRPC_PORT_ENV_VAR_NAME: &str = "DAPR_GRPC_PORT";
 
 //const DAPR_API_MAX_RETRIES_ENV_VAR_NAME: &str = "DAPR_API_MAX_RETRIES";
 //const DAPR_API_MAX_RETRIES_DEFAULT: u8 = 0;
@@ -26,6 +31,9 @@ pub struct Client {
 }
 
 impl Client {
+    /// Internal function that creates a new  dapr client instance
+    /// # Errors
+    /// Returns an error if the client cannot be created
     async fn new_internal(addr: Uri, keep_alive: Option<Duration>) -> Result<Self, Error> {
         let user_agent = format!("dapr-sdk-rust/{}", SDK_VERSION);
         let builder = Channel::builder(addr)
@@ -42,14 +50,53 @@ impl Client {
         })
     }
 
-    /// Create a dapr instance with the endpoint from env var or default.
+    /// Creates a new dapr client instance
+    /// # Errors
+    /// Returns an error if the client cannot be created
     pub async fn new() -> Result<Self, Error> {
-        let addr: Uri = format!("{}:{}", "http://localhost", "50051")
-            .parse()
-            .unwrap();
+        let addr = match Self::get_default_dapr_grpc_addr() {
+            Ok(addr) => addr,
+            Err(_) => return Err(Error::InitializationError),
+        };
+
+        println!("dapr grpc address: {}", addr.clone());
         let keep_alive = Some(Duration::from_secs(60));
         Self::new_internal(addr, keep_alive).await
         // TODO: Cleanup implementation
+    }
+
+    /// Internal function to get the default dapr grpc address
+    /// This will be using in order of priority:
+    /// 1. Env var: `DAPR_GRPC_ENDPOINT`
+    /// 2. Env var: `DAPR_GRPC_PORT`
+    /// 3. Default: `http://localhost:50051`
+    /// # Errors
+    /// Returns an error if the address cannot be parsed from either of the env vars
+    fn get_default_dapr_grpc_addr() -> Result<Uri, Error> {
+        // Try to get the endpoint from `DAPR_GRPC_ENDPOINT` env var
+        if let Ok(endpoint) = env::var(DAPR_GRPC_ENDPOINT_ENV_VAR_NAME) {
+            match endpoint.parse() {
+                Ok(endpoint) => return Ok(endpoint),
+                Err(_) => {
+                    error!("Failed to parse DAPR_GRPC_ENDPOINT env var");
+                }
+            };
+        }
+
+        // Try to get the port from `DAPR_GRPC_PORT` env var
+        if let Ok(port) = env::var(DAPR_GRPC_PORT_ENV_VAR_NAME) {
+            let addr = format!("http://localhost:{}", port);
+            match addr.parse() {
+                Ok(addr) => return Ok(addr),
+                Err(_) => {
+                    error!("Failed to parse DAPR_GRPC_PORT env var");
+                }
+            };
+        }
+
+        // Default to 50051
+        let addr = "http://localhost:50051";
+        Ok(addr.parse().unwrap())
     }
 
     /// Invokes a method on a remote Dapr app.

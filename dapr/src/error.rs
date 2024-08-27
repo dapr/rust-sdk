@@ -10,6 +10,7 @@ pub enum Error {
     VarError,
     SerializationError,
     UnimplementedError,
+    InitializationError,
 }
 
 impl Display for Error {
