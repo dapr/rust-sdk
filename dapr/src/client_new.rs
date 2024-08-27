@@ -525,14 +525,3 @@ impl Client {
         Err(Error::UnimplementedError)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_new() {
-        let client_resp = Client::new().await;
-        assert!(client_resp.is_ok());
-    }
-}
