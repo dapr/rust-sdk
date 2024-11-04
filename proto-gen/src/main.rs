@@ -69,6 +69,6 @@ fn proto_gen(
         .out_dir(out_dir.clone())
         .file_descriptor_set_path(out_dir.clone().join("types.bin"))
         .protoc_arg("--experimental_allow_proto3_optional")
-        .compile(&include_dirs, &interface)
+        .compile_protos(&include_dirs, &interface)
         .expect("Failed to compile protos");
 }
