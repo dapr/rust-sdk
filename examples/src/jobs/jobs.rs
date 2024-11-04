@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use base64::prelude::*;
 use dapr::client::JobBuilder;
 use dapr::dapr::proto::runtime::v1::{
     app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse,
@@ -42,17 +41,8 @@ async fn backup_job_handler(request: JobEventRequest) -> Result<JobEventResponse
     // The logic for handling the backup job request
 
     if request.data.is_some() {
-        // weird value - any type is actually put into the value
-        let any = request.data.unwrap().value;
-
-        // parse any value
-        let any_parsed: JsonAny = serde_json::from_slice(&any).unwrap();
-
-        // Decode the base64-encoded value field
-        let decoded_value = BASE64_STANDARD.decode(any_parsed.value).unwrap();
-
         // Deserialize the decoded value into a Backup struct
-        let backup_val: Backup = serde_json::from_slice(&decoded_value).unwrap();
+        let backup_val: Backup = serde_json::from_slice(&request.data.unwrap().value).unwrap();
 
         println!("job received: {:?}", backup_val);
     }

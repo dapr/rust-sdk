@@ -6,7 +6,6 @@
 /// `POST <http://localhost:3500/v1.0/invoke/<app_id>/method/<method>?query1=value1&query2=value2`>
 ///
 /// Dapr runtime will parse POST as a verb and extract querystring to quersytring map.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct HttpExtension {
     /// Required. HTTP verb.
@@ -21,7 +20,17 @@ pub mod http_extension {
     /// Type of HTTP 1.1 Methods
     /// RFC 7231: <https://tools.ietf.org/html/rfc7231#page-24>
     /// RFC 5789: <https://datatracker.ietf.org/doc/html/rfc5789>
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Verb {
         None = 0,
@@ -42,16 +51,16 @@ pub mod http_extension {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Verb::None => "NONE",
-                Verb::Get => "GET",
-                Verb::Head => "HEAD",
-                Verb::Post => "POST",
-                Verb::Put => "PUT",
-                Verb::Delete => "DELETE",
-                Verb::Connect => "CONNECT",
-                Verb::Options => "OPTIONS",
-                Verb::Trace => "TRACE",
-                Verb::Patch => "PATCH",
+                Self::None => "NONE",
+                Self::Get => "GET",
+                Self::Head => "HEAD",
+                Self::Post => "POST",
+                Self::Put => "PUT",
+                Self::Delete => "DELETE",
+                Self::Connect => "CONNECT",
+                Self::Options => "OPTIONS",
+                Self::Trace => "TRACE",
+                Self::Patch => "PATCH",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -75,7 +84,6 @@ pub mod http_extension {
 /// InvokeRequest is the message to invoke a method with the data.
 /// This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 /// of AppCallback gRPC service.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct InvokeRequest {
     /// Required. method is a method name which will be invoked by caller.
@@ -102,7 +110,6 @@ pub struct InvokeRequest {
 /// from app callback.
 /// This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 /// of AppCallback gRPC service.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct InvokeResponse {
     /// Required in unary RPCs. The content body of InvokeService response.
@@ -114,7 +121,6 @@ pub struct InvokeResponse {
 }
 /// Chunk of data sent in a streaming request or response.
 /// This is used in requests including InternalInvokeRequestStream.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StreamPayload {
     /// Data sent in the chunk.
@@ -128,7 +134,6 @@ pub struct StreamPayload {
     pub seq: u64,
 }
 /// StateItem represents state key, value, and additional options to save state.
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StateItem {
     /// Required. The state key
@@ -143,14 +148,15 @@ pub struct StateItem {
     pub etag: ::core::option::Option<Etag>,
     /// The metadata which will be passed to state store component.
     #[prost(map = "string, string", tag = "4")]
-    pub metadata:
-        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
     /// Options for concurrency and consistency to save the state.
     #[prost(message, optional, tag = "5")]
     pub options: ::core::option::Option<StateOptions>,
 }
 /// Etag represents a state item version
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Etag {
     /// value sets the etag value
@@ -158,7 +164,6 @@ pub struct Etag {
     pub value: ::prost::alloc::string::String,
 }
 /// StateOptions configures concurrency and consistency for state operations
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct StateOptions {
     #[prost(enumeration = "state_options::StateConcurrency", tag = "1")]
@@ -169,7 +174,17 @@ pub struct StateOptions {
 /// Nested message and enum types in `StateOptions`.
 pub mod state_options {
     /// Enum describing the supported concurrency for state.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum StateConcurrency {
         ConcurrencyUnspecified = 0,
@@ -183,9 +198,9 @@ pub mod state_options {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                StateConcurrency::ConcurrencyUnspecified => "CONCURRENCY_UNSPECIFIED",
-                StateConcurrency::ConcurrencyFirstWrite => "CONCURRENCY_FIRST_WRITE",
-                StateConcurrency::ConcurrencyLastWrite => "CONCURRENCY_LAST_WRITE",
+                Self::ConcurrencyUnspecified => "CONCURRENCY_UNSPECIFIED",
+                Self::ConcurrencyFirstWrite => "CONCURRENCY_FIRST_WRITE",
+                Self::ConcurrencyLastWrite => "CONCURRENCY_LAST_WRITE",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -199,7 +214,17 @@ pub mod state_options {
         }
     }
     /// Enum describing the supported consistency for state.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum StateConsistency {
         ConsistencyUnspecified = 0,
@@ -213,9 +238,9 @@ pub mod state_options {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                StateConsistency::ConsistencyUnspecified => "CONSISTENCY_UNSPECIFIED",
-                StateConsistency::ConsistencyEventual => "CONSISTENCY_EVENTUAL",
-                StateConsistency::ConsistencyStrong => "CONSISTENCY_STRONG",
+                Self::ConsistencyUnspecified => "CONSISTENCY_UNSPECIFIED",
+                Self::ConsistencyEventual => "CONSISTENCY_EVENTUAL",
+                Self::ConsistencyStrong => "CONSISTENCY_STRONG",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -230,7 +255,6 @@ pub mod state_options {
     }
 }
 /// ConfigurationItem represents all the configuration with its name(key).
-#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ConfigurationItem {
     /// Required. The value of configuration item.
@@ -241,6 +265,8 @@ pub struct ConfigurationItem {
     pub version: ::prost::alloc::string::String,
     /// the metadata which will be passed to/from configuration store component.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata:
-        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
 }
