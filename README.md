@@ -45,13 +45,15 @@ resiliency.
 
 Ensure you have Rust version 1.78 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
+These crates no longer require protoc unless to recompile the protobuf files.
+
 ## How to use
 
 Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.16.0-rc.1"
+dapr = "0.16.0-rc.2"
 ```
 
 Here's a basic example to create a client:
