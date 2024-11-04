@@ -6,7 +6,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Rust SDK for dapr"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["microservices", "dapr"]
 rust-version.workspace = true
 
@@ -30,8 +30,8 @@ tokio-util = { workspace = true, features = ["io"] }
 [dev-dependencies]
 axum-test = "15.3"
 once_cell = "1.19"
+dapr = { path = "./" }
 tokio = { workspace = true, features = ["full"] }
 uuid = { version = "1.10", features = ["v4"] }
-dapr = { workspace = true }
 tokio-test = { workspace = true }
 tokio-stream = { workspace = true }
