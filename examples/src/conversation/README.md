@@ -23,6 +23,8 @@ timeout: 60
 cargo build --examples
 ```
 
+<!-- END_STEP -->
+
 2. Run the example using the Dapr CLI
 
 <!-- STEP
