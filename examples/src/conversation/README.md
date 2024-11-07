@@ -40,11 +40,7 @@ timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id conversation \
-         --dapr-grpc-port 50001 \
-         --log-level debug \
-         --resources-path ./config \
-         -- go run ./main.go
+dapr run --app-id=conversation --resources-path ./config --dapr-grpc-port 3500 -- cargo run --example conversation
 ```
 
 <!-- END_STEP -->
