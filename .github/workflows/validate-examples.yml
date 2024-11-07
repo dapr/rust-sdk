@@ -147,7 +147,7 @@ jobs:
           ls -la
 
       - name: Build Custom Install Bundle
-        if: env.DAPR_REF != '' && env.DAPR_CLI_REF != ''
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         run: |
           : # Create daprbundle directory
           mkdir ~/daprbundle
