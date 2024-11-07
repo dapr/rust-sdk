@@ -533,6 +533,18 @@ impl<T: DaprInterface> Client<T> {
         };
         self.0.delete_job_alpha1(request).await
     }
+
+    /// Converse with an LLM
+    ///
+    /// # Arguments
+    ///
+    /// * ConversationRequest - The request containing inputs to send to the LLM
+    pub async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error> {
+        self.0.converse_alpha1(request).await
+    }
 }
 
 #[async_trait]
@@ -595,6 +607,11 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: DeleteJobRequest,
     ) -> Result<DeleteJobResponse, Error>;
+
+    async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error>;
 }
 
 #[async_trait]
@@ -789,6 +806,16 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .await?
             .into_inner())
     }
+
+    async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error> {
+        Ok(self
+            .converse_alpha1(Request::new(request))
+            .await?
+            .into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -907,6 +934,18 @@ pub type DeleteJobRequest = crate::dapr::proto::runtime::v1::DeleteJobRequest;
 /// A response from a delete job request
 pub type DeleteJobResponse = crate::dapr::proto::runtime::v1::DeleteJobResponse;
 
+/// A request to conversate with an LLM
+pub type ConversationRequest = crate::dapr::proto::runtime::v1::ConversationRequest;
+
+/// A response from conversating with an LLM
+pub type ConversationResponse = crate::dapr::proto::runtime::v1::ConversationResponse;
+
+/// A result from an interacting with a LLM
+pub type ConversationResult = crate::dapr::proto::runtime::v1::ConversationResult;
+
+/// An input to the conversation
+pub type ConversationInput = crate::dapr::proto::runtime::v1::ConversationInput;
+
 type StreamPayload = crate::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
@@ -984,6 +1023,65 @@ impl JobBuilder {
             ttl: self.ttl,
             repeats: self.repeats,
             due_time: self.due_time,
+        }
+    }
+}
+
+pub struct ConversationInputBuilder {
+    message: String,
+    role: Option<String>,
+    scrub_pii: Option<bool>,
+}
+
+impl ConversationInputBuilder {
+    pub fn new(message: &str) -> Self {
+        ConversationInputBuilder {
+            message: message.to_string(),
+            role: None,
+            scrub_pii: None,
+        }
+    }
+
+    pub fn build(self) -> ConversationInput {
+        ConversationInput {
+            message: self.message,
+            role: self.role,
+            scrub_pii: self.scrub_pii,
+        }
+    }
+}
+
+pub struct ConversationRequestBuilder {
+    name: String,
+    context_id: Option<String>,
+    inputs: Vec<ConversationInput>,
+    parameters: HashMap<String, Any>,
+    metadata: HashMap<String, String>,
+    scrub_pii: Option<bool>,
+    temperature: Option<f64>,
+}
+impl ConversationRequestBuilder {
+    pub fn new(name: &str, inputs: Vec<ConversationInput>) -> Self {
+        ConversationRequestBuilder {
+            name: name.to_string(),
+            context_id: None,
+            inputs,
+            parameters: Default::default(),
+            metadata: Default::default(),
+            scrub_pii: None,
+            temperature: None,
+        }
+    }
+
+    pub fn build(self) -> ConversationRequest {
+        ConversationRequest {
+            name: self.name,
+            context_id: self.context_id,
+            inputs: self.inputs,
+            parameters: self.parameters,
+            metadata: self.metadata,
+            scrub_pii: self.scrub_pii,
+            temperature: self.temperature,
         }
     }
 }
