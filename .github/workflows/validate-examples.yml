@@ -147,14 +147,14 @@ jobs:
           ls -la
 
       - name: Build Custom Install Bundle
-        if: env.DAPR_REF != '' && env.DAPR_CLI_REF != ''
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         run: |
           : # Create daprbundle directory
           mkdir ~/daprbundle
           cp .github/workflows/validate-examples/details.json ~/daprbundle/
 
           : # Add cli
-          cp ~/artifacts/$GITHUB_SHA/dapr ~/daprbundle/dapr
+          cp cli/dist/linux_amd64/release/dapr ~/daprbundle/dapr
 
           : # Compress executables to /dist/ appending _linux_amd64 to the name
           mkdir ~/daprbundle/dist
