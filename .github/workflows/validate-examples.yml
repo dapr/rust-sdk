@@ -127,6 +127,7 @@ jobs:
           cd dapr_runtime
           make
           echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          mkdir -p $HOME/artifacts/$GITHUB_SHA/
           RUNTIME_VERSION=edge
           echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> $GITHUB_ENV
 
@@ -135,7 +136,7 @@ jobs:
         run: |
           mkdir ~/dapr_docker
           cd dapr_runtime
-          docker build --build-arg "PKG_FILES=*" -f ./docker/Dockerfile ./dist/linux_amd64/release -t daprio/dapr:0.0.0-dev
+          docker build --build-arg "PKG_FILES=*" -f ./docker/Dockerfile ./dist/linux_amd64/release -t daprio/dapr:9.0.0-dev
 
       - name: Download Install Bundle CLI
         if: env.DAPR_REF != '' && env.DAPR_CLI_REF == ''
@@ -169,7 +170,7 @@ jobs:
 
           : # Add docker image
           mkdir ~/daprbundle/docker
-          docker save daprio/dapr:0.0.0-dev | gzip > ~/daprbundle/docker/daprio-dapr-0.0.0-dev.tar.gz
+          docker save daprio/dapr:9.0.0-dev | gzip > ~/daprbundle/docker/daprio-dapr-9.0.0-dev.tar.gz
 
           : # Bundle
           cd ~/daprbundle
