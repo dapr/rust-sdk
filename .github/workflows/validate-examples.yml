@@ -46,7 +46,7 @@ jobs:
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ${{ github.event.inputs_daprcli_commit }}
       DAPR_CLI_VERSION: ${{ github.event.inputs_daprcli_version }}
-      DAPR_REF: ${{ github.event.inputs.dapr_commit }}
+      DAPR_REF: 334ae9eea43d487a7b29a0e4aef904e3eba57a10
       DAPR_RUNTIME_VERSION: ${{ github.event.inputs.dapr_version }}
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
@@ -76,14 +76,14 @@ jobs:
       - name: Determine latest Dapr Runtime version
         if: env.DAPR_RUNTIME_VERSION == ''
         run: |
-          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d ' ",v')
           echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Found $RUNTIME_VERSION"
 
       - name: Determine latest Dapr Cli version
         if: env.DAPR_CLI_VERSION == ''
         run: |
-          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d ' ",v')
           echo "DAPR_CLI_VERSION=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
 
@@ -127,6 +127,7 @@ jobs:
           cd dapr_runtime
           make
           echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          mkdir -p $HOME/artifacts/$GITHUB_SHA/
           RUNTIME_VERSION=edge
           echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> $GITHUB_ENV
 
@@ -135,7 +136,7 @@ jobs:
         run: |
           mkdir ~/dapr_docker
           cd dapr_runtime
-          docker build --build-arg "PKG_FILES=*" -f ./docker/Dockerfile ./dist/linux_amd64/release -t daprio/dapr:0.0.0-dev
+          docker build --build-arg "PKG_FILES=*" -f ./docker/Dockerfile ./dist/linux_amd64/release -t daprio/dapr:9.0.0-dev
 
       - name: Download Install Bundle CLI
         if: env.DAPR_REF != '' && env.DAPR_CLI_REF == ''
@@ -147,14 +148,14 @@ jobs:
           ls -la
 
       - name: Build Custom Install Bundle
-        if: env.DAPR_REF != '' && env.DAPR_CLI_REF != ''
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         run: |
           : # Create daprbundle directory
           mkdir ~/daprbundle
           cp .github/workflows/validate-examples/details.json ~/daprbundle/
 
           : # Add cli
-          cp ~/artifacts/$GITHUB_SHA/dapr ~/daprbundle/dapr
+          cp cli/dist/linux_amd64/release/dapr ~/daprbundle/dapr
 
           : # Compress executables to /dist/ appending _linux_amd64 to the name
           mkdir ~/daprbundle/dist
@@ -169,7 +170,7 @@ jobs:
 
           : # Add docker image
           mkdir ~/daprbundle/docker
-          docker save daprio/dapr:0.0.0-dev | gzip > ~/daprbundle/docker/daprio-dapr-0.0.0-dev.tar.gz
+          docker save daprio/dapr:9.0.0-dev | gzip > ~/daprbundle/docker/daprio-dapr-9.0.0-dev.tar.gz
 
           : # Bundle
           cd ~/daprbundle
@@ -219,7 +220,7 @@ jobs:
       fail-fast: false
       matrix:
         examples:
-          [ "actors", "bindings", "client", "configuration", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "pubsub", "query_state", "secrets-bulk" ]
+          [ "actors", "bindings", "client", "configuration", "conversation", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "pubsub", "query_state", "secrets-bulk" ]
     steps:
       - name: Check out code
         uses: actions/checkout@v4

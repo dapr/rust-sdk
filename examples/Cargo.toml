@@ -48,6 +48,10 @@ name = "configuration"
 path = "src/configuration/main.rs"
 
 [[example]]
+name = "conversation"
+path = "src/conversation/main.rs"
+
+[[example]]
 name = "crypto"
 path = "src/crypto/main.rs"
 
