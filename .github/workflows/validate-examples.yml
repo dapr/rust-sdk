@@ -46,7 +46,7 @@ jobs:
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ${{ github.event.inputs_daprcli_commit }}
       DAPR_CLI_VERSION: ${{ github.event.inputs_daprcli_version }}
-      DAPR_REF: ${{ github.event.inputs.dapr_commit }}
+      DAPR_REF: 334ae9eea43d487a7b29a0e4aef904e3eba57a10
       DAPR_RUNTIME_VERSION: ${{ github.event.inputs.dapr_version }}
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
@@ -219,7 +219,7 @@ jobs:
       fail-fast: false
       matrix:
         examples:
-          [ "actors", "bindings", "client", "configuration", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "pubsub", "query_state", "secrets-bulk" ]
+          [ "actors", "bindings", "client", "configuration", "conversation", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "pubsub", "query_state", "secrets-bulk" ]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
