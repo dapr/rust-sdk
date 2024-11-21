@@ -7,10 +7,12 @@ description: How to get up and running with the Dapr Rust SDK
 no_list: true
 ---
 
-The Dapr client package allows you to interact with other Dapr applications from a Rust application.
+The Dapr client package allows you to interact with other Dapr applications from
+a Rust application.
 
 {{% alert title="Note" color="primary" %}}
-The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a stable release and will likely involve breaking changes.
+The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a
+stable release and will likely involve breaking changes.
 {{% /alert %}}
 
 ## Prerequisites
@@ -18,7 +20,6 @@ The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a stabl
 - [Dapr CLI]({{< ref install-dapr-cli.md >}}) installed
 - Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
 - [Rust installed](https://www.rust-lang.org/tools/install)
-
 
 ## Import the client package
 
@@ -31,6 +32,7 @@ dapr = "0.16.0"
 ```
 
 You can either reference `dapr::Client` or bind the full path to a new name as follows:
+
 ```rust
 use dapr::Client as DaprClient
 ```
@@ -38,23 +40,24 @@ use dapr::Client as DaprClient
 ## Instantiating the Dapr client
 
 ```rust
-const addr: String = "https://127.0.0.1";
-const port: String = "50001";
+let addr = "https://127.0.0.1".to_string();
 
 let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr,
     port).await?;
 ```
 
-
 ## Building blocks
 
-The Rust SDK allows you to interface with the [Dapr building blocks]({{< ref building-blocks >}}).
+The Rust SDK allows you to interface with the
+[Dapr building blocks]({{< ref building-blocks >}}).
 
 ### Service Invocation
 
-To invoke a specific method on another service running with Dapr sidecar, the Dapr client Go SDK provides two options:
+To invoke a specific method on another service running with Dapr sidecar, the
+Dapr client Go SDK provides two options:
 
 Invoke a service
+
 ```rust
 let response = client
     .invoke_service("service-to-invoke", "method-to-invoke", Some(data))
@@ -62,12 +65,13 @@ let response = client
     .unwrap();
 ```
 
-
-For a full guide on service invocation, visit [How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
+For a full guide on service invocation, visit
+[How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
 
 ### State Management
 
-The Dapr Client provides access to these state management methods:  `save_state`, `get_state`, `delete_state` that can be used like so:
+The Dapr Client provides access to these state management methods:  `save_state`
+, `get_state`, `delete_state` that can be used like so:
 
 ```rust
 let store_name = "store-name";
@@ -85,12 +89,14 @@ let response = client.get_state(store_name, state_key, None).await.unwrap();
 client.delete_state(store_name, state_key, None).await?;
 ```
 
-> **Note:** The `save_state` method currently performs a 'bulk' save but this will be refactored
+> **Note:** The `save_state` method currently performs a 'bulk' save but this
+will be refactored
 
-
-For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+For a full guide on state management, visit
+[How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
 
 ### Publish Messages
+
 To publish data onto a topic, the Dapr Go client provides a simple method:
 
 ```rust
@@ -104,7 +110,9 @@ client
     .await?;
 ```
 
-For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
+For a full guide on pub/sub, visit
+[How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
 ## Related links
+
 [Rust SDK Examples](https://github.com/dapr/rust-sdk/tree/master/examples)
