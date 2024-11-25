@@ -37,14 +37,20 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v4
+
+    - name: Check compiled protos for a diff
+      run: |
+        make proto-gen check-diff-proto
+
     - name: cargo fmt
       run: cargo fmt -- --check --color ${{ env.CARGO_TERM_COLOR }}
+
     - name: cargo clippy
       run: cargo clippy
 
 
   build:
-    name: Build on rust-${{ matrix.rust-version}}
+    name: Test and Build on rust-${{ matrix.rust-version}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
