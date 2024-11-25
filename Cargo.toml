@@ -12,9 +12,6 @@ resolver = "2"
 
 [workspace.dependencies]
 async-trait = "0.1"
-
-dapr-macros = { path = "./dapr-macros" }
-
 prost = "0.13.1"
 prost-build = "0.13.1"
 prost-types = "0.13.1"

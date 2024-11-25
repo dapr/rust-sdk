@@ -15,7 +15,6 @@ async-trait = { workspace = true }
 axum = "0.7"
 bytes = "1.7"
 chrono = "0.4"
-dapr-macros = { workspace = true }
 futures = "0.3"
 log = "0.4"
 prost = { workspace = true }
