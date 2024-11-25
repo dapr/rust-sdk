@@ -1,3 +1,4 @@
+#[cfg(test)]
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
