@@ -17,7 +17,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let store_name = String::from("statestore");
 
     // save key-value pair in the state store
-    client.save_state(store_name, vec![(key, val)]).await?;
+    client
+        .save_state(store_name, key, val, None, None, None)
+        .await?;
 
     println!("Successfully saved!");
 

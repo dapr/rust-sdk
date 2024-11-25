@@ -172,6 +172,7 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `store_name` - The name of state store.
     /// * `key` - The key of the desired state.
+    /// * `metadata` - Any metadata pairs to include in the request.
     pub async fn get_state<S>(
         &mut self,
         store_name: S,
@@ -198,19 +199,54 @@ impl<T: DaprInterface> Client<T> {
 
     /// Save an array of state objects.
     ///
+    /// This does not include any etag or metadata options.
+    ///
     /// # Arguments
     ///
     /// * `store_name` - The name of state store.
-    /// * `states` - The array of the state key values.
-    pub async fn save_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
+    /// * `key` - The key for the value
+    /// * `value` - The value to be saved for the key
+    /// * `etag` - The etag identifier
+    /// * `metadata` - Any metadata pairs to include in the request.
+    /// * `options` - Any state option
+    pub async fn save_state<S>(
+        &mut self,
+        store_name: S,
+        key: S,
+        value: Vec<u8>,
+        etag: Option<Etag>,
+        metadata: Option<HashMap<String, String>>,
+        options: Option<StateOptions>,
+    ) -> Result<(), Error>
     where
-        I: IntoIterator<Item = (K, Vec<u8>)>,
-        K: Into<String>,
+        S: Into<String>,
+    {
+        let states = vec![StateItem {
+            key: key.into(),
+            value,
+            etag,
+            metadata: metadata.unwrap_or_default(),
+            options,
+        }];
+
+        self.save_bulk_states(store_name, states).await
+    }
+
+    /// Save an array of state objects.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `items` - The array of the state items.
+    pub async fn save_bulk_states<S, I>(&mut self, store_name: S, items: I) -> Result<(), Error>
+    where
+        S: Into<String>,
+        I: Into<Vec<StateItem>>,
     {
         self.0
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
-                states: states.into_iter().map(|pair| pair.into()).collect(),
+                states: items.into(),
             })
             .await
     }
@@ -841,6 +877,15 @@ pub type GetStateResponse = dapr_v1::GetStateResponse;
 
 /// A request for saving state
 pub type SaveStateRequest = dapr_v1::SaveStateRequest;
+
+/// A state item
+pub type StateItem = common_v1::StateItem;
+
+/// State options
+pub type StateOptions = common_v1::StateOptions;
+
+/// Etag identifier
+pub type Etag = common_v1::Etag;
 
 /// A request for querying state
 pub type QueryStateRequest = dapr_v1::QueryStateRequest;
