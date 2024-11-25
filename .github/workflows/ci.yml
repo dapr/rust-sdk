@@ -22,7 +22,7 @@ env:
 
 jobs:
   lint:
-    name: Lint
+    name: Check and Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -78,7 +78,7 @@ jobs:
       run: cargo test --workspace --all-targets --all-features
 
   test-docs-sdk:
-    name: Docs SDK
+    name: Check Docs - dapr
     runs-on: ubuntu-latest
     env:
       RUSTDOCFLAGS: -Dwarnings
@@ -89,7 +89,7 @@ jobs:
       - run: cargo docs-rs -p dapr
 
   test-docs-macros:
-    name: Docs Macros
+    name: Check Docs - dapr-macros
     runs-on: ubuntu-latest
     env:
       RUSTDOCFLAGS: -Dwarnings
