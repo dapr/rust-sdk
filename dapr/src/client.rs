@@ -216,12 +216,12 @@ impl<T: DaprInterface> Client<T> {
         value: Vec<u8>,
         etag: Option<Etag>,
         metadata: Option<HashMap<String, String>>,
-        options:  Option<StateOptions>,
+        options: Option<StateOptions>,
     ) -> Result<(), Error>
     where
         S: Into<String>,
     {
-        let states = vec![StateItem{
+        let states = vec![StateItem {
             key: key.into(),
             value,
             etag,
@@ -247,7 +247,6 @@ impl<T: DaprInterface> Client<T> {
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
                 states: items.into(),
-
             })
             .await
     }
