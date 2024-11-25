@@ -74,23 +74,27 @@ The Dapr Client provides access to these state management methods:  `save_state`
 , `get_state`, `delete_state` that can be used like so:
 
 ```rust
-let store_name = "store-name";
-let state_key = "state-key";
+let store_name = String::from("statestore");
 
-let states = vec![(state_key, ("state-value").as_bytes().to_vec())];
+let key = String::from("hello");
+let val = String::from("world").into_bytes();
 
-// save state with the key "state-key" and value "state-value"
-client.save_state(store_name, states).await?;
+// save key-value pair in the state store
+client
+    .save_state(store_name, key, val, None, None, None)
+    .await?;
 
-// get state for key "state-key"
-let response = client.get_state(store_name, state_key, None).await.unwrap();
+let get_response = client
+    .get_state("statestore", "hello", None)
+    .await?;
 
-// delete state for key "state-key"
-client.delete_state(store_name, state_key, None).await?;
+// delete a value from the state store
+client
+    .delete_state("statestore", "hello", None)
+    .await?;
 ```
 
-> **Note:** The `save_state` method currently performs a 'bulk' save but this
-will be refactored
+Multiple states can be sent with the `save_bulk_states` method.
 
 For a full guide on state management, visit
 [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
