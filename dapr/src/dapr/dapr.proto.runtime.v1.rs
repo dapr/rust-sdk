@@ -4480,6 +4480,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Starts a new instance of a workflow
+        #[deprecated]
         pub async fn start_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::StartWorkflowRequest>,
@@ -4507,6 +4508,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Gets details about a started workflow instance
+        #[deprecated]
         pub async fn get_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetWorkflowRequest>,
@@ -4534,6 +4536,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Purge Workflow
+        #[deprecated]
         pub async fn purge_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::PurgeWorkflowRequest>,
@@ -4558,6 +4561,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Terminates a running workflow instance
+        #[deprecated]
         pub async fn terminate_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::TerminateWorkflowRequest>,
@@ -4585,6 +4589,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Pauses a running workflow instance
+        #[deprecated]
         pub async fn pause_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::PauseWorkflowRequest>,
@@ -4609,6 +4614,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Resumes a paused workflow instance
+        #[deprecated]
         pub async fn resume_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ResumeWorkflowRequest>,
@@ -4633,6 +4639,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Raise an event to a running workflow instance
+        #[deprecated]
         pub async fn raise_event_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::RaiseEventWorkflowRequest>,
