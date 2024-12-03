@@ -51,12 +51,12 @@ let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr,
 The Rust SDK allows you to interface with the
 [Dapr building blocks]({{< ref building-blocks >}}).
 
-### Service Invocation
+### Service Invocation (gRPC)
 
 To invoke a specific method on another service running with Dapr sidecar, the
-Dapr client Go SDK provides two options:
+Dapr client provides two options:
 
-Invoke a service
+Invoke a (gRPC) service
 
 ```rust
 let response = client
@@ -101,7 +101,7 @@ For a full guide on state management, visit
 
 ### Publish Messages
 
-To publish data onto a topic, the Dapr Go client provides a simple method:
+To publish data onto a topic, the Dapr client provides a simple method:
 
 ```rust
 let pubsub_name = "pubsub-name".to_string();
