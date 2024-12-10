@@ -1,12 +1,9 @@
 #![doc = include_str!("../README.md")]
 
-extern crate dapr_macros;
-
 pub use serde;
 pub use serde_json;
 
 pub use client::Client;
-pub use dapr_macros::actor;
 
 /// Module containing the Dapr Callback SDK.
 pub mod appcallback;

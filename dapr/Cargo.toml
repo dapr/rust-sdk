@@ -15,7 +15,6 @@ async-trait = { workspace = true }
 axum = "0.7"
 bytes = "1.7"
 chrono = "0.4"
-dapr-macros = { workspace = true }
 futures = "0.3"
 log = "0.4"
 prost = { workspace = true }
@@ -28,9 +27,10 @@ tokio-util = { workspace = true, features = ["io"] }
 
 
 [dev-dependencies]
-axum-test = "15.3"
+axum-test = "16.4.0"
 once_cell = "1.19"
 dapr = { path = "./" }
+dapr-macros = { path = "../dapr-macros" }
 tokio = { workspace = true, features = ["full"] }
 uuid = { version = "1.10", features = ["v4"] }
 tokio-test = { workspace = true }

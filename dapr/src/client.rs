@@ -172,6 +172,7 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * `store_name` - The name of state store.
     /// * `key` - The key of the desired state.
+    /// * `metadata` - Any metadata pairs to include in the request.
     pub async fn get_state<S>(
         &mut self,
         store_name: S,
@@ -198,19 +199,54 @@ impl<T: DaprInterface> Client<T> {
 
     /// Save an array of state objects.
     ///
+    /// This does not include any etag or metadata options.
+    ///
     /// # Arguments
     ///
     /// * `store_name` - The name of state store.
-    /// * `states` - The array of the state key values.
-    pub async fn save_state<I, K>(&mut self, store_name: K, states: I) -> Result<(), Error>
+    /// * `key` - The key for the value
+    /// * `value` - The value to be saved for the key
+    /// * `etag` - The etag identifier
+    /// * `metadata` - Any metadata pairs to include in the request.
+    /// * `options` - Any state option
+    pub async fn save_state<S>(
+        &mut self,
+        store_name: S,
+        key: S,
+        value: Vec<u8>,
+        etag: Option<Etag>,
+        metadata: Option<HashMap<String, String>>,
+        options: Option<StateOptions>,
+    ) -> Result<(), Error>
     where
-        I: IntoIterator<Item = (K, Vec<u8>)>,
-        K: Into<String>,
+        S: Into<String>,
+    {
+        let states = vec![StateItem {
+            key: key.into(),
+            value,
+            etag,
+            metadata: metadata.unwrap_or_default(),
+            options,
+        }];
+
+        self.save_bulk_states(store_name, states).await
+    }
+
+    /// Save an array of state objects.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_name` - The name of state store.
+    /// * `items` - The array of the state items.
+    pub async fn save_bulk_states<S, I>(&mut self, store_name: S, items: I) -> Result<(), Error>
+    where
+        S: Into<String>,
+        I: Into<Vec<StateItem>>,
     {
         self.0
             .save_state(SaveStateRequest {
                 store_name: store_name.into(),
-                states: states.into_iter().map(|pair| pair.into()).collect(),
+                states: items.into(),
             })
             .await
     }
@@ -533,6 +569,18 @@ impl<T: DaprInterface> Client<T> {
         };
         self.0.delete_job_alpha1(request).await
     }
+
+    /// Converse with an LLM
+    ///
+    /// # Arguments
+    ///
+    /// * ConversationRequest - The request containing inputs to send to the LLM
+    pub async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error> {
+        self.0.converse_alpha1(request).await
+    }
 }
 
 #[async_trait]
@@ -595,6 +643,11 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: DeleteJobRequest,
     ) -> Result<DeleteJobResponse, Error>;
+
+    async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error>;
 }
 
 #[async_trait]
@@ -789,6 +842,16 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .await?
             .into_inner())
     }
+
+    async fn converse_alpha1(
+        &mut self,
+        request: ConversationRequest,
+    ) -> Result<ConversationResponse, Error> {
+        Ok(self
+            .converse_alpha1(Request::new(request))
+            .await?
+            .into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -814,6 +877,15 @@ pub type GetStateResponse = dapr_v1::GetStateResponse;
 
 /// A request for saving state
 pub type SaveStateRequest = dapr_v1::SaveStateRequest;
+
+/// A state item
+pub type StateItem = common_v1::StateItem;
+
+/// State options
+pub type StateOptions = common_v1::StateOptions;
+
+/// Etag identifier
+pub type Etag = common_v1::Etag;
 
 /// A request for querying state
 pub type QueryStateRequest = dapr_v1::QueryStateRequest;
@@ -907,6 +979,18 @@ pub type DeleteJobRequest = crate::dapr::proto::runtime::v1::DeleteJobRequest;
 /// A response from a delete job request
 pub type DeleteJobResponse = crate::dapr::proto::runtime::v1::DeleteJobResponse;
 
+/// A request to conversate with an LLM
+pub type ConversationRequest = crate::dapr::proto::runtime::v1::ConversationRequest;
+
+/// A response from conversating with an LLM
+pub type ConversationResponse = crate::dapr::proto::runtime::v1::ConversationResponse;
+
+/// A result from an interacting with a LLM
+pub type ConversationResult = crate::dapr::proto::runtime::v1::ConversationResult;
+
+/// An input to the conversation
+pub type ConversationInput = crate::dapr::proto::runtime::v1::ConversationInput;
+
 type StreamPayload = crate::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
@@ -984,6 +1068,65 @@ impl JobBuilder {
             ttl: self.ttl,
             repeats: self.repeats,
             due_time: self.due_time,
+        }
+    }
+}
+
+pub struct ConversationInputBuilder {
+    message: String,
+    role: Option<String>,
+    scrub_pii: Option<bool>,
+}
+
+impl ConversationInputBuilder {
+    pub fn new(message: &str) -> Self {
+        ConversationInputBuilder {
+            message: message.to_string(),
+            role: None,
+            scrub_pii: None,
+        }
+    }
+
+    pub fn build(self) -> ConversationInput {
+        ConversationInput {
+            message: self.message,
+            role: self.role,
+            scrub_pii: self.scrub_pii,
+        }
+    }
+}
+
+pub struct ConversationRequestBuilder {
+    name: String,
+    context_id: Option<String>,
+    inputs: Vec<ConversationInput>,
+    parameters: HashMap<String, Any>,
+    metadata: HashMap<String, String>,
+    scrub_pii: Option<bool>,
+    temperature: Option<f64>,
+}
+impl ConversationRequestBuilder {
+    pub fn new(name: &str, inputs: Vec<ConversationInput>) -> Self {
+        ConversationRequestBuilder {
+            name: name.to_string(),
+            context_id: None,
+            inputs,
+            parameters: Default::default(),
+            metadata: Default::default(),
+            scrub_pii: None,
+            temperature: None,
+        }
+    }
+
+    pub fn build(self) -> ConversationRequest {
+        ConversationRequest {
+            name: self.name,
+            context_id: self.context_id,
+            inputs: self.inputs,
+            parameters: self.parameters,
+            metadata: self.metadata,
+            scrub_pii: self.scrub_pii,
+            temperature: self.temperature,
         }
     }
 }

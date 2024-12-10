@@ -12,9 +12,6 @@ resolver = "2"
 
 [workspace.dependencies]
 async-trait = "0.1"
-
-dapr-macros = { version = "0.16.0-rc.2", path = "./dapr-macros" }
-
 prost = "0.13.1"
 prost-build = "0.13.1"
 prost-types = "0.13.1"
@@ -31,7 +28,7 @@ tonic = "0.12.1"
 tonic-build = "0.12.1"
 
 [workspace.package]
-version = "0.16.0-rc.2"
+version = "0.16.0-rc.3"
 authors = [
     "Mike Nguyen <hey@mike.ee>",
     "The Dapr Authors <dapr@dapr.io>"

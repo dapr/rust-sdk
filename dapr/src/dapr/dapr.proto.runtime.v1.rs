@@ -3154,7 +3154,7 @@ pub struct Job {
     ///
     /// Systemd timer style cron accepts 6 fields:
     /// seconds | minutes | hours | day of month | month        | day of week
-    /// 0-59    | 0-59    | 0-23  | 1-31         | 1-12/jan-dec | 0-7/sun-sat
+    /// 0-59    | 0-59    | 0-23  | 1-31         | 1-12/jan-dec | 0-6/sun-sat
     ///
     /// "0 30 * * * *" - every hour on the half hour
     /// "0 15 3 * * *" - every day at 03:15
@@ -3228,6 +3228,72 @@ pub struct DeleteJobRequest {
 /// Empty
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeleteJobResponse {}
+/// ConversationRequest is the request object for Conversation.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationRequest {
+    /// The name of Conversation component
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    /// The ID of an existing chat (like in ChatGPT)
+    #[prost(string, optional, tag = "2")]
+    pub context_id: ::core::option::Option<::prost::alloc::string::String>,
+    /// Inputs for the conversation, support multiple input in one time.
+    #[prost(message, repeated, tag = "3")]
+    pub inputs: ::prost::alloc::vec::Vec<ConversationInput>,
+    /// Parameters for all custom fields.
+    #[prost(map = "string, message", tag = "4")]
+    pub parameters: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost_types::Any,
+    >,
+    /// The metadata passing to conversation components.
+    #[prost(map = "string, string", tag = "5")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    /// Scrub PII data that comes back from the LLM
+    #[prost(bool, optional, tag = "6")]
+    pub scrub_pii: ::core::option::Option<bool>,
+    /// Temperature for the LLM to optimize for creativity or predictability
+    #[prost(double, optional, tag = "7")]
+    pub temperature: ::core::option::Option<f64>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationInput {
+    /// The message to send to the llm
+    #[prost(string, tag = "1")]
+    pub message: ::prost::alloc::string::String,
+    /// The role to set for the message
+    #[prost(string, optional, tag = "2")]
+    pub role: ::core::option::Option<::prost::alloc::string::String>,
+    /// Scrub PII data that goes into the LLM
+    #[prost(bool, optional, tag = "3")]
+    pub scrub_pii: ::core::option::Option<bool>,
+}
+/// ConversationResult is the result for one input.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResult {
+    /// Result for the one conversation input.
+    #[prost(string, tag = "1")]
+    pub result: ::prost::alloc::string::String,
+    /// Parameters for all custom fields.
+    #[prost(map = "string, message", tag = "2")]
+    pub parameters: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost_types::Any,
+    >,
+}
+/// ConversationResponse is the response for Conversation.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResponse {
+    /// The ID of an existing chat (like in ChatGPT)
+    #[prost(string, optional, tag = "1")]
+    pub context_id: ::core::option::Option<::prost::alloc::string::String>,
+    /// An array of results.
+    #[prost(message, repeated, tag = "2")]
+    pub outputs: ::prost::alloc::vec::Vec<ConversationResult>,
+}
 /// PubsubSubscriptionType indicates the type of subscription
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -4414,6 +4480,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Starts a new instance of a workflow
+        #[deprecated]
         pub async fn start_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::StartWorkflowRequest>,
@@ -4441,6 +4508,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Gets details about a started workflow instance
+        #[deprecated]
         pub async fn get_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetWorkflowRequest>,
@@ -4468,6 +4536,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Purge Workflow
+        #[deprecated]
         pub async fn purge_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::PurgeWorkflowRequest>,
@@ -4492,6 +4561,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Terminates a running workflow instance
+        #[deprecated]
         pub async fn terminate_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::TerminateWorkflowRequest>,
@@ -4519,6 +4589,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Pauses a running workflow instance
+        #[deprecated]
         pub async fn pause_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::PauseWorkflowRequest>,
@@ -4543,6 +4614,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Resumes a paused workflow instance
+        #[deprecated]
         pub async fn resume_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ResumeWorkflowRequest>,
@@ -4567,6 +4639,7 @@ pub mod dapr_client {
             self.inner.unary(req, path, codec).await
         }
         /// Raise an event to a running workflow instance
+        #[deprecated]
         pub async fn raise_event_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::RaiseEventWorkflowRequest>,
@@ -4869,6 +4942,31 @@ pub mod dapr_client {
                 .insert(
                     GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteJobAlpha1"),
                 );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Converse with a LLM service
+        pub async fn converse_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ConversationRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ConversationResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/ConverseAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ConverseAlpha1"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -5316,6 +5414,14 @@ pub mod dapr_server {
             request: tonic::Request<super::DeleteJobRequest>,
         ) -> std::result::Result<
             tonic::Response<super::DeleteJobResponse>,
+            tonic::Status,
+        >;
+        /// Converse with a LLM service
+        async fn converse_alpha1(
+            &self,
+            request: tonic::Request<super::ConversationRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ConversationResponse>,
             tonic::Status,
         >;
     }
@@ -7985,6 +8091,49 @@ pub mod dapr_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = DeleteJobAlpha1Svc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/ConverseAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct ConverseAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::ConversationRequest>
+                    for ConverseAlpha1Svc<T> {
+                        type Response = super::ConversationResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ConversationRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::converse_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ConverseAlpha1Svc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
