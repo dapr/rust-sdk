@@ -84,6 +84,12 @@ pub struct DaprHttpServer {
 
 impl DaprHttpServer {
     /// Creates a new instance of the Dapr HTTP server with default options.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if the Dapr Sidecar cannot be reached!
+    /// For a non-panicking version that allows you to handle any errors yourself, see:
+    /// [DaprHttpServer::try_new_with_dapr_port]
     pub async fn new() -> Self {
         let dapr_port: u16 = std::env::var("DAPR_GRPC_PORT")
             .unwrap_or("3501".into())
@@ -92,19 +98,38 @@ impl DaprHttpServer {
         Self::with_dapr_port(dapr_port).await
     }
 
+    /// Creates a new instance of the Dapr HTTP server that connects to the Dapr sidecar on the
+    /// given dapr_port.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if the Dapr Sidecar cannot be reached!
+    /// For a non-panicking version that allows you to handle any errors yourself, see:
+    /// [DaprHttpServer::try_new_with_dapr_port]
     pub async fn with_dapr_port(dapr_port: u16) -> Self {
-        let dapr_addr = format!("https://127.0.0.1:{}", dapr_port);
-
-        let cc = match TonicClient::connect(dapr_addr).await {
+        match Self::try_new_with_dapr_port(dapr_port).await {
             Ok(c) => c,
             Err(err) => panic!("failed to connect to dapr: {}", err),
-        };
+        }
+    }
+
+    /// Creates a new instance of the Dapr HTTP server that connects to the Dapr sidecar on the
+    /// given dapr_port.
+    ///
+    /// In contrast to the other functions that create a DaprHttpServer, this function does
+    /// not panic, but instead returns a Result.
+    pub async fn try_new_with_dapr_port(
+        dapr_port: u16,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let dapr_addr = format!("https://127.0.0.1:{}", dapr_port);
+
+        let cc = TonicClient::connect(dapr_addr).await?;
         let rt = ActorRuntime::new(cc);
 
-        DaprHttpServer {
+        Ok(DaprHttpServer {
             actor_runtime: Arc::new(rt),
             shutdown_signal: None,
-        }
+        })
     }
 
     pub fn with_graceful_shutdown<F>(self, signal: F) -> Self
@@ -138,7 +163,7 @@ impl DaprHttpServer {
             .unwrap_or(8080);
 
         let address = format!("127.0.0.1:{}", port.unwrap_or(default_port));
-        let listener = TcpListener::bind(address).await.unwrap();
+        let listener = TcpListener::bind(address).await?;
 
         let server = axum::serve(listener, app.into_make_service());
 
