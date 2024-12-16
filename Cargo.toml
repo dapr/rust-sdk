@@ -28,7 +28,7 @@ tonic = "0.12.1"
 tonic-build = "0.12.1"
 
 [workspace.package]
-version = "0.16.0-rc.3"
+version = "0.16.0-rc.4"
 authors = [
     "Mike Nguyen <hey@mike.ee>",
     "The Dapr Authors <dapr@dapr.io>"
