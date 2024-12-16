@@ -656,6 +656,13 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
     }
 
+    async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
+        self.publish_event(Request::new(request))
+            .await?
+            .into_inner();
+        Ok(())
+    }
+
     async fn invoke_service(
         &mut self,
         request: InvokeServiceRequest,
@@ -676,13 +683,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .into_inner())
     }
 
-    async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        self.publish_event(Request::new(request))
-            .await?
-            .into_inner();
-        Ok(())
-    }
-
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
         Ok(self.get_secret(Request::new(request)).await?.into_inner())
     }
@@ -701,6 +701,11 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
     }
 
+    async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
+        self.save_state(Request::new(request)).await?.into_inner();
+        Ok(())
+    }
+
     async fn query_state_alpha1(
         &mut self,
         request: QueryStateRequest,
@@ -709,11 +714,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .query_state_alpha1(Request::new(request))
             .await?
             .into_inner())
-    }
-
-    async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        self.save_state(Request::new(request)).await?.into_inner();
-        Ok(())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {

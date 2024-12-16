@@ -1,4 +1,4 @@
-use std::{collections::HashMap, thread, time::Duration};
+use std::{collections::HashMap, time::Duration};
 
 use tokio::time;
 
@@ -21,7 +21,7 @@ struct Refund {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
-    thread::sleep(Duration::from_secs(2));
+    tokio::time::sleep(Duration::from_secs(2)).await;
 
     // Set address for Dapr connection
     let addr = "https://127.0.0.1".to_string();

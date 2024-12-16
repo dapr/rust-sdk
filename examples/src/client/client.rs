@@ -2,7 +2,7 @@
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
-    std::thread::sleep(std::time::Duration::new(2, 0));
+    tokio::time::sleep(std::time::Duration::new(2, 0)).await;
 
     // Set the Dapr address
     let addr = "https://127.0.0.1".to_string();
