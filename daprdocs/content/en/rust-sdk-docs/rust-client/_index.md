@@ -34,7 +34,7 @@ dapr = "0.16.0"
 You can either reference `dapr::Client` or bind the full path to a new name as follows:
 
 ```rust
-use dapr::Client as DaprClient
+use dapr::Client as DaprClient;
 ```
 
 ## Instantiating the Dapr client
@@ -43,7 +43,7 @@ use dapr::Client as DaprClient
 let addr = "https://127.0.0.1".to_string();
 
 let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr,
-    port).await?;
+port).await?;
 ```
 
 ## Building blocks
