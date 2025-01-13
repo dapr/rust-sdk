@@ -10,8 +10,8 @@ use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
 use tonic::{Status, Streaming};
 
-use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
+use crate::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -603,6 +603,13 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
     }
 
+    async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
+        self.publish_event(Request::new(request))
+            .await?
+            .into_inner();
+        Ok(())
+    }
+
     async fn invoke_service(
         &mut self,
         request: InvokeServiceRequest,
@@ -623,13 +630,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .into_inner())
     }
 
-    async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        self.publish_event(Request::new(request))
-            .await?
-            .into_inner();
-        Ok(())
-    }
-
     async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
         Ok(self.get_secret(Request::new(request)).await?.into_inner())
     }
@@ -648,6 +648,11 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         Ok(self.get_state(Request::new(request)).await?.into_inner())
     }
 
+    async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
+        self.save_state(Request::new(request)).await?.into_inner();
+        Ok(())
+    }
+
     async fn query_state_alpha1(
         &mut self,
         request: QueryStateRequest,
@@ -656,11 +661,6 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .query_state_alpha1(Request::new(request))
             .await?
             .into_inner())
-    }
-
-    async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        self.save_state(Request::new(request)).await?.into_inner();
-        Ok(())
     }
 
     async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
@@ -875,39 +875,39 @@ pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationRes
 pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 /// Encryption gRPC request
-pub type EncryptRequest = crate::dapr::proto::runtime::v1::EncryptRequest;
+pub type EncryptRequest = crate::proto::runtime::v1::EncryptRequest;
 
 /// Decrypt gRPC request
-pub type DecryptRequest = crate::dapr::proto::runtime::v1::DecryptRequest;
+pub type DecryptRequest = crate::proto::runtime::v1::DecryptRequest;
 
 /// Encryption request options
-pub type EncryptRequestOptions = crate::dapr::proto::runtime::v1::EncryptRequestOptions;
+pub type EncryptRequestOptions = crate::proto::runtime::v1::EncryptRequestOptions;
 
 /// Decryption request options
-pub type DecryptRequestOptions = crate::dapr::proto::runtime::v1::DecryptRequestOptions;
+pub type DecryptRequestOptions = crate::proto::runtime::v1::DecryptRequestOptions;
 
 /// The basic job structure
-pub type Job = crate::dapr::proto::runtime::v1::Job;
+pub type Job = crate::proto::runtime::v1::Job;
 
 /// A request to schedule a job
-pub type ScheduleJobRequest = crate::dapr::proto::runtime::v1::ScheduleJobRequest;
+pub type ScheduleJobRequest = crate::proto::runtime::v1::ScheduleJobRequest;
 
 /// A response from a schedule job request
-pub type ScheduleJobResponse = crate::dapr::proto::runtime::v1::ScheduleJobResponse;
+pub type ScheduleJobResponse = crate::proto::runtime::v1::ScheduleJobResponse;
 
 /// A request to get a job
-pub type GetJobRequest = crate::dapr::proto::runtime::v1::GetJobRequest;
+pub type GetJobRequest = crate::proto::runtime::v1::GetJobRequest;
 
 /// A response from a get job request
-pub type GetJobResponse = crate::dapr::proto::runtime::v1::GetJobResponse;
+pub type GetJobResponse = crate::proto::runtime::v1::GetJobResponse;
 
 /// A request to delete a job
-pub type DeleteJobRequest = crate::dapr::proto::runtime::v1::DeleteJobRequest;
+pub type DeleteJobRequest = crate::proto::runtime::v1::DeleteJobRequest;
 
 /// A response from a delete job request
-pub type DeleteJobResponse = crate::dapr::proto::runtime::v1::DeleteJobResponse;
+pub type DeleteJobResponse = crate::proto::runtime::v1::DeleteJobResponse;
 
-type StreamPayload = crate::dapr::proto::common::v1::StreamPayload;
+type StreamPayload = crate::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
 where
     K: Into<String>,
