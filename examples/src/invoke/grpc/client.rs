@@ -1,5 +1,5 @@
 use crate::hello_world::HelloReply;
-use std::{thread, time::Duration};
+use std::time::Duration;
 
 use prost::Message;
 
@@ -12,7 +12,7 @@ type DaprClient = dapr::Client<dapr::client::TonicClient>;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sleep to allow for the server to become available
-    thread::sleep(Duration::from_secs(5));
+    tokio::time::sleep(Duration::from_secs(5)).await;
 
     // Set the Dapr address
     let address = "https://127.0.0.1".to_string();

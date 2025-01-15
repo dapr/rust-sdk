@@ -61,7 +61,7 @@ impl AppCallback for AppCallbackService {
         let name = &r.name;
         let data = &r.data;
 
-        let message = String::from_utf8_lossy(&data);
+        let message = String::from_utf8_lossy(data);
         println!("Binding Name: {}", &name);
         println!("Message: {}", &message);
 

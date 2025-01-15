@@ -7,7 +7,7 @@ type DaprClient = dapr::Client<dapr::client::TonicClient>;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: Handle this issue in the sdk
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
-    std::thread::sleep(std::time::Duration::new(2, 0));
+    tokio::time::sleep(std::time::Duration::new(2, 0)).await;
 
     // Set the Dapr address
     let addr = "https://127.0.0.1".to_string();
@@ -19,14 +19,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // get key-value pair in the state store
     let response = client
-        .get_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
+        .get_configuration(CONFIGSTORE_NAME, vec![&key], None)
         .await?;
     let val = response.items.get("hello").unwrap();
     println!("Configuration value: {val:?}");
 
     // Subscribe for configuration changes
     let mut stream = client
-        .subscribe_configuration(CONFIGSTORE_NAME, vec![(&key)], None)
+        .subscribe_configuration(CONFIGSTORE_NAME, vec![&key], None)
         .await?;
 
     let mut subscription_id = String::new();
