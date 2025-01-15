@@ -13,7 +13,6 @@ rust-version.workspace = true
 [dependencies]
 async-trait = { workspace = true }
 axum = "0.7"
-bytes = "1.7"
 chrono = "0.4"
 futures = "0.3"
 log = "0.4"
@@ -33,5 +32,4 @@ dapr = { path = "./" }
 dapr-macros = { path = "../dapr-macros" }
 tokio = { workspace = true, features = ["full"] }
 uuid = { version = "1.10", features = ["v4"] }
-tokio-test = { workspace = true }
 tokio-stream = { workspace = true }

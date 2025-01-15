@@ -3,7 +3,7 @@ use serde_json::json;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
-    std::thread::sleep(std::time::Duration::new(5, 0));
+    tokio::time::sleep(std::time::Duration::new(5, 0)).await;
 
     // Set the Dapr address and create a connection
     let addr = "https://127.0.0.1".to_string();
