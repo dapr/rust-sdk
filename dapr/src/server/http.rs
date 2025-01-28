@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{OriginalUri, Path, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{delete, get, put},
@@ -207,12 +207,21 @@ impl DaprHttpServer {
             .route(
                 "/actors/:actor_type/:actor_id/method/timer/:timer_name",
                 put(invoke_timer).with_state(rt.clone()),
-            );
+            )
+            .fallback(fallback_handler);
 
         self.actor_runtime
             .configure_method_routes(app, rt.clone())
             .await
     }
+}
+
+async fn fallback_handler(OriginalUri(uri): OriginalUri) -> impl IntoResponse {
+    log::warn!("Returning 404 for request: {uri}");
+    (
+        StatusCode::NOT_FOUND,
+        format!("The URI '{uri}' could not be found!"),
+    )
 }
 
 async fn health_check() -> impl IntoResponse {
