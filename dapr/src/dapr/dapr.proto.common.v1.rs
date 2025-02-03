@@ -51,16 +51,16 @@ pub mod http_extension {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::None => "NONE",
-                Self::Get => "GET",
-                Self::Head => "HEAD",
-                Self::Post => "POST",
-                Self::Put => "PUT",
-                Self::Delete => "DELETE",
-                Self::Connect => "CONNECT",
-                Self::Options => "OPTIONS",
-                Self::Trace => "TRACE",
-                Self::Patch => "PATCH",
+                Verb::None => "NONE",
+                Verb::Get => "GET",
+                Verb::Head => "HEAD",
+                Verb::Post => "POST",
+                Verb::Put => "PUT",
+                Verb::Delete => "DELETE",
+                Verb::Connect => "CONNECT",
+                Verb::Options => "OPTIONS",
+                Verb::Trace => "TRACE",
+                Verb::Patch => "PATCH",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -198,9 +198,9 @@ pub mod state_options {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::ConcurrencyUnspecified => "CONCURRENCY_UNSPECIFIED",
-                Self::ConcurrencyFirstWrite => "CONCURRENCY_FIRST_WRITE",
-                Self::ConcurrencyLastWrite => "CONCURRENCY_LAST_WRITE",
+                StateConcurrency::ConcurrencyUnspecified => "CONCURRENCY_UNSPECIFIED",
+                StateConcurrency::ConcurrencyFirstWrite => "CONCURRENCY_FIRST_WRITE",
+                StateConcurrency::ConcurrencyLastWrite => "CONCURRENCY_LAST_WRITE",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -238,9 +238,9 @@ pub mod state_options {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::ConsistencyUnspecified => "CONSISTENCY_UNSPECIFIED",
-                Self::ConsistencyEventual => "CONSISTENCY_EVENTUAL",
-                Self::ConsistencyStrong => "CONSISTENCY_STRONG",
+                StateConsistency::ConsistencyUnspecified => "CONSISTENCY_UNSPECIFIED",
+                StateConsistency::ConsistencyEventual => "CONSISTENCY_EVENTUAL",
+                StateConsistency::ConsistencyStrong => "CONSISTENCY_STRONG",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.

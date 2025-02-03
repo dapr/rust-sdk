@@ -105,9 +105,9 @@ pub mod topic_event_response {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::Success => "SUCCESS",
-                Self::Retry => "RETRY",
-                Self::Drop => "DROP",
+                TopicEventResponseStatus::Success => "SUCCESS",
+                TopicEventResponseStatus::Retry => "RETRY",
+                TopicEventResponseStatus::Drop => "DROP",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -288,8 +288,8 @@ pub mod binding_event_response {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::Sequential => "SEQUENTIAL",
-                Self::Parallel => "PARALLEL",
+                BindingEventConcurrency::Sequential => "SEQUENTIAL",
+                BindingEventConcurrency::Parallel => "PARALLEL",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -2422,9 +2422,9 @@ pub mod actor_runtime {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::Initializing => "INITIALIZING",
-                Self::Disabled => "DISABLED",
-                Self::Running => "RUNNING",
+                ActorRuntimeStatus::Initializing => "INITIALIZING",
+                ActorRuntimeStatus::Disabled => "DISABLED",
+                ActorRuntimeStatus::Running => "RUNNING",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -2674,10 +2674,10 @@ pub mod unlock_response {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::Success => "SUCCESS",
-                Self::LockDoesNotExist => "LOCK_DOES_NOT_EXIST",
-                Self::LockBelongsToOthers => "LOCK_BELONGS_TO_OTHERS",
-                Self::InternalError => "INTERNAL_ERROR",
+                Status::Success => "SUCCESS",
+                Status::LockDoesNotExist => "LOCK_DOES_NOT_EXIST",
+                Status::LockBelongsToOthers => "LOCK_BELONGS_TO_OTHERS",
+                Status::InternalError => "INTERNAL_ERROR",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -2732,8 +2732,8 @@ pub mod subtle_get_key_request {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Self::Pem => "PEM",
-                Self::Json => "JSON",
+                KeyFormat::Pem => "PEM",
+                KeyFormat::Json => "JSON",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
@@ -3314,10 +3314,10 @@ impl PubsubSubscriptionType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            Self::Unknown => "UNKNOWN",
-            Self::Declarative => "DECLARATIVE",
-            Self::Programmatic => "PROGRAMMATIC",
-            Self::Streaming => "STREAMING",
+            PubsubSubscriptionType::Unknown => "UNKNOWN",
+            PubsubSubscriptionType::Declarative => "DECLARATIVE",
+            PubsubSubscriptionType::Programmatic => "PROGRAMMATIC",
+            PubsubSubscriptionType::Streaming => "STREAMING",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
