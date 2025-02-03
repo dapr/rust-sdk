@@ -12,8 +12,8 @@ resolver = "2"
 
 [workspace.dependencies]
 async-trait = "0.1"
-prost = "0.13.1"
-prost-types = "0.13.1"
+prost = "0.13.4"
+prost-types = "0.13.4"
 
 serde = "1.0"
 serde_json = "1.0"
@@ -22,11 +22,11 @@ tokio = "1.39"
 tokio-stream = "0.1"
 tokio-util = "0.7"
 
-tonic = "0.12.1"
-tonic-build = "0.12.1"
+tonic = "0.12.3"
+tonic-build = "0.12.3"
 
 [workspace.package]
-version = "0.16.0-rc.4"
+version = "0.16.0-rc.5"
 authors = [
     "Mike Nguyen <hey@mike.ee>",
     "The Dapr Authors <dapr@dapr.io>"
