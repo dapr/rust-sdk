@@ -30,6 +30,26 @@ impl<T: DaprInterface> Client<T> {
         Ok(Client(T::connect(address).await?))
     }
 
+    /// Connect to the Dapr sidecar with a specific port.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - Address of gRPC server to connect to.
+    /// * `port` - Port of the gRPC server to connect to.
+    pub async fn connect_with_port(addr: String, port: String) -> Result<Self, Error> {
+        // assert that port is between 1 and 65535
+        let port: u16 = match port.parse::<u16>() {
+            Ok(p) => p,
+            Err(_) => {
+                panic!("Port must be a number between 1 and 65535");
+            }
+        };
+
+        let address = format!("{}:{}", addr, port);
+
+        Ok(Client(T::connect(address).await?))
+    }
+
     /// Invoke a method in a Dapr enabled app.
     ///
     /// # Arguments

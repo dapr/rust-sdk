@@ -53,7 +53,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.16.0-rc.5"
+dapr = "0.16.0-rc.6"
 ```
 
 Here's a basic example to create a client:
