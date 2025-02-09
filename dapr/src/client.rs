@@ -75,7 +75,7 @@ impl<T: DaprInterface> Client<T> {
                     data,
                     ..Default::default()
                 }
-                    .into(),
+                .into(),
             })
             .await
     }
@@ -648,7 +648,7 @@ pub trait DaprInterface: Sized {
     ) -> Result<UnsubscribeConfigurationResponse, Error>;
 
     async fn encrypt(&mut self, payload: Vec<EncryptRequest>)
-                     -> Result<Vec<StreamPayload>, Status>;
+        -> Result<Vec<StreamPayload>, Status>;
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
 
