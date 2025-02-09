@@ -10,8 +10,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Set the Dapr address
     let address = "https://127.0.0.1".to_string();
+    let port = "3500".to_string();
 
-    let mut client = DaprClient::connect(address).await?;
+    let mut client = DaprClient::connect_with_port(address, port).await?;
 
     let input = ConversationInputBuilder::new("hello world").build();
 
