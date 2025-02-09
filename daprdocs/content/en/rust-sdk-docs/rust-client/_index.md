@@ -46,6 +46,12 @@ let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr,
 port).await?;
 ```
 
+Alternatively if you would like to specify a custom port, this can be done by using this connect method:
+
+```rust
+let mut client = dapr::Client::<dapr::client::TonicClient>::connect_with_port(addr, "3500".to_string()).await?;
+```
+
 ## Building blocks
 
 The Rust SDK allows you to interface with the
