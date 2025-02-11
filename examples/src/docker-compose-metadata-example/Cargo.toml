@@ -1,0 +1,15 @@
+[package]
+name = "metadata"
+publish = false
+version = "0.0.1"
+edition = "2018"
+
+[workspace]
+
+[dependencies]
+dapr = "0.16.0-rc.6"
+tokio = { version = "1.43", features = ["full"] }
+
+[[bin]]
+name = "metadata"
+path = "main.rs"

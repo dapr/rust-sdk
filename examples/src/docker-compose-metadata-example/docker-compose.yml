@@ -1,0 +1,34 @@
+version: '3'
+services:
+  ############################
+  # Rustapp app + Dapr sidecar
+  ############################
+  rustapp:
+    build: .
+    ports:
+      - "50002:50002"
+    depends_on:
+      - placement
+    networks:
+      - hello-dapr
+  rustapp-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+              "-app-id", "rustapp",
+              "-placement-host-address", "placement:50006",
+              "-dapr-grpc-port", "50002"]
+    depends_on:
+      - rustapp
+    network_mode: "service:rustapp"
+  ############################
+  # Dapr placement service
+  ############################
+  placement:
+    image: "daprio/dapr:edge"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
+    networks:
+      - hello-dapr
+networks:
+  hello-dapr:
