@@ -1093,7 +1093,7 @@ impl JobBuilder {
 }
 
 pub struct ConversationInputBuilder {
-    message: String,
+    content: String,
     role: Option<String>,
     scrub_pii: Option<bool>,
 }
@@ -1101,7 +1101,7 @@ pub struct ConversationInputBuilder {
 impl ConversationInputBuilder {
     pub fn new(message: &str) -> Self {
         ConversationInputBuilder {
-            message: message.to_string(),
+            content: message.to_string(),
             role: None,
             scrub_pii: None,
         }
@@ -1109,7 +1109,7 @@ impl ConversationInputBuilder {
 
     pub fn build(self) -> ConversationInput {
         ConversationInput {
-            message: self.message,
+            content: self.content,
             role: self.role,
             scrub_pii: self.scrub_pii,
         }

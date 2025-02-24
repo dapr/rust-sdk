@@ -3261,9 +3261,9 @@ pub struct ConversationRequest {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ConversationInput {
-    /// The message to send to the llm
+    /// The content to send to the llm
     #[prost(string, tag = "1")]
-    pub message: ::prost::alloc::string::String,
+    pub content: ::prost::alloc::string::String,
     /// The role to set for the message
     #[prost(string, optional, tag = "2")]
     pub role: ::core::option::Option<::prost::alloc::string::String>,
