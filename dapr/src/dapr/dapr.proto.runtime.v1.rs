@@ -2373,9 +2373,18 @@ pub struct GetMetadataResponse {
     pub runtime_version: ::prost::alloc::string::String,
     #[prost(string, repeated, tag = "9")]
     pub enabled_features: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    /// TODO: Cassie: probably add scheduler runtime status
     #[prost(message, optional, tag = "10")]
     pub actor_runtime: ::core::option::Option<ActorRuntime>,
+    #[prost(message, optional, tag = "11")]
+    pub scheduler: ::core::option::Option<MetadataScheduler>,
+}
+/// MetadataScheduler is a message that contains the list of addresses of the
+/// scheduler connections.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MetadataScheduler {
+    /// connected_addresses the list of addresses of the scheduler connections.
+    #[prost(string, repeated, tag = "1")]
+    pub connected_addresses: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ActorRuntime {
