@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let request =
         ConversationRequestBuilder::new(conversation_component, vec![input.clone()]).build();
 
-    println!("conversation input: {:?}", input.message);
+    println!("conversation input: {:?}", input.content);
 
     let response = client.converse_alpha1(request).await?;
 
