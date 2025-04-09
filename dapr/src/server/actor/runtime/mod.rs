@@ -102,9 +102,9 @@ impl ActorTypeRegistration {
     /// # Arguments:
     /// * `method_name` - The name of the method to be registered. This name will be used by actor clients to invoke the method.
     /// * `handler` - The handler function to be invoked when the method is called.  
-    ///     Can be any valid [Axum handler](https://docs.rs/axum/latest/axum/handler/index.html),
-    ///     use [Axum extractors](https://docs.rs/axum/latest/axum/extract/index.html) to access the incoming request and return an [`impl IntoResponse`](https://docs.rs/axum/latest/axum/response/trait.IntoResponse.html).
-    ///     Use the `DaprJson` extractor to deserialize the request from Json coming from a Dapr sidecar.
+    ///   Can be any valid [Axum handler](https://docs.rs/axum/latest/axum/handler/index.html),
+    ///   use [Axum extractors](https://docs.rs/axum/latest/axum/extract/index.html) to access the incoming request and return an [`impl IntoResponse`](https://docs.rs/axum/latest/axum/response/trait.IntoResponse.html).
+    ///   Use the `DaprJson` extractor to deserialize the request from Json coming from a Dapr sidecar.
     /// # Example:
     /// ```ignore
     /// # use std::sync::Arc;
