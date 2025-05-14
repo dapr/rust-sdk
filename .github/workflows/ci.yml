@@ -16,7 +16,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  CARGO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
   PROTOC_VERSION: 24.4
   RUSTFLAGS: "-D warnings"
 
@@ -145,4 +144,6 @@ jobs:
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v4
     - name: cargo publish - ${{ matrix.crate }}
+      env:
+          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
       run: cargo publish --manifest-path ${{ matrix.crate }}/Cargo.toml --token ${{ env.CARGO_TOKEN }}
