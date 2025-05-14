@@ -27,8 +27,7 @@ Add Dapr to your `cargo.toml`
 
 ```toml
 [dependencies]
-# Other dependencies
-dapr = "0.16.1"
+dapr = "0.16"
 ```
 
 You can either reference `dapr::Client` or bind the full path to a new name as follows:
