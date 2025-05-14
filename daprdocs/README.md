@@ -14,7 +14,8 @@ This allows separation of roles and expertise between maintainers, and makes it 
 
 ## Writing Rust SDK docs
 
-To get up and running to write Go SDK docs, visit the [docs repo](https://github.com/dapr/docs) to initialize your environment. It will clone both the docs repo and this repo, so you can make changes and see it rendered within the site instantly, as well as commit and PR into this repo.
+To get up and running to write Rust SDK docs, visit the [docs repo](https://github.com/dapr/docs) to initialize your 
+environment. It will clone both the docs repo and this repo, so you can make changes and see it rendered within the site instantly, as well as commit and PR into this repo.
 
 Make sure to read the [docs contributing guide](https://docs.dapr.io/contributing/contributing-docs/) for information on style/semantics/etc.
 
