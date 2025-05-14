@@ -1,7 +1,5 @@
-use std::iter;
-
 use proc_macro2::TokenTree;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::{parse_macro_input, Ident, LitStr};
 
@@ -77,17 +75,22 @@ derive_parse! {
 
 #[proc_macro_attribute]
 pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let actor_struct_name = match syn::parse::<syn::ItemStruct>(item.clone()) {
-        Ok(actor_struct) => actor_struct.ident.clone(),
-        Err(_) => match syn::parse::<syn::ItemType>(item.clone()) {
-            Ok(ty) => ty.ident.clone(),
-            Err(e) => panic!("Error parsing actor struct: {}", e),
+    let item_struct = match syn::parse::<syn::ItemStruct>(item.clone()) {
+        Ok(s) => s,
+        Err(_) => match syn::parse::<syn::ItemType>(item) {
+            Ok(ty) => return ty.into_token_stream().into(),
+            Err(e) => panic!("Error parsing actor: {}", e),
         },
     };
 
-    let mut result = TokenStream::from(quote!(
+    let actor_ident = &item_struct.ident;
+    let generics = &item_struct.generics;
+
+    let expanded_impl = quote! {
         #[async_trait::async_trait]
-        impl dapr::server::actor::axum::extract::FromRequestParts<dapr::server::actor::runtime::ActorState> for &#actor_struct_name {
+        impl #generics dapr::server::actor::axum::extract::FromRequestParts<dapr::server::actor::runtime::ActorState>
+            for &#actor_ident #generics
+        {
             type Rejection = dapr::server::actor::ActorRejection;
 
             async fn from_request_parts(
@@ -103,16 +106,8 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 };
                 let actor_type = state.actor_type.clone();
                 let actor_id = path.actor_id.clone();
-                log::info!(
-                    "Request for actor_type: {}, actor_id: {}",
-                    actor_type,
-                    actor_id
-                );
-                let actor = match state
-                    .runtime
-                    .get_or_create_actor(&actor_type, &actor_id)
-                    .await
-                {
+                log::info!("Request for actor_type: {}, actor_id: {}", actor_type, actor_id);
+                let actor = match state.runtime.get_or_create_actor(&actor_type, &actor_id).await {
                     Ok(actor) => actor,
                     Err(e) => {
                         log::error!("Error getting actor: {}", e);
@@ -120,15 +115,16 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 };
                 let actor = actor.as_ref();
-                let well_known_actor =
-                    unsafe { &*(actor as *const dyn dapr::server::actor::Actor as *const #actor_struct_name) };
+                let well_known_actor = unsafe {
+                    &*(actor as *const dyn dapr::server::actor::Actor as *const #actor_ident #generics)
+                };
                 Ok(well_known_actor)
             }
         }
-    ));
+    };
 
-    result.extend(iter::once(item));
-
+    let mut result = TokenStream::from(expanded_impl);
+    result.extend(TokenStream::from(quote! { #item_struct }));
     result
 }
 
