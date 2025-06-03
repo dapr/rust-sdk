@@ -9,8 +9,10 @@ pub use client::Client;
 pub mod appcallback;
 /// Module containing the 'Client' implementation.
 pub mod client;
+
 /// Module importing the Dapr runtime implementation.
 pub mod dapr {
+    #![allow(clippy::large_enum_variant)]
     pub mod proto {
         pub mod common {
             pub mod v1 {
