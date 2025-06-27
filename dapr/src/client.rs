@@ -25,7 +25,7 @@ impl<T: DaprInterface> Client<T> {
     pub async fn connect(addr: String) -> Result<Self, Error> {
         // Get the Dapr port to create a connection
         let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-        let address = format!("{}:{}", addr, port);
+        let address = format!("{addr}:{port}");
 
         Ok(Client(T::connect(address).await?))
     }
@@ -45,7 +45,7 @@ impl<T: DaprInterface> Client<T> {
             }
         };
 
-        let address = format!("{}:{}", addr, port);
+        let address = format!("{addr}:{port}");
 
         Ok(Client(T::connect(address).await?))
     }
