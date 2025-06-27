@@ -37,7 +37,7 @@ impl Display for ActorError {
             ActorError::CorruptedState => write!(f, "Actor state corrupted"),
             ActorError::MethodNotFound => write!(f, "Method not found"),
             ActorError::ActorNotFound => write!(f, "Actor not found"),
-            ActorError::MethodError(e) => write!(f, "Method error: {}", e),
+            ActorError::MethodError(e) => write!(f, "Method error: {e}"),
             ActorError::SerializationError() => write!(f, "Serialization error"),
         }
     }

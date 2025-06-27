@@ -28,14 +28,14 @@ where
         let bytes = match axum::body::Bytes::from_request(req, state).await {
             Ok(bytes) => bytes,
             Err(e) => {
-                log::error!("Error getting bytes: {}", e);
+                log::error!("Error getting bytes: {e}");
                 return Err(JsonRejection::JsonError(e.to_string()));
             }
         };
         let value = match serde_json::from_slice::<T>(&bytes) {
             Ok(value) => value,
             Err(e) => {
-                log::error!("Error deserializing JSON: {}", e);
+                log::error!("Error deserializing JSON: {e}");
                 return Err(JsonRejection::JsonError(e.to_string()));
             }
         };

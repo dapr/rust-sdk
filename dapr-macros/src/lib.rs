@@ -81,7 +81,7 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(actor_struct) => actor_struct.ident.clone(),
         Err(_) => match syn::parse::<syn::ItemType>(item.clone()) {
             Ok(ty) => ty.ident.clone(),
-            Err(e) => panic!("Error parsing actor struct: {}", e),
+            Err(e) => panic!("Error parsing actor struct: {e}"),
         },
     };
 

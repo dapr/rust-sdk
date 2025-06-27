@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let greeter_service = GreeterService::default();
 
-    println!("AppCallback server listening on: {}", server_address);
+    println!("AppCallback server listening on: {server_address}");
     // Create a gRPC server with the callback_service.
     Server::builder()
         .add_service(GreeterServer::new(greeter_service))

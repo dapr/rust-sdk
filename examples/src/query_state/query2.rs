@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         Ok(response) => response.results,
         Err(e) => {
-            println!("Error: {:?}", e);
+            println!("Error: {e:?}");
             return Ok(());
         }
     };
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "value": value
         }));
     }
-    println!("Query results: {:?}", results);
+    println!("Query results: {results:?}");
 
     Ok(())
 }

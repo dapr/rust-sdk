@@ -109,7 +109,7 @@ impl DaprHttpServer {
     pub async fn with_dapr_port(dapr_port: u16) -> Self {
         match Self::try_new_with_dapr_port(dapr_port).await {
             Ok(c) => c,
-            Err(err) => panic!("failed to connect to dapr: {}", err),
+            Err(err) => panic!("failed to connect to dapr: {err}"),
         }
     }
 
@@ -121,7 +121,7 @@ impl DaprHttpServer {
     pub async fn try_new_with_dapr_port(
         dapr_port: u16,
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        let dapr_addr = format!("https://127.0.0.1:{}", dapr_port);
+        let dapr_addr = format!("https://127.0.0.1:{dapr_port}");
 
         let cc = TonicClient::connect(dapr_addr).await?;
         let rt = ActorRuntime::new(cc);
@@ -244,11 +244,11 @@ async fn deactivate_actor(
     match runtime.deactivate_actor(&actor_type, &actor_id).await {
         Ok(_) => StatusCode::OK,
         Err(err) => {
-            log::error!("invoke_actor: {:?}", err);
+            log::error!("invoke_actor: {err:?}");
             match err {
                 super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
                 _ => {
-                    log::error!("deactivate_actor: {:?}", err);
+                    log::error!("deactivate_actor: {err:?}");
                     StatusCode::INTERNAL_SERVER_ERROR
                 }
             }
@@ -261,13 +261,7 @@ async fn invoke_reminder(
     Path((actor_type, actor_id, reminder_name)): Path<(String, String, String)>,
     Json(payload): Json<ReminderPayload>,
 ) -> impl IntoResponse {
-    log::debug!(
-        "invoke_reminder: {} {} {} {:?}",
-        actor_type,
-        actor_id,
-        reminder_name,
-        payload
-    );
+    log::debug!("invoke_reminder: {actor_type} {actor_id} {reminder_name} {payload:?}");
 
     match runtime
         .invoke_reminder(
@@ -280,11 +274,11 @@ async fn invoke_reminder(
     {
         Ok(_output) => StatusCode::OK,
         Err(err) => {
-            log::error!("invoke_actor: {:?}", err);
+            log::error!("invoke_actor: {err:?}");
             match err {
                 super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
                 _ => {
-                    log::error!("invoke_reminder: {:?}", err);
+                    log::error!("invoke_reminder: {err:?}");
                     StatusCode::INTERNAL_SERVER_ERROR
                 }
             }
@@ -297,13 +291,7 @@ async fn invoke_timer(
     Path((actor_type, actor_id, timer_name)): Path<(String, String, String)>,
     Json(payload): Json<TimerPayload>,
 ) -> impl IntoResponse {
-    log::debug!(
-        "invoke_timer: {} {} {}, {:?}",
-        actor_type,
-        actor_id,
-        timer_name,
-        payload
-    );
+    log::debug!("invoke_timer: {actor_type} {actor_id} {timer_name}, {payload:?}");
 
     match runtime
         .invoke_timer(
@@ -316,11 +304,11 @@ async fn invoke_timer(
     {
         Ok(_output) => StatusCode::OK,
         Err(err) => {
-            log::error!("invoke_actor: {:?}", err);
+            log::error!("invoke_actor: {err:?}");
             match err {
                 super::actor::ActorError::ActorNotFound => StatusCode::NOT_FOUND,
                 _ => {
-                    log::error!("invoke_timer: {:?}", err);
+                    log::error!("invoke_timer: {err:?}");
                     StatusCode::INTERNAL_SERVER_ERROR
                 }
             }
