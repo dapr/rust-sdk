@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .invoke_actor("MyActor", "a1", "do_stuff", data, None)
         .await;
 
-    println!("Response: {:#?}", resp);
+    println!("Response: {resp:#?}");
 
     Ok(())
 }

@@ -44,7 +44,7 @@ async fn backup_job_handler(request: JobEventRequest) -> Result<JobEventResponse
         // Deserialize the decoded value into a Backup struct
         let backup_val: Backup = serde_json::from_slice(&request.data.unwrap().value).unwrap();
 
-        println!("job received: {:?}", backup_val);
+        println!("job received: {backup_val:?}");
     }
 
     Ok(JobEventResponse::default())
@@ -88,9 +88,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_addr = "https://127.0.0.1".to_string();
 
     let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-    let address = format!("{}:{}", client_addr, port);
+    let address = format!("{client_addr}:{port}");
 
-    println!("attempting to create a dapr client: {}", address);
+    println!("attempting to create a dapr client: {address}");
 
     // Create the client
     let mut client = DaprClient::connect(client_addr).await?;
@@ -127,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let get_resp_backup: Backup =
         serde_json::from_slice(&get_resp.clone().job.unwrap().data.unwrap().value).unwrap();
 
-    println!("job retrieved: {:?}", get_resp_backup);
+    println!("job retrieved: {get_resp_backup:?}");
 
     let _delete_resp = client.delete_job_alpha1("prod-db-backup").await?;
 

@@ -31,7 +31,7 @@ impl MyActor {
         println!("doing stuff with {}", req.name);
         let mut dapr = self.client.clone();
         let r = dapr.get_actor_state("key1").await.unwrap();
-        println!("get_actor_state {:?}", r);
+        println!("get_actor_state {r:?}");
         Json(MyResponse { available: true })
     }
 }

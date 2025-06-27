@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Message: {:#?}", &resp.message);
     };
 
-    println!("Response: {:#?}", response);
+    println!("Response: {response:#?}");
 
     Ok(())
 }

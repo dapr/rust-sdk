@@ -97,7 +97,7 @@ async fn test_actor_invoke() {
     let server = TestServer::new(app.into_make_service()).unwrap();
 
     let invoke_resp = server
-        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .put(&format!("/actors/MyActor/{actor_id}/method/do_stuff"))
         .json(&json!({ "name": "foo" }))
         .await;
     invoke_resp.assert_status_ok();
@@ -118,7 +118,7 @@ async fn test_actor_invoke() {
     );
 
     let invoke_resp2 = server
-        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .put(&format!("/actors/MyActor/{actor_id}/method/do_stuff"))
         .json(&json!({ "name": "foo" }))
         .await;
     invoke_resp2.assert_status_ok();
@@ -169,19 +169,15 @@ async fn test_actor_deactivate() {
     let actor_id = Uuid::new_v4().to_string();
 
     let invoke_resp = server
-        .put(&format!("/actors/MyActor/{}/method/do_stuff", actor_id))
+        .put(&format!("/actors/MyActor/{actor_id}/method/do_stuff"))
         .json(&json!({ "name": "foo" }))
         .await;
     invoke_resp.assert_status_ok();
 
-    let deactivate_resp1 = server
-        .delete(&format!("/actors/MyActor/{}", actor_id))
-        .await;
+    let deactivate_resp1 = server.delete(&format!("/actors/MyActor/{actor_id}")).await;
     deactivate_resp1.assert_status_ok();
 
-    let deactivate_resp2 = server
-        .delete(&format!("/actors/MyActor/{}", actor_id))
-        .await;
+    let deactivate_resp2 = server.delete(&format!("/actors/MyActor/{actor_id}")).await;
     deactivate_resp2.assert_status_not_found();
 
     assert_eq!(
