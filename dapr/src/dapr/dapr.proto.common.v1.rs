@@ -270,3 +270,35 @@ pub struct ConfigurationItem {
         ::prost::alloc::string::String,
     >,
 }
+/// JobFailurePolicy defines the policy to apply when a job fails to trigger.
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct JobFailurePolicy {
+    /// policy is the policy to apply when a job fails to trigger.
+    #[prost(oneof = "job_failure_policy::Policy", tags = "1, 2")]
+    pub policy: ::core::option::Option<job_failure_policy::Policy>,
+}
+/// Nested message and enum types in `JobFailurePolicy`.
+pub mod job_failure_policy {
+    /// policy is the policy to apply when a job fails to trigger.
+    #[derive(Clone, Copy, PartialEq, ::prost::Oneof)]
+    pub enum Policy {
+        #[prost(message, tag = "1")]
+        Drop(super::JobFailurePolicyDrop),
+        #[prost(message, tag = "2")]
+        Constant(super::JobFailurePolicyConstant),
+    }
+}
+/// JobFailurePolicyDrop is a policy which drops the job tick when the job fails to trigger.
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct JobFailurePolicyDrop {}
+/// JobFailurePolicyConstant is a policy which retries the job at a consistent interval when the job fails to trigger.
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct JobFailurePolicyConstant {
+    /// interval is the constant delay to wait before retrying the job.
+    #[prost(message, optional, tag = "1")]
+    pub interval: ::core::option::Option<::prost_types::Duration>,
+    /// max_retries is the optional maximum number of retries to attempt before giving up.
+    /// If unset, the Job will be retried indefinitely.
+    #[prost(uint32, optional, tag = "2")]
+    pub max_retries: ::core::option::Option<u32>,
+}

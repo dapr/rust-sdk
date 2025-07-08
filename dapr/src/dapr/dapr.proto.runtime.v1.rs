@@ -3198,6 +3198,14 @@ pub struct Job {
     /// when the job is triggered.
     #[prost(message, optional, tag = "6")]
     pub data: ::core::option::Option<::prost_types::Any>,
+    /// If true, allows this job to overwrite an existing job with the same name.
+    #[prost(bool, tag = "7")]
+    pub overwrite: bool,
+    /// failure_policy is the optional policy for handling job failures.
+    #[prost(message, optional, tag = "8")]
+    pub failure_policy: ::core::option::Option<
+        super::super::common::v1::JobFailurePolicy,
+    >,
 }
 /// ScheduleJobRequest is the message to create/schedule the job.
 #[derive(Clone, PartialEq, ::prost::Message)]
