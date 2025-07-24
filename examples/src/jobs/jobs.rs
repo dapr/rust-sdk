@@ -26,12 +26,6 @@ struct Metadata {
     backup_location: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct JsonAny {
-    type_url: String,
-    value: String,
-}
-
 async fn ping_pong_handler(_request: JobEventRequest) -> Result<JobEventResponse, Status> {
     println!("received job on ping_pong_handler");
 
