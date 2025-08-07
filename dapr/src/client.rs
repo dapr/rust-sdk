@@ -1,5 +1,5 @@
 use crate::dapr::proto::common::v1::job_failure_policy::Policy;
-use crate::dapr::proto::common::v1::{JobFailurePolicyConstant, JobFailurePolicyDrop};
+use crate::dapr::proto::common::v1::JobFailurePolicyConstant;
 use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
 use async_trait::async_trait;
@@ -1145,16 +1145,14 @@ impl JobFailurePolicyBuilder {
     pub fn build(self) -> common_v1::JobFailurePolicy {
         match self.policy {
             JobFailurePolicyType::Drop {} => common_v1::JobFailurePolicy {
-                policy: Some(Policy::Drop(JobFailurePolicyDrop {})),
+                policy: Some(Policy::Drop(Default::default())),
             },
             JobFailurePolicyType::Constant {} => JobFailurePolicy {
                 policy: Some(Policy::Constant(JobFailurePolicyConstant {
-                    interval: Some(
-                        prost_types::Duration::try_from(
-                            self.retry_interval.expect("retry_interval must be set"),
-                        )
-                        .expect("Failed to convert Duration"),
-                    ),
+                    interval: self.retry_interval.map(|interval| {
+                        prost_types::Duration::try_from(interval)
+                            .expect("Failed to convert Duration")
+                    }),
                     max_retries: self.max_retries,
                 })),
             },
