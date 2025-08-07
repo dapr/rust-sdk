@@ -559,9 +559,15 @@ impl<T: DaprInterface> Client<T> {
     /// # Arguments
     ///
     /// * job - The job to schedule
-    pub async fn schedule_job_alpha1(&mut self, job: Job) -> Result<ScheduleJobResponse, Error> {
+    /// * overwrite - Optional flag to overwrite an existing job with the same name
+    pub async fn schedule_job_alpha1(
+        &mut self,
+        job: Job,
+        overwrite: Option<bool>,
+    ) -> Result<ScheduleJobResponse, Error> {
         let request = ScheduleJobRequest {
             job: Some(job.clone()),
+            overwrite: overwrite.unwrap_or(false),
         };
         self.0.schedule_job_alpha1(request).await
     }
