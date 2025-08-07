@@ -1,17 +1,18 @@
-use std::collections::HashMap;
-
+use crate::dapr::proto::common::v1::job_failure_policy::Policy;
+use crate::dapr::proto::common::v1::{JobFailurePolicyConstant, JobFailurePolicyDrop};
+use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::error::Error;
 use async_trait::async_trait;
 use futures::StreamExt;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
+use std::time::Duration;
 use tokio::io::AsyncRead;
 use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
 use tonic::{Status, Streaming};
-
-use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use crate::error::Error;
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -987,6 +988,9 @@ pub type DecryptRequestOptions = crate::dapr::proto::runtime::v1::DecryptRequest
 /// The basic job structure
 pub type Job = crate::dapr::proto::runtime::v1::Job;
 
+/// A failure policy for a job
+pub type JobFailurePolicy = crate::dapr::proto::common::v1::JobFailurePolicy;
+
 /// A request to schedule a job
 pub type ScheduleJobRequest = crate::dapr::proto::runtime::v1::ScheduleJobRequest;
 
@@ -1046,6 +1050,7 @@ pub struct JobBuilder {
     ttl: Option<String>,
     repeats: Option<u32>,
     due_time: Option<String>,
+    failure_policy: Option<JobFailurePolicy>,
 }
 
 impl JobBuilder {
@@ -1058,6 +1063,7 @@ impl JobBuilder {
             ttl: None,
             repeats: None,
             due_time: None,
+            failure_policy: None,
         }
     }
 
@@ -1094,6 +1100,59 @@ impl JobBuilder {
             ttl: self.ttl,
             repeats: self.repeats,
             due_time: self.due_time,
+            failure_policy: self.failure_policy,
+        }
+    }
+}
+
+// Enum for a job failure policy
+pub enum JobFailurePolicyType {
+    Drop {},
+    Constant {},
+}
+
+pub struct JobFailurePolicyBuilder {
+    policy: JobFailurePolicyType,
+    pub retry_interval: Option<Duration>,
+    pub max_retries: Option<u32>,
+}
+
+impl JobFailurePolicyBuilder {
+    pub fn new(policy: JobFailurePolicyType) -> Self {
+        JobFailurePolicyBuilder {
+            policy,
+            retry_interval: None,
+            max_retries: None,
+        }
+    }
+
+    pub fn with_retry_interval(mut self, interval: Duration) -> Self {
+        // Convert interval string (e.g., "5s") to ProstDuration
+        self.retry_interval = Some(interval);
+        self
+    }
+
+    pub fn with_max_retries(mut self, max_retries: u32) -> Self {
+        self.max_retries = Some(max_retries);
+        self
+    }
+
+    pub fn build(self) -> common_v1::JobFailurePolicy {
+        match self.policy {
+            JobFailurePolicyType::Drop {} => common_v1::JobFailurePolicy {
+                policy: Some(Policy::Drop(JobFailurePolicyDrop {})),
+            },
+            JobFailurePolicyType::Constant {} => JobFailurePolicy {
+                policy: Some(Policy::Constant(JobFailurePolicyConstant {
+                    interval: Some(
+                        prost_types::Duration::try_from(
+                            self.retry_interval.expect("retry_interval must be set"),
+                        )
+                        .expect("Failed to convert Duration"),
+                    ),
+                    max_retries: self.max_retries,
+                })),
+            },
         }
     }
 }

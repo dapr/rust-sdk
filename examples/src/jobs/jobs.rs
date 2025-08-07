@@ -110,7 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_data(any)
         .build();
 
-    let _schedule_resp = client.schedule_job_alpha1(job).await?;
+    let _schedule_resp = client.schedule_job_alpha1(job, None).await?;
 
     println!("job scheduled successfully");
 
@@ -135,7 +135,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_schedule("@every 1s")
         .with_repeats(5)
         .build();
-    let _schedule_resp = client.schedule_job_alpha1(ping_pong_job).await?;
+    let _schedule_resp = client.schedule_job_alpha1(ping_pong_job, None).await?;
 
     sleep(Duration::from_secs(10)).await;
 
