@@ -1092,6 +1092,11 @@ impl JobBuilder {
         self
     }
 
+    pub fn with_failure_policy(mut self, policy: JobFailurePolicyDrop) -> Self {
+        self.failure_policy = Some(policy);
+        self
+    }
+
     pub fn build(self) -> Job {
         Job {
             schedule: self.schedule,
