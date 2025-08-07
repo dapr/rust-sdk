@@ -1092,7 +1092,7 @@ impl JobBuilder {
         self
     }
 
-    pub fn with_failure_policy(mut self, policy: JobFailurePolicyDrop) -> Self {
+    pub fn with_failure_policy(mut self, policy: JobFailurePolicy) -> Self {
         self.failure_policy = Some(policy);
         self
     }

@@ -1,7 +1,6 @@
 use std::time::Duration;
 
-use dapr::client::JobBuilder;
-use dapr::dapr::proto::common::v1::JobFailurePolicyDrop;
+use dapr::client::{JobBuilder, JobFailurePolicyBuilder, JobFailurePolicyType};
 use dapr::dapr::proto::runtime::v1::{
     app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse,
 };
@@ -110,7 +109,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let job = JobBuilder::new("prod-db-backup")
         .with_schedule("@every 1s")
         .with_data(any)
-        .with_failure_policy(JobFailurePolicyDrop {})
+        .with_failure_policy(JobFailurePolicyBuilder::new(JobFailurePolicyType::Drop {}).build())
         .build();
 
     let _schedule_resp = client.schedule_job_alpha1(job, None).await?;
