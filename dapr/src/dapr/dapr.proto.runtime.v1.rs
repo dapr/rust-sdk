@@ -72,23 +72,16 @@ pub struct TopicEventRequest {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct TopicEventResponse {
     /// The list of output bindings.
-    #[prost(enumeration = "topic_event_response::TopicEventResponseStatus", tag = "1")]
+    #[prost(
+        enumeration = "topic_event_response::TopicEventResponseStatus",
+        tag = "1"
+    )]
     pub status: i32,
 }
 /// Nested message and enum types in `TopicEventResponse`.
 pub mod topic_event_response {
     /// TopicEventResponseStatus allows apps to have finer control over handling of the message.
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum TopicEventResponseStatus {
         /// SUCCESS is the default behavior: message is acknowledged and not retried or logged.
@@ -157,10 +150,8 @@ pub struct TopicEventBulkRequestEntry {
     pub content_type: ::prost::alloc::string::String,
     /// The metadata associated with the event.
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// The content of the event.
     #[prost(oneof = "topic_event_bulk_request_entry::Event", tags = "2, 3")]
     pub event: ::core::option::Option<topic_event_bulk_request_entry::Event>,
@@ -187,10 +178,8 @@ pub struct TopicEventBulkRequest {
     pub entries: ::prost::alloc::vec::Vec<TopicEventBulkRequestEntry>,
     /// The metadata associated with the this bulk request.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// The pubsub topic which publisher sent to.
     #[prost(string, tag = "4")]
     pub topic: ::prost::alloc::string::String,
@@ -213,7 +202,10 @@ pub struct TopicEventBulkResponseEntry {
     #[prost(string, tag = "1")]
     pub entry_id: ::prost::alloc::string::String,
     /// The status of the response.
-    #[prost(enumeration = "topic_event_response::TopicEventResponseStatus", tag = "2")]
+    #[prost(
+        enumeration = "topic_event_response::TopicEventResponseStatus",
+        tag = "2"
+    )]
     pub status: i32,
 }
 /// AppBulkResponse is response from app on published message
@@ -234,10 +226,8 @@ pub struct BindingEventRequest {
     pub data: ::prost::alloc::vec::Vec<u8>,
     /// The metadata set by the input binging components.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// BindingEventResponse includes operations to save state or
 /// send data to output bindings optionally.
@@ -257,23 +247,16 @@ pub struct BindingEventResponse {
     pub data: ::prost::alloc::vec::Vec<u8>,
     /// The concurrency of output bindings to send data to
     /// "to" output bindings list. The default is SEQUENTIAL.
-    #[prost(enumeration = "binding_event_response::BindingEventConcurrency", tag = "5")]
+    #[prost(
+        enumeration = "binding_event_response::BindingEventConcurrency",
+        tag = "5"
+    )]
     pub concurrency: i32,
 }
 /// Nested message and enum types in `BindingEventResponse`.
 pub mod binding_event_response {
     /// BindingEventConcurrency is the kind of concurrency
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum BindingEventConcurrency {
         /// SEQUENTIAL sends data to output bindings specified in "to" sequentially.
@@ -320,10 +303,8 @@ pub struct TopicSubscription {
     pub topic: ::prost::alloc::string::String,
     /// The optional properties used for this topic's subscription e.g. session id
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// The optional routing rules to match against. In the gRPC interface, OnTopicEvent
     /// is still invoked but the matching path is sent in the TopicEventRequest.
     #[prost(message, optional, tag = "5")]
@@ -388,10 +369,10 @@ pub mod app_callback_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     /// AppCallback V1 allows user application to interact with Dapr runtime.
     /// User application needs to implement AppCallback service if it needs to
     /// receive message from dapr runtime.
@@ -438,9 +419,8 @@ pub mod app_callback_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             AppCallbackClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -478,30 +458,22 @@ pub mod app_callback_client {
         /// Invokes service method with InvokeRequest.
         pub async fn on_invoke(
             &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::common::v1::InvokeRequest,
-            >,
+            request: impl tonic::IntoRequest<super::super::super::common::v1::InvokeRequest>,
         ) -> std::result::Result<
             tonic::Response<super::super::super::common::v1::InvokeResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.AppCallback/OnInvoke",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.AppCallback/OnInvoke");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.AppCallback", "OnInvoke"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallback",
+                "OnInvoke",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Lists all topics subscribed by this app.
@@ -512,83 +484,58 @@ pub mod app_callback_client {
             tonic::Response<super::ListTopicSubscriptionsResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallback/ListTopicSubscriptions",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallback",
-                        "ListTopicSubscriptions",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallback",
+                "ListTopicSubscriptions",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Subscribes events from Pubsub
         pub async fn on_topic_event(
             &mut self,
             request: impl tonic::IntoRequest<super::TopicEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::TopicEventResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::TopicEventResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallback/OnTopicEvent",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.AppCallback", "OnTopicEvent"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallback",
+                "OnTopicEvent",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Lists all input bindings subscribed by this app.
         pub async fn list_input_bindings(
             &mut self,
             request: impl tonic::IntoRequest<()>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListInputBindingsResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::ListInputBindingsResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallback/ListInputBindings",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallback",
-                        "ListInputBindings",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallback",
+                "ListInputBindings",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Listens events from the input bindings
@@ -598,30 +545,20 @@ pub mod app_callback_client {
         pub async fn on_binding_event(
             &mut self,
             request: impl tonic::IntoRequest<super::BindingEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BindingEventResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::BindingEventResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallback/OnBindingEvent",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallback",
-                        "OnBindingEvent",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallback",
+                "OnBindingEvent",
+            ));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -633,10 +570,10 @@ pub mod app_callback_health_check_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     /// AppCallbackHealthCheck V1 is an optional extension to AppCallback V1 to implement
     /// the HealthCheck method.
     #[derive(Debug, Clone)]
@@ -682,13 +619,10 @@ pub mod app_callback_health_check_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
-            AppCallbackHealthCheckClient::new(
-                InterceptedService::new(inner, interceptor),
-            )
+            AppCallbackHealthCheckClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -725,30 +659,20 @@ pub mod app_callback_health_check_client {
         pub async fn health_check(
             &mut self,
             request: impl tonic::IntoRequest<()>,
-        ) -> std::result::Result<
-            tonic::Response<super::HealthCheckResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::HealthCheckResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallbackHealthCheck/HealthCheck",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallbackHealthCheck",
-                        "HealthCheck",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallbackHealthCheck",
+                "HealthCheck",
+            ));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -760,10 +684,10 @@ pub mod app_callback_alpha_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     /// AppCallbackAlpha V1 is an optional extension to AppCallback V1 to opt
     /// for Alpha RPCs.
     #[derive(Debug, Clone)]
@@ -809,9 +733,8 @@ pub mod app_callback_alpha_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             AppCallbackAlphaClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -850,60 +773,39 @@ pub mod app_callback_alpha_client {
         pub async fn on_bulk_topic_event_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::TopicEventBulkRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::TopicEventBulkResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::TopicEventBulkResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallbackAlpha/OnBulkTopicEventAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallbackAlpha",
-                        "OnBulkTopicEventAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallbackAlpha",
+                "OnBulkTopicEventAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Sends job back to the app's endpoint at trigger time.
         pub async fn on_job_event_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::JobEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::JobEventResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::JobEventResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.AppCallbackAlpha/OnJobEventAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.AppCallbackAlpha",
-                        "OnJobEventAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.AppCallbackAlpha",
+                "OnJobEventAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -915,7 +817,7 @@ pub mod app_callback_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with AppCallbackServer.
@@ -941,18 +843,12 @@ pub mod app_callback_server {
         async fn on_topic_event(
             &self,
             request: tonic::Request<super::TopicEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::TopicEventResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::TopicEventResponse>, tonic::Status>;
         /// Lists all input bindings subscribed by this app.
         async fn list_input_bindings(
             &self,
             request: tonic::Request<()>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListInputBindingsResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::ListInputBindingsResponse>, tonic::Status>;
         /// Listens events from the input bindings
         ///
         /// User application can save the states or send the events to the output
@@ -960,10 +856,7 @@ pub mod app_callback_server {
         async fn on_binding_event(
             &self,
             request: tonic::Request<super::BindingEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BindingEventResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::BindingEventResponse>, tonic::Status>;
     }
     /// AppCallback V1 allows user application to interact with Dapr runtime.
     /// User application needs to implement AppCallback service if it needs to
@@ -989,10 +882,7 @@ pub mod app_callback_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -1047,26 +937,19 @@ pub mod app_callback_server {
                 "/dapr.proto.runtime.v1.AppCallback/OnInvoke" => {
                     #[allow(non_camel_case_types)]
                     struct OnInvokeSvc<T: AppCallback>(pub Arc<T>);
-                    impl<
-                        T: AppCallback,
-                    > tonic::server::UnaryService<
-                        super::super::super::common::v1::InvokeRequest,
-                    > for OnInvokeSvc<T> {
+                    impl<T: AppCallback>
+                        tonic::server::UnaryService<super::super::super::common::v1::InvokeRequest>
+                        for OnInvokeSvc<T>
+                    {
                         type Response = super::super::super::common::v1::InvokeResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::super::super::common::v1::InvokeRequest,
-                            >,
+                            request: tonic::Request<super::super::super::common::v1::InvokeRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as AppCallback>::on_invoke(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as AppCallback>::on_invoke(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -1095,21 +978,13 @@ pub mod app_callback_server {
                 "/dapr.proto.runtime.v1.AppCallback/ListTopicSubscriptions" => {
                     #[allow(non_camel_case_types)]
                     struct ListTopicSubscriptionsSvc<T: AppCallback>(pub Arc<T>);
-                    impl<T: AppCallback> tonic::server::UnaryService<()>
-                    for ListTopicSubscriptionsSvc<T> {
+                    impl<T: AppCallback> tonic::server::UnaryService<()> for ListTopicSubscriptionsSvc<T> {
                         type Response = super::ListTopicSubscriptionsResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(&mut self, request: tonic::Request<()>) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as AppCallback>::list_topic_subscriptions(
-                                        &inner,
-                                        request,
-                                    )
-                                    .await
+                                <T as AppCallback>::list_topic_subscriptions(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1139,15 +1014,9 @@ pub mod app_callback_server {
                 "/dapr.proto.runtime.v1.AppCallback/OnTopicEvent" => {
                     #[allow(non_camel_case_types)]
                     struct OnTopicEventSvc<T: AppCallback>(pub Arc<T>);
-                    impl<
-                        T: AppCallback,
-                    > tonic::server::UnaryService<super::TopicEventRequest>
-                    for OnTopicEventSvc<T> {
+                    impl<T: AppCallback> tonic::server::UnaryService<super::TopicEventRequest> for OnTopicEventSvc<T> {
                         type Response = super::TopicEventResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::TopicEventRequest>,
@@ -1184,18 +1053,13 @@ pub mod app_callback_server {
                 "/dapr.proto.runtime.v1.AppCallback/ListInputBindings" => {
                     #[allow(non_camel_case_types)]
                     struct ListInputBindingsSvc<T: AppCallback>(pub Arc<T>);
-                    impl<T: AppCallback> tonic::server::UnaryService<()>
-                    for ListInputBindingsSvc<T> {
+                    impl<T: AppCallback> tonic::server::UnaryService<()> for ListInputBindingsSvc<T> {
                         type Response = super::ListInputBindingsResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(&mut self, request: tonic::Request<()>) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as AppCallback>::list_input_bindings(&inner, request)
-                                    .await
+                                <T as AppCallback>::list_input_bindings(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1225,15 +1089,11 @@ pub mod app_callback_server {
                 "/dapr.proto.runtime.v1.AppCallback/OnBindingEvent" => {
                     #[allow(non_camel_case_types)]
                     struct OnBindingEventSvc<T: AppCallback>(pub Arc<T>);
-                    impl<
-                        T: AppCallback,
-                    > tonic::server::UnaryService<super::BindingEventRequest>
-                    for OnBindingEventSvc<T> {
+                    impl<T: AppCallback> tonic::server::UnaryService<super::BindingEventRequest>
+                        for OnBindingEventSvc<T>
+                    {
                         type Response = super::BindingEventResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::BindingEventRequest>,
@@ -1267,23 +1127,19 @@ pub mod app_callback_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(empty_body());
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(empty_body());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }
@@ -1312,7 +1168,7 @@ pub mod app_callback_health_check_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with AppCallbackHealthCheckServer.
@@ -1322,10 +1178,7 @@ pub mod app_callback_health_check_server {
         async fn health_check(
             &self,
             request: tonic::Request<()>,
-        ) -> std::result::Result<
-            tonic::Response<super::HealthCheckResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::HealthCheckResponse>, tonic::Status>;
     }
     /// AppCallbackHealthCheck V1 is an optional extension to AppCallback V1 to implement
     /// the HealthCheck method.
@@ -1350,10 +1203,7 @@ pub mod app_callback_health_check_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -1388,8 +1238,7 @@ pub mod app_callback_health_check_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>>
-    for AppCallbackHealthCheckServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for AppCallbackHealthCheckServer<T>
     where
         T: AppCallbackHealthCheck,
         B: Body + std::marker::Send + 'static,
@@ -1409,18 +1258,13 @@ pub mod app_callback_health_check_server {
                 "/dapr.proto.runtime.v1.AppCallbackHealthCheck/HealthCheck" => {
                     #[allow(non_camel_case_types)]
                     struct HealthCheckSvc<T: AppCallbackHealthCheck>(pub Arc<T>);
-                    impl<T: AppCallbackHealthCheck> tonic::server::UnaryService<()>
-                    for HealthCheckSvc<T> {
+                    impl<T: AppCallbackHealthCheck> tonic::server::UnaryService<()> for HealthCheckSvc<T> {
                         type Response = super::HealthCheckResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(&mut self, request: tonic::Request<()>) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as AppCallbackHealthCheck>::health_check(&inner, request)
-                                    .await
+                                <T as AppCallbackHealthCheck>::health_check(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1447,23 +1291,19 @@ pub mod app_callback_health_check_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(empty_body());
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(empty_body());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }
@@ -1492,7 +1332,7 @@ pub mod app_callback_alpha_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with AppCallbackAlphaServer.
@@ -1502,18 +1342,12 @@ pub mod app_callback_alpha_server {
         async fn on_bulk_topic_event_alpha1(
             &self,
             request: tonic::Request<super::TopicEventBulkRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::TopicEventBulkResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::TopicEventBulkResponse>, tonic::Status>;
         /// Sends job back to the app's endpoint at trigger time.
         async fn on_job_event_alpha1(
             &self,
             request: tonic::Request<super::JobEventRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::JobEventResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::JobEventResponse>, tonic::Status>;
     }
     /// AppCallbackAlpha V1 is an optional extension to AppCallback V1 to opt
     /// for Alpha RPCs.
@@ -1538,10 +1372,7 @@ pub mod app_callback_alpha_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -1596,25 +1427,19 @@ pub mod app_callback_alpha_server {
                 "/dapr.proto.runtime.v1.AppCallbackAlpha/OnBulkTopicEventAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct OnBulkTopicEventAlpha1Svc<T: AppCallbackAlpha>(pub Arc<T>);
-                    impl<
-                        T: AppCallbackAlpha,
-                    > tonic::server::UnaryService<super::TopicEventBulkRequest>
-                    for OnBulkTopicEventAlpha1Svc<T> {
+                    impl<T: AppCallbackAlpha>
+                        tonic::server::UnaryService<super::TopicEventBulkRequest>
+                        for OnBulkTopicEventAlpha1Svc<T>
+                    {
                         type Response = super::TopicEventBulkResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::TopicEventBulkRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as AppCallbackAlpha>::on_bulk_topic_event_alpha1(
-                                        &inner,
-                                        request,
-                                    )
+                                <T as AppCallbackAlpha>::on_bulk_topic_event_alpha1(&inner, request)
                                     .await
                             };
                             Box::pin(fut)
@@ -1645,26 +1470,18 @@ pub mod app_callback_alpha_server {
                 "/dapr.proto.runtime.v1.AppCallbackAlpha/OnJobEventAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct OnJobEventAlpha1Svc<T: AppCallbackAlpha>(pub Arc<T>);
-                    impl<
-                        T: AppCallbackAlpha,
-                    > tonic::server::UnaryService<super::JobEventRequest>
-                    for OnJobEventAlpha1Svc<T> {
+                    impl<T: AppCallbackAlpha> tonic::server::UnaryService<super::JobEventRequest>
+                        for OnJobEventAlpha1Svc<T>
+                    {
                         type Response = super::JobEventResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::JobEventRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as AppCallbackAlpha>::on_job_event_alpha1(
-                                        &inner,
-                                        request,
-                                    )
-                                    .await
+                                <T as AppCallbackAlpha>::on_job_event_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1691,23 +1508,19 @@ pub mod app_callback_alpha_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(empty_body());
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
-                }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(empty_body());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }
@@ -1756,10 +1569,8 @@ pub struct GetStateRequest {
     pub consistency: i32,
     /// The metadata which will be sent to state store components.
     #[prost(map = "string, string", tag = "4")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetBulkStateRequest is the message to get a list of key-value states from specific state store.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1775,10 +1586,8 @@ pub struct GetBulkStateRequest {
     pub parallelism: i32,
     /// The metadata which will be sent to state store components.
     #[prost(map = "string, string", tag = "4")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetBulkStateResponse is the response conveying the list of state values.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1806,10 +1615,8 @@ pub struct BulkStateItem {
     pub error: ::prost::alloc::string::String,
     /// The metadata which will be sent to app.
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetStateResponse is the response conveying the state value and etag.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1823,10 +1630,8 @@ pub struct GetStateResponse {
     pub etag: ::prost::alloc::string::String,
     /// The metadata which will be sent to app.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// DeleteStateRequest is the message to delete key-value states in the specific state store.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1847,10 +1652,8 @@ pub struct DeleteStateRequest {
     pub options: ::core::option::Option<super::super::common::v1::StateOptions>,
     /// The metadata which will be sent to state store components.
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// DeleteBulkStateRequest is the message to delete a list of key-value states from specific state store.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1883,10 +1686,8 @@ pub struct QueryStateRequest {
     pub query: ::prost::alloc::string::String,
     /// The metadata which will be sent to state store components.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryStateItem {
@@ -1915,10 +1716,8 @@ pub struct QueryStateResponse {
     pub token: ::prost::alloc::string::String,
     /// The metadata which will be sent to app.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// PublishEventRequest is the message to publish event data to pubsub topic
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1940,10 +1739,8 @@ pub struct PublishEventRequest {
     /// metadata property:
     /// - key : the key of the message.
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// BulkPublishRequest is the message to bulk publish events to pubsub topic
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1959,10 +1756,8 @@ pub struct BulkPublishRequest {
     pub entries: ::prost::alloc::vec::Vec<BulkPublishRequestEntry>,
     /// The request level metadata passing to to the pubsub components
     #[prost(map = "string, string", tag = "4")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// BulkPublishRequestEntry is the message containing the event to be bulk published
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1978,10 +1773,8 @@ pub struct BulkPublishRequestEntry {
     pub content_type: ::prost::alloc::string::String,
     /// The event level metadata passing to the pubsub component
     #[prost(map = "string, string", tag = "4")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// BulkPublishResponse is the message returned from a BulkPublishEvent call
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2039,10 +1832,8 @@ pub struct SubscribeTopicEventsRequestInitialAlpha1 {
     /// metadata property:
     /// - key : the key of the message.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// dead_letter_topic is the topic to which messages that fail to be processed
     /// are sent.
     #[prost(string, optional, tag = "4")]
@@ -2103,10 +1894,8 @@ pub struct InvokeBindingRequest {
     /// have a default time to live. The message ttl overrides any value
     /// in the binding definition.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// The name of the operation type for the binding to invoke
     #[prost(string, tag = "4")]
     pub operation: ::prost::alloc::string::String,
@@ -2119,10 +1908,8 @@ pub struct InvokeBindingResponse {
     pub data: ::prost::alloc::vec::Vec<u8>,
     /// The metadata returned from an external system
     #[prost(map = "string, string", tag = "2")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetSecretRequest is the message to get secret from secret store.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2135,10 +1922,8 @@ pub struct GetSecretRequest {
     pub key: ::prost::alloc::string::String,
     /// The metadata which will be sent to secret store components.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetSecretResponse is the response message to convey the requested secret.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2146,10 +1931,8 @@ pub struct GetSecretResponse {
     /// data is the secret value. Some secret store, such as kubernetes secret
     /// store, can save multiple secrets for single secret key.
     #[prost(map = "string, string", tag = "1")]
-    pub data: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub data:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetBulkSecretRequest is the message to get the secrets from secret store.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2159,19 +1942,15 @@ pub struct GetBulkSecretRequest {
     pub store_name: ::prost::alloc::string::String,
     /// The metadata which will be sent to secret store components.
     #[prost(map = "string, string", tag = "2")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// SecretResponse is a map of decrypted string/string values
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SecretResponse {
     #[prost(map = "string, string", tag = "1")]
-    pub secrets: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub secrets:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetBulkSecretResponse is the response message to convey the requested secrets.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2179,10 +1958,7 @@ pub struct GetBulkSecretResponse {
     /// data hold the secret values. Some secret store, such as kubernetes secret
     /// store, can save multiple secrets for single secret key.
     #[prost(map = "string, message", tag = "1")]
-    pub data: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        SecretResponse,
-    >,
+    pub data: ::std::collections::HashMap<::prost::alloc::string::String, SecretResponse>,
 }
 /// TransactionalStateOperation is the message to execute a specified operation with a key-value pair.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2205,10 +1981,8 @@ pub struct ExecuteStateTransactionRequest {
     pub operations: ::prost::alloc::vec::Vec<TransactionalStateOperation>,
     /// The metadata used for transactional operations.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// RegisterActorTimerRequest is the message to register a timer for an actor of a given type and id.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2285,10 +2059,8 @@ pub struct GetActorStateResponse {
     pub data: ::prost::alloc::vec::Vec<u8>,
     /// The metadata which will be sent to app.
     #[prost(map = "string, string", tag = "2")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// ExecuteActorStateTransactionRequest is the message to execute multiple operations on a specified actor.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2314,10 +2086,8 @@ pub struct TransactionalActorStateOperation {
     /// Common metadata property:
     /// - ttlInSeconds : the time to live in seconds for the stored value.
     #[prost(map = "string, string", tag = "4")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// InvokeActorRequest is the message to call an actor.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2331,10 +2101,8 @@ pub struct InvokeActorRequest {
     #[prost(bytes = "vec", tag = "4")]
     pub data: ::prost::alloc::vec::Vec<u8>,
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// InvokeActorResponse is the method that returns an actor invocation response.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2359,10 +2127,8 @@ pub struct GetMetadataResponse {
     #[prost(message, repeated, tag = "3")]
     pub registered_components: ::prost::alloc::vec::Vec<RegisteredComponents>,
     #[prost(map = "string, string", tag = "4")]
-    pub extended_metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub extended_metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     #[prost(message, repeated, tag = "5")]
     pub subscriptions: ::prost::alloc::vec::Vec<PubsubSubscription>,
     #[prost(message, repeated, tag = "6")]
@@ -2403,17 +2169,7 @@ pub struct ActorRuntime {
 }
 /// Nested message and enum types in `ActorRuntime`.
 pub mod actor_runtime {
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum ActorRuntimeStatus {
         /// Indicates that the actor runtime is still being initialized.
@@ -2501,10 +2257,8 @@ pub struct PubsubSubscription {
     #[prost(string, tag = "2")]
     pub topic: ::prost::alloc::string::String,
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     #[prost(message, optional, tag = "4")]
     pub rules: ::core::option::Option<PubsubSubscriptionRules>,
     #[prost(string, tag = "5")]
@@ -2544,10 +2298,8 @@ pub struct GetConfigurationRequest {
     pub keys: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     /// Optional. The metadata which will be sent to configuration store components.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// GetConfigurationResponse is the response conveying the list of configuration values.
 /// It should be the FULL configuration of specified application which contains all of its configuration items.
@@ -2572,10 +2324,8 @@ pub struct SubscribeConfigurationRequest {
     pub keys: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     /// The metadata which will be sent to configuration store components.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// UnSubscribeConfigurationRequest is the message to stop watching the key-value configuration.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -2658,17 +2408,7 @@ pub struct UnlockResponse {
 }
 /// Nested message and enum types in `UnlockResponse`.
 pub mod unlock_response {
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum Status {
         Success = 0,
@@ -2716,17 +2456,7 @@ pub struct SubtleGetKeyRequest {
 }
 /// Nested message and enum types in `SubtleGetKeyRequest`.
 pub mod subtle_get_key_request {
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum KeyFormat {
         /// PEM (PKIX) (default)
@@ -3055,10 +2785,8 @@ pub struct GetWorkflowResponse {
     pub runtime_status: ::prost::alloc::string::String,
     /// Additional component-specific properties of the workflow instance.
     #[prost(map = "string, string", tag = "6")]
-    pub properties: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub properties:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 /// StartWorkflowRequest is the request for StartWorkflowBeta1.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -3074,10 +2802,8 @@ pub struct StartWorkflowRequest {
     pub workflow_name: ::prost::alloc::string::String,
     /// Additional component-specific options for starting the workflow instance.
     #[prost(map = "string, string", tag = "4")]
-    pub options: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub options:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// Input data for the workflow instance.
     #[prost(bytes = "vec", tag = "5")]
     pub input: ::prost::alloc::vec::Vec<u8>,
@@ -3198,6 +2924,9 @@ pub struct Job {
     /// when the job is triggered.
     #[prost(message, optional, tag = "6")]
     pub data: ::core::option::Option<::prost_types::Any>,
+    /// failure_policy is the optional policy for handling job failures.
+    #[prost(message, optional, tag = "7")]
+    pub failure_policy: ::core::option::Option<super::super::common::v1::JobFailurePolicy>,
 }
 /// ScheduleJobRequest is the message to create/schedule the job.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -3205,6 +2934,9 @@ pub struct ScheduleJobRequest {
     /// The job details.
     #[prost(message, optional, tag = "1")]
     pub job: ::core::option::Option<Job>,
+    /// If true, allows this job to overwrite an existing job with the same name.
+    #[prost(bool, tag = "2")]
+    pub overwrite: bool,
 }
 /// ScheduleJobResponse is the message response to create/schedule the job.
 ///
@@ -3251,16 +2983,11 @@ pub struct ConversationRequest {
     pub inputs: ::prost::alloc::vec::Vec<ConversationInput>,
     /// Parameters for all custom fields.
     #[prost(map = "string, message", tag = "4")]
-    pub parameters: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost_types::Any,
-    >,
+    pub parameters: ::std::collections::HashMap<::prost::alloc::string::String, ::prost_types::Any>,
     /// The metadata passing to conversation components.
     #[prost(map = "string, string", tag = "5")]
-    pub metadata: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     /// Scrub PII data that comes back from the LLM
     #[prost(bool, optional, tag = "6")]
     pub scrub_pii: ::core::option::Option<bool>,
@@ -3268,6 +2995,53 @@ pub struct ConversationRequest {
     #[prost(double, optional, tag = "7")]
     pub temperature: ::core::option::Option<f64>,
 }
+/// ConversationRequestAlpha2 is the new request object for Conversation.
+/// Many of these fields are inspired by openai.ChatCompletionNewParams
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L2106>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationRequestAlpha2 {
+    /// The name of Conversation component
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    /// The ID of an existing chat (like in ChatGPT)
+    #[prost(string, optional, tag = "2")]
+    pub context_id: ::core::option::Option<::prost::alloc::string::String>,
+    /// Inputs for the conversation, support multiple input in one time.
+    /// This is the revamped conversation inputs better matching openai.
+    #[prost(message, repeated, tag = "3")]
+    pub inputs: ::prost::alloc::vec::Vec<ConversationInputAlpha2>,
+    /// Parameters for all custom fields.
+    #[prost(map = "string, message", tag = "4")]
+    pub parameters: ::std::collections::HashMap<::prost::alloc::string::String, ::prost_types::Any>,
+    /// The metadata passing to conversation components.
+    #[prost(map = "string, string", tag = "5")]
+    pub metadata:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    /// Scrub PII data that comes back from the LLM
+    #[prost(bool, optional, tag = "6")]
+    pub scrub_pii: ::core::option::Option<bool>,
+    /// Temperature for the LLM to optimize for creativity or predictability
+    #[prost(double, optional, tag = "7")]
+    pub temperature: ::core::option::Option<f64>,
+    /// Tools register the tools available to be used by the LLM during the conversation.
+    /// These are sent on a per request basis.
+    /// The tools available during the first round of the conversation
+    /// may be different than tools specified later on.
+    #[prost(message, repeated, tag = "8")]
+    pub tools: ::prost::alloc::vec::Vec<ConversationTools>,
+    /// Controls which (if any) tool is called by the model.
+    /// `none` means the model will not call any tool and instead generates a message.
+    /// `auto` means the model can pick between generating a message or calling one or more tools.
+    /// Alternatively, a specific tool name may be used here, and casing/syntax must match on tool name.
+    /// `none` is the default when no tools are present.
+    /// `auto` is the default if tools are present.
+    /// `required` requires one or more functions to be called.
+    /// ref: <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1976>
+    /// ref: <https://python.langchain.com/docs/how_to/tool_choice/>
+    #[prost(string, optional, tag = "9")]
+    pub tool_choice: ::core::option::Option<::prost::alloc::string::String>,
+}
+/// maintained for backwards compatibility
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ConversationInput {
     /// The content to send to the llm
@@ -3280,6 +3054,152 @@ pub struct ConversationInput {
     #[prost(bool, optional, tag = "3")]
     pub scrub_pii: ::core::option::Option<bool>,
 }
+/// directly inspired by openai.ChatCompletionNewParams
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L2106>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationInputAlpha2 {
+    /// The content to send to the llm
+    #[prost(message, repeated, tag = "1")]
+    pub messages: ::prost::alloc::vec::Vec<ConversationMessage>,
+    /// Scrub PII data that goes into the LLM
+    #[prost(bool, optional, tag = "2")]
+    pub scrub_pii: ::core::option::Option<bool>,
+}
+/// inspired by openai.ChatCompletionMessageParamUnion
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1449>
+/// The role field is inherent to the type of ConversationMessage,
+/// and is propagated in the backend according to the underlying LLM provider type.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessage {
+    #[prost(oneof = "conversation_message::MessageTypes", tags = "1, 2, 3, 4, 5")]
+    pub message_types: ::core::option::Option<conversation_message::MessageTypes>,
+}
+/// Nested message and enum types in `ConversationMessage`.
+pub mod conversation_message {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum MessageTypes {
+        #[prost(message, tag = "1")]
+        OfDeveloper(super::ConversationMessageOfDeveloper),
+        #[prost(message, tag = "2")]
+        OfSystem(super::ConversationMessageOfSystem),
+        #[prost(message, tag = "3")]
+        OfUser(super::ConversationMessageOfUser),
+        #[prost(message, tag = "4")]
+        OfAssistant(super::ConversationMessageOfAssistant),
+        /// Note: there could be a ConversationMessageOfFunction type here too,
+        /// but that is deprecated in openai, so we will not support this.
+        #[prost(message, tag = "5")]
+        OfTool(super::ConversationMessageOfTool),
+    }
+}
+/// inspired by openai.ChatCompletionDeveloperMessageParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1130>
+/// ConversationMessageOfDeveloper is intended to be the contents of a conversation message,
+/// as the role of a developer.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageOfDeveloper {
+    /// The name of the participant in the message.
+    #[prost(string, optional, tag = "1")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "2")]
+    pub content: ::prost::alloc::vec::Vec<ConversationMessageContent>,
+}
+/// inspired by openai.ChatCompletionSystemMessageParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1842>
+/// ConversationMessageOfSystem is intended to be the contents of a conversation message,
+/// as the role of a system.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageOfSystem {
+    #[prost(string, optional, tag = "1")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "2")]
+    pub content: ::prost::alloc::vec::Vec<ConversationMessageContent>,
+}
+/// inspired by openai.ChatCompletionUserMessageParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L2060C6-L2060C36>
+/// ConversationMessageOfUser is intended to be the contents of a conversation message,
+/// as the role of an end user.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageOfUser {
+    #[prost(string, optional, tag = "1")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "2")]
+    pub content: ::prost::alloc::vec::Vec<ConversationMessageContent>,
+}
+/// inspired by openai.ChatCompletionAssistantMessageParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L310>
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L2060C6-L2060C36>
+/// ConversationMessageOfAssistant is intended to be the contents of a conversation message,
+/// as the role of an assistant.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageOfAssistant {
+    #[prost(string, optional, tag = "1")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "2")]
+    pub content: ::prost::alloc::vec::Vec<ConversationMessageContent>,
+    /// Tool calls generated by the model, such as function calls for the client to then make.
+    #[prost(message, repeated, tag = "3")]
+    pub tool_calls: ::prost::alloc::vec::Vec<ConversationToolCalls>,
+}
+/// inspired by openai.ChatCompletionToolMessageParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L2011>
+/// ConversationMessageOfTool is intended to be the contents of a conversation message,
+/// as the role of a tool.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageOfTool {
+    /// Tool ID is helpful for tracking tool history
+    #[prost(string, optional, tag = "1")]
+    pub tool_id: ::core::option::Option<::prost::alloc::string::String>,
+    /// Name of tool associated with the message
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub content: ::prost::alloc::vec::Vec<ConversationMessageContent>,
+}
+/// inspired by openai.ChatCompletionMessageToolCallParam and openai.ChatCompletionMessageToolCall
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1669>
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1611>
+/// ConversationToolCalls is the tool call request sent from the llm to the client to then call to execute.
+/// This assumes that in our api if a client makes a request that would get a tool call response from the llm,
+/// that this client can also have the tool handy itself to execute it.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationToolCalls {
+    #[prost(string, optional, tag = "1")]
+    pub id: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(oneof = "conversation_tool_calls::ToolTypes", tags = "2")]
+    pub tool_types: ::core::option::Option<conversation_tool_calls::ToolTypes>,
+}
+/// Nested message and enum types in `ConversationToolCalls`.
+pub mod conversation_tool_calls {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum ToolTypes {
+        #[prost(message, tag = "2")]
+        Function(super::ConversationToolCallsOfFunction),
+    }
+}
+/// inspired by openai.ChatCompletionMessageToolCallFunctionParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1692>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationToolCallsOfFunction {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    /// The arguments to call the function with, as generated by the model in JSON
+    /// format. Note that the model does not always generate valid JSON, and may
+    /// hallucinate parameters not defined by your function schema. Validate the
+    /// arguments in your code before calling your function.
+    #[prost(string, tag = "2")]
+    pub arguments: ::prost::alloc::string::String,
+}
+/// inspired by openai.ChatCompletionContentPartTextParam & openai.ChatCompletionDeveloperMessageParamContentUnion
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1084>
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1154C6-L1154C53>
+/// Note: openai has this message be either a message of string or message of array type,
+/// so instead of this, we support that in one message type instead.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationMessageContent {
+    #[prost(string, tag = "1")]
+    pub text: ::prost::alloc::string::String,
+}
 /// ConversationResult is the result for one input.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ConversationResult {
@@ -3288,10 +3208,44 @@ pub struct ConversationResult {
     pub result: ::prost::alloc::string::String,
     /// Parameters for all custom fields.
     #[prost(map = "string, message", tag = "2")]
-    pub parameters: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost_types::Any,
-    >,
+    pub parameters: ::std::collections::HashMap<::prost::alloc::string::String, ::prost_types::Any>,
+}
+/// inspired by openai.ChatCompletion
+/// ConversationResultAlpha2 is the result for one input.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResultAlpha2 {
+    /// Result for the conversation input.
+    #[prost(message, repeated, tag = "1")]
+    pub choices: ::prost::alloc::vec::Vec<ConversationResultChoices>,
+}
+/// inspired by openai.ChatCompletionChoice
+/// based on <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L226>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResultChoices {
+    /// The reason the model stopped generating tokens. This will be `stop` if the model
+    /// hit a natural stop point or a provided stop sequence, `length` if the maximum
+    /// number of tokens specified in the request was reached, `content_filter` if
+    /// content was omitted due to a flag from our content filters, `tool_calls` if the
+    /// model called a tool.
+    /// Any of "stop", "length", "tool_calls", "content_filter".
+    #[prost(string, tag = "1")]
+    pub finish_reason: ::prost::alloc::string::String,
+    /// The index of the choice in the list of choices.
+    #[prost(int64, tag = "2")]
+    pub index: i64,
+    #[prost(message, optional, tag = "3")]
+    pub message: ::core::option::Option<ConversationResultMessage>,
+}
+/// inspired by openai.ChatCompletionMessage
+/// based on <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1218C6-L1218C27>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResultMessage {
+    /// The contents of the message.
+    #[prost(string, tag = "1")]
+    pub content: ::prost::alloc::string::String,
+    /// The tool calls generated by the model.
+    #[prost(message, repeated, tag = "2")]
+    pub tool_calls: ::prost::alloc::vec::Vec<ConversationToolCalls>,
 }
 /// ConversationResponse is the response for Conversation.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -3302,6 +3256,51 @@ pub struct ConversationResponse {
     /// An array of results.
     #[prost(message, repeated, tag = "2")]
     pub outputs: ::prost::alloc::vec::Vec<ConversationResult>,
+}
+/// ConversationResponseAlpha2 is the Alpha2 response for Conversation.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationResponseAlpha2 {
+    /// The ID of an existing chat (like in ChatGPT)
+    #[prost(string, optional, tag = "1")]
+    pub context_id: ::core::option::Option<::prost::alloc::string::String>,
+    /// An array of results.
+    #[prost(message, repeated, tag = "2")]
+    pub outputs: ::prost::alloc::vec::Vec<ConversationResultAlpha2>,
+}
+/// ConversationTools are the typed tools available to be called.
+/// inspired by openai.ChatCompletionToolParam
+/// <https://github.com/openai/openai-go/blob/main/chatcompletion.go#L1950>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationTools {
+    #[prost(oneof = "conversation_tools::ToolTypes", tags = "1")]
+    pub tool_types: ::core::option::Option<conversation_tools::ToolTypes>,
+}
+/// Nested message and enum types in `ConversationTools`.
+pub mod conversation_tools {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum ToolTypes {
+        #[prost(message, tag = "1")]
+        Function(super::ConversationToolsFunction),
+    }
+}
+/// ConversationToolsFunction is the main tool type to be used in a conversation.
+/// inspired by openai.FunctionDefinitionParam
+/// <https://pkg.go.dev/github.com/openai/openai-go/shared#FunctionDefinitionParam>
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ConversationToolsFunction {
+    /// The name of the function to be called.
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    /// A description of what the function does,
+    /// used by the model to choose when and how to call the function.
+    #[prost(string, optional, tag = "2")]
+    pub description: ::core::option::Option<::prost::alloc::string::String>,
+    /// The parameters the functions accepts, described as a JSON Schema object.
+    /// See the [guide](<https://platform.openai.com/docs/guides/function-calling>) for examples,
+    /// and the [JSON Schema reference](<https://json-schema.org/understanding-json-schema/>) for documentation about the format.
+    /// Omitting `parameters` defines a function with an empty parameter list.
+    #[prost(message, optional, tag = "3")]
+    pub parameters: ::core::option::Option<::prost_types::Struct>,
 }
 /// PubsubSubscriptionType indicates the type of subscription
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
@@ -3347,10 +3346,10 @@ pub mod dapr_client {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
-    use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    use tonic::codegen::*;
     /// Dapr service provides APIs to user application to access Dapr building blocks.
     #[derive(Debug, Clone)]
     pub struct DaprClient<T> {
@@ -3382,10 +3381,7 @@ pub mod dapr_client {
             let inner = tonic::client::Grpc::with_origin(inner, origin);
             Self { inner }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> DaprClient<InterceptedService<T, F>>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> DaprClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -3395,9 +3391,8 @@ pub mod dapr_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             DaprClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -3441,43 +3436,29 @@ pub mod dapr_client {
             tonic::Response<super::super::super::common::v1::InvokeResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/InvokeService",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/InvokeService");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "InvokeService"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "InvokeService",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets the state for a specific key.
         pub async fn get_state(
             &mut self,
             request: impl tonic::IntoRequest<super::GetStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetStateResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetStateResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetState",
-            );
+            let path = http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetState");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetState"));
@@ -3487,25 +3468,19 @@ pub mod dapr_client {
         pub async fn get_bulk_state(
             &mut self,
             request: impl tonic::IntoRequest<super::GetBulkStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetBulkStateResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetBulkStateResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetBulkState",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetBulkState");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetBulkState"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetBulkState",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Saves the state for a specific key.
@@ -3513,18 +3488,12 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::SaveStateRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/SaveState",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/SaveState");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SaveState"));
@@ -3534,27 +3503,20 @@ pub mod dapr_client {
         pub async fn query_state_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::QueryStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::QueryStateResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::QueryStateResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/QueryStateAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "QueryStateAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "QueryStateAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Deletes the state for a specific key.
@@ -3562,18 +3524,12 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteStateRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/DeleteState",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/DeleteState");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteState"));
@@ -3584,23 +3540,17 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteBulkStateRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/DeleteBulkState",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/DeleteBulkState");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteBulkState"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "DeleteBulkState",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Executes transactions for a specified store
@@ -3608,26 +3558,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ExecuteStateTransactionRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/ExecuteStateTransaction",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "ExecuteStateTransaction",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ExecuteStateTransaction",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Publishes events to the specific topic.
@@ -3635,51 +3577,37 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::PublishEventRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/PublishEvent",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/PublishEvent");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "PublishEvent"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "PublishEvent",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Bulk Publishes multiple events to the specified topic.
         pub async fn bulk_publish_event_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::BulkPublishRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BulkPublishResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::BulkPublishResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/BulkPublishEventAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "BulkPublishEventAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "BulkPublishEventAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubscribeTopicEventsAlpha1 subscribes to a PubSub topic and receives topic
@@ -3690,78 +3618,53 @@ pub mod dapr_client {
                 Message = super::SubscribeTopicEventsRequestAlpha1,
             >,
         ) -> std::result::Result<
-            tonic::Response<
-                tonic::codec::Streaming<super::SubscribeTopicEventsResponseAlpha1>,
-            >,
+            tonic::Response<tonic::codec::Streaming<super::SubscribeTopicEventsResponseAlpha1>>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubscribeTopicEventsAlpha1",
             );
             let mut req = request.into_streaming_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "SubscribeTopicEventsAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubscribeTopicEventsAlpha1",
+            ));
             self.inner.streaming(req, path, codec).await
         }
         /// Invokes binding data to specific output bindings
         pub async fn invoke_binding(
             &mut self,
             request: impl tonic::IntoRequest<super::InvokeBindingRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::InvokeBindingResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::InvokeBindingResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/InvokeBinding",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/InvokeBinding");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "InvokeBinding"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "InvokeBinding",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets secrets from secret stores.
         pub async fn get_secret(
             &mut self,
             request: impl tonic::IntoRequest<super::GetSecretRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetSecretResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetSecretResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetSecret",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetSecret");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetSecret"));
@@ -3771,25 +3674,19 @@ pub mod dapr_client {
         pub async fn get_bulk_secret(
             &mut self,
             request: impl tonic::IntoRequest<super::GetBulkSecretRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetBulkSecretResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetBulkSecretResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetBulkSecret",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetBulkSecret");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetBulkSecret"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetBulkSecret",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Register an actor timer.
@@ -3797,23 +3694,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::RegisterActorTimerRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/RegisterActorTimer",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "RegisterActorTimer"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "RegisterActorTimer",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Unregister an actor timer.
@@ -3821,23 +3713,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::UnregisterActorTimerRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/UnregisterActorTimer",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "UnregisterActorTimer"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "UnregisterActorTimer",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Register an actor reminder.
@@ -3845,26 +3732,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::RegisterActorReminderRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/RegisterActorReminder",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "RegisterActorReminder",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "RegisterActorReminder",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Unregister an actor reminder.
@@ -3872,51 +3751,37 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::UnregisterActorReminderRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/UnregisterActorReminder",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "UnregisterActorReminder",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "UnregisterActorReminder",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets the state for a specific actor.
         pub async fn get_actor_state(
             &mut self,
             request: impl tonic::IntoRequest<super::GetActorStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetActorStateResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetActorStateResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetActorState",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetActorState");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetActorState"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetActorState",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Executes state transactions for a specified actor
@@ -3924,48 +3789,32 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ExecuteActorStateTransactionRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/ExecuteActorStateTransaction",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "ExecuteActorStateTransaction",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ExecuteActorStateTransaction",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// InvokeActor calls a method on an actor.
         pub async fn invoke_actor(
             &mut self,
             request: impl tonic::IntoRequest<super::InvokeActorRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::InvokeActorResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::InvokeActorResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/InvokeActor",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/InvokeActor");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "InvokeActor"));
@@ -3975,57 +3824,40 @@ pub mod dapr_client {
         pub async fn get_configuration_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetConfigurationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetConfigurationResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetConfigurationResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/GetConfigurationAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "GetConfigurationAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetConfigurationAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// GetConfiguration gets configuration from configuration store.
         pub async fn get_configuration(
             &mut self,
             request: impl tonic::IntoRequest<super::GetConfigurationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetConfigurationResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetConfigurationResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/GetConfiguration",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetConfiguration"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetConfiguration",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubscribeConfiguration gets configuration from configuration store and subscribe the updates event by grpc stream
@@ -4033,31 +3865,21 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::SubscribeConfigurationRequest>,
         ) -> std::result::Result<
-            tonic::Response<
-                tonic::codec::Streaming<super::SubscribeConfigurationResponse>,
-            >,
+            tonic::Response<tonic::codec::Streaming<super::SubscribeConfigurationResponse>>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubscribeConfigurationAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "SubscribeConfigurationAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubscribeConfigurationAlpha1",
+            ));
             self.inner.server_streaming(req, path, codec).await
         }
         /// SubscribeConfiguration gets configuration from configuration store and subscribe the updates event by grpc stream
@@ -4065,31 +3887,21 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::SubscribeConfigurationRequest>,
         ) -> std::result::Result<
-            tonic::Response<
-                tonic::codec::Streaming<super::SubscribeConfigurationResponse>,
-            >,
+            tonic::Response<tonic::codec::Streaming<super::SubscribeConfigurationResponse>>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubscribeConfiguration",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "SubscribeConfiguration",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubscribeConfiguration",
+            ));
             self.inner.server_streaming(req, path, codec).await
         }
         /// UnSubscribeConfiguration unsubscribe the subscription of configuration
@@ -4100,26 +3912,18 @@ pub mod dapr_client {
             tonic::Response<super::UnsubscribeConfigurationResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/UnsubscribeConfigurationAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "UnsubscribeConfigurationAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "UnsubscribeConfigurationAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// UnSubscribeConfiguration unsubscribe the subscription of configuration
@@ -4130,51 +3934,36 @@ pub mod dapr_client {
             tonic::Response<super::UnsubscribeConfigurationResponse>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/UnsubscribeConfiguration",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "UnsubscribeConfiguration",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "UnsubscribeConfiguration",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// TryLockAlpha1 tries to get a lock with an expiry.
         pub async fn try_lock_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::TryLockRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::TryLockResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::TryLockResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/TryLockAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/TryLockAlpha1");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "TryLockAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "TryLockAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// UnlockAlpha1 unlocks a lock.
@@ -4182,21 +3971,17 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::UnlockRequest>,
         ) -> std::result::Result<tonic::Response<super::UnlockResponse>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/UnlockAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/UnlockAlpha1");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "UnlockAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "UnlockAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// EncryptAlpha1 encrypts a message using the Dapr encryption scheme and a key stored in the vault.
@@ -4207,21 +3992,17 @@ pub mod dapr_client {
             tonic::Response<tonic::codec::Streaming<super::EncryptResponse>>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/EncryptAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/EncryptAlpha1");
             let mut req = request.into_streaming_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "EncryptAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "EncryptAlpha1",
+            ));
             self.inner.streaming(req, path, codec).await
         }
         /// DecryptAlpha1 decrypts a message using the Dapr encryption scheme and a key stored in the vault.
@@ -4232,43 +4013,31 @@ pub mod dapr_client {
             tonic::Response<tonic::codec::Streaming<super::DecryptResponse>>,
             tonic::Status,
         > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/DecryptAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/DecryptAlpha1");
             let mut req = request.into_streaming_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DecryptAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "DecryptAlpha1",
+            ));
             self.inner.streaming(req, path, codec).await
         }
         /// Gets metadata of the sidecar
         pub async fn get_metadata(
             &mut self,
             request: impl tonic::IntoRequest<super::GetMetadataRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetMetadataResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetMetadataResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetMetadata",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetMetadata");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetMetadata"));
@@ -4279,18 +4048,12 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::SetMetadataRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/SetMetadata",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/SetMetadata");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SetMetadata"));
@@ -4300,192 +4063,140 @@ pub mod dapr_client {
         pub async fn subtle_get_key_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleGetKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleGetKeyResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleGetKeyResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleGetKeyAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleGetKeyAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleGetKeyAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleEncryptAlpha1 encrypts a small message using a key stored in the vault.
         pub async fn subtle_encrypt_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleEncryptRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleEncryptResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleEncryptResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleEncryptAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleEncryptAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleEncryptAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleDecryptAlpha1 decrypts a small message using a key stored in the vault.
         pub async fn subtle_decrypt_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleDecryptRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleDecryptResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleDecryptResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleDecryptAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleDecryptAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleDecryptAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleWrapKeyAlpha1 wraps a key using a key stored in the vault.
         pub async fn subtle_wrap_key_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleWrapKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleWrapKeyResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleWrapKeyResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleWrapKeyAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleWrapKeyAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleWrapKeyAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleUnwrapKeyAlpha1 unwraps a key using a key stored in the vault.
         pub async fn subtle_unwrap_key_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleUnwrapKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleUnwrapKeyResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleUnwrapKeyResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleUnwrapKeyAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "SubtleUnwrapKeyAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleUnwrapKeyAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleSignAlpha1 signs a message using a key stored in the vault.
         pub async fn subtle_sign_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleSignRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleSignResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleSignResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleSignAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleSignAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleSignAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// SubtleVerifyAlpha1 verifies the signature of a message using a key stored in the vault.
         pub async fn subtle_verify_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::SubtleVerifyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleVerifyResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::SubtleVerifyResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/SubtleVerifyAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SubtleVerifyAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "SubtleVerifyAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Starts a new instance of a workflow
@@ -4493,27 +4204,20 @@ pub mod dapr_client {
         pub async fn start_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::StartWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::StartWorkflowResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::StartWorkflowResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/StartWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "StartWorkflowAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "StartWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets details about a started workflow instance
@@ -4521,27 +4225,20 @@ pub mod dapr_client {
         pub async fn get_workflow_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetWorkflowResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetWorkflowResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/GetWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetWorkflowAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Purge Workflow
@@ -4550,23 +4247,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::PurgeWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/PurgeWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "PurgeWorkflowAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "PurgeWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Terminates a running workflow instance
@@ -4575,26 +4267,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::TerminateWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/TerminateWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "TerminateWorkflowAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "TerminateWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Pauses a running workflow instance
@@ -4603,23 +4287,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::PauseWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/PauseWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "PauseWorkflowAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "PauseWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Resumes a paused workflow instance
@@ -4628,23 +4307,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ResumeWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/ResumeWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ResumeWorkflowAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ResumeWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Raise an event to a running workflow instance
@@ -4653,80 +4327,58 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::RaiseEventWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/RaiseEventWorkflowAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "RaiseEventWorkflowAlpha1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "RaiseEventWorkflowAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Starts a new instance of a workflow
         pub async fn start_workflow_beta1(
             &mut self,
             request: impl tonic::IntoRequest<super::StartWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::StartWorkflowResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::StartWorkflowResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/StartWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "StartWorkflowBeta1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "StartWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets details about a started workflow instance
         pub async fn get_workflow_beta1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetWorkflowResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::GetWorkflowResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/GetWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetWorkflowBeta1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Purge Workflow
@@ -4734,23 +4386,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::PurgeWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/PurgeWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "PurgeWorkflowBeta1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "PurgeWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Terminates a running workflow instance
@@ -4758,26 +4405,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::TerminateWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/TerminateWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "TerminateWorkflowBeta1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "TerminateWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Pauses a running workflow instance
@@ -4785,23 +4424,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::PauseWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/PauseWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "PauseWorkflowBeta1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "PauseWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Resumes a paused workflow instance
@@ -4809,23 +4443,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ResumeWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/ResumeWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ResumeWorkflowBeta1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ResumeWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Raise an event to a running workflow instance
@@ -4833,26 +4462,18 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::RaiseEventWorkflowRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/RaiseEventWorkflowBeta1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "dapr.proto.runtime.v1.Dapr",
-                        "RaiseEventWorkflowBeta1",
-                    ),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "RaiseEventWorkflowBeta1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Shutdown the sidecar
@@ -4860,18 +4481,11 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::ShutdownRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/Shutdown",
-            );
+            let path = http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/Shutdown");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "Shutdown"));
@@ -4881,27 +4495,20 @@ pub mod dapr_client {
         pub async fn schedule_job_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ScheduleJobRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ScheduleJobResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::ScheduleJobResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
                 "/dapr.proto.runtime.v1.Dapr/ScheduleJobAlpha1",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ScheduleJobAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ScheduleJobAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Gets a scheduled job
@@ -4909,73 +4516,73 @@ pub mod dapr_client {
             &mut self,
             request: impl tonic::IntoRequest<super::GetJobRequest>,
         ) -> std::result::Result<tonic::Response<super::GetJobResponse>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/GetJobAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/GetJobAlpha1");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetJobAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "GetJobAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Delete a job
         pub async fn delete_job_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteJobRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::DeleteJobResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::DeleteJobResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/DeleteJobAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/DeleteJobAlpha1");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteJobAlpha1"),
-                );
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "DeleteJobAlpha1",
+            ));
             self.inner.unary(req, path, codec).await
         }
         /// Converse with a LLM service
         pub async fn converse_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ConversationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ConversationResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+        ) -> std::result::Result<tonic::Response<super::ConversationResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dapr.proto.runtime.v1.Dapr/ConverseAlpha1",
-            );
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/ConverseAlpha1");
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ConverseAlpha1"));
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ConverseAlpha1",
+            ));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Converse with a LLM service via alpha2 api
+        pub async fn converse_alpha2(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ConversationRequestAlpha2>,
+        ) -> std::result::Result<tonic::Response<super::ConversationResponseAlpha2>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::unknown(format!("Service was not ready: {}", e.into()))
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path =
+                http::uri::PathAndQuery::from_static("/dapr.proto.runtime.v1.Dapr/ConverseAlpha2");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new(
+                "dapr.proto.runtime.v1.Dapr",
+                "ConverseAlpha2",
+            ));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -4987,7 +4594,7 @@ pub mod dapr_server {
         dead_code,
         missing_docs,
         clippy::wildcard_imports,
-        clippy::let_unit_value,
+        clippy::let_unit_value
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with DaprServer.
@@ -5006,18 +4613,12 @@ pub mod dapr_server {
         async fn get_state(
             &self,
             request: tonic::Request<super::GetStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetStateResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetStateResponse>, tonic::Status>;
         /// Gets a bulk of state items for a list of keys
         async fn get_bulk_state(
             &self,
             request: tonic::Request<super::GetBulkStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetBulkStateResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetBulkStateResponse>, tonic::Status>;
         /// Saves the state for a specific key.
         async fn save_state(
             &self,
@@ -5027,10 +4628,7 @@ pub mod dapr_server {
         async fn query_state_alpha1(
             &self,
             request: tonic::Request<super::QueryStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::QueryStateResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::QueryStateResponse>, tonic::Status>;
         /// Deletes the state for a specific key.
         async fn delete_state(
             &self,
@@ -5055,26 +4653,20 @@ pub mod dapr_server {
         async fn bulk_publish_event_alpha1(
             &self,
             request: tonic::Request<super::BulkPublishRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::BulkPublishResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::BulkPublishResponse>, tonic::Status>;
         /// Server streaming response type for the SubscribeTopicEventsAlpha1 method.
         type SubscribeTopicEventsAlpha1Stream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::SubscribeTopicEventsResponseAlpha1,
                     tonic::Status,
                 >,
-            >
-            + std::marker::Send
+            > + std::marker::Send
             + 'static;
         /// SubscribeTopicEventsAlpha1 subscribes to a PubSub topic and receives topic
         /// events from it.
         async fn subscribe_topic_events_alpha1(
             &self,
-            request: tonic::Request<
-                tonic::Streaming<super::SubscribeTopicEventsRequestAlpha1>,
-            >,
+            request: tonic::Request<tonic::Streaming<super::SubscribeTopicEventsRequestAlpha1>>,
         ) -> std::result::Result<
             tonic::Response<Self::SubscribeTopicEventsAlpha1Stream>,
             tonic::Status,
@@ -5083,26 +4675,17 @@ pub mod dapr_server {
         async fn invoke_binding(
             &self,
             request: tonic::Request<super::InvokeBindingRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::InvokeBindingResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::InvokeBindingResponse>, tonic::Status>;
         /// Gets secrets from secret stores.
         async fn get_secret(
             &self,
             request: tonic::Request<super::GetSecretRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetSecretResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetSecretResponse>, tonic::Status>;
         /// Gets a bulk of secrets
         async fn get_bulk_secret(
             &self,
             request: tonic::Request<super::GetBulkSecretRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetBulkSecretResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetBulkSecretResponse>, tonic::Status>;
         /// Register an actor timer.
         async fn register_actor_timer(
             &self,
@@ -5127,10 +4710,7 @@ pub mod dapr_server {
         async fn get_actor_state(
             &self,
             request: tonic::Request<super::GetActorStateRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetActorStateResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetActorStateResponse>, tonic::Status>;
         /// Executes state transactions for a specified actor
         async fn execute_actor_state_transaction(
             &self,
@@ -5140,34 +4720,21 @@ pub mod dapr_server {
         async fn invoke_actor(
             &self,
             request: tonic::Request<super::InvokeActorRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::InvokeActorResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::InvokeActorResponse>, tonic::Status>;
         /// GetConfiguration gets configuration from configuration store.
         async fn get_configuration_alpha1(
             &self,
             request: tonic::Request<super::GetConfigurationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetConfigurationResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetConfigurationResponse>, tonic::Status>;
         /// GetConfiguration gets configuration from configuration store.
         async fn get_configuration(
             &self,
             request: tonic::Request<super::GetConfigurationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetConfigurationResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetConfigurationResponse>, tonic::Status>;
         /// Server streaming response type for the SubscribeConfigurationAlpha1 method.
         type SubscribeConfigurationAlpha1Stream: tonic::codegen::tokio_stream::Stream<
-                Item = std::result::Result<
-                    super::SubscribeConfigurationResponse,
-                    tonic::Status,
-                >,
-            >
-            + std::marker::Send
+                Item = std::result::Result<super::SubscribeConfigurationResponse, tonic::Status>,
+            > + std::marker::Send
             + 'static;
         /// SubscribeConfiguration gets configuration from configuration store and subscribe the updates event by grpc stream
         async fn subscribe_configuration_alpha1(
@@ -5179,21 +4746,14 @@ pub mod dapr_server {
         >;
         /// Server streaming response type for the SubscribeConfiguration method.
         type SubscribeConfigurationStream: tonic::codegen::tokio_stream::Stream<
-                Item = std::result::Result<
-                    super::SubscribeConfigurationResponse,
-                    tonic::Status,
-                >,
-            >
-            + std::marker::Send
+                Item = std::result::Result<super::SubscribeConfigurationResponse, tonic::Status>,
+            > + std::marker::Send
             + 'static;
         /// SubscribeConfiguration gets configuration from configuration store and subscribe the updates event by grpc stream
         async fn subscribe_configuration(
             &self,
             request: tonic::Request<super::SubscribeConfigurationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<Self::SubscribeConfigurationStream>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<Self::SubscribeConfigurationStream>, tonic::Status>;
         /// UnSubscribeConfiguration unsubscribe the subscription of configuration
         async fn unsubscribe_configuration_alpha1(
             &self,
@@ -5223,39 +4783,28 @@ pub mod dapr_server {
         /// Server streaming response type for the EncryptAlpha1 method.
         type EncryptAlpha1Stream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<super::EncryptResponse, tonic::Status>,
-            >
-            + std::marker::Send
+            > + std::marker::Send
             + 'static;
         /// EncryptAlpha1 encrypts a message using the Dapr encryption scheme and a key stored in the vault.
         async fn encrypt_alpha1(
             &self,
             request: tonic::Request<tonic::Streaming<super::EncryptRequest>>,
-        ) -> std::result::Result<
-            tonic::Response<Self::EncryptAlpha1Stream>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<Self::EncryptAlpha1Stream>, tonic::Status>;
         /// Server streaming response type for the DecryptAlpha1 method.
         type DecryptAlpha1Stream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<super::DecryptResponse, tonic::Status>,
-            >
-            + std::marker::Send
+            > + std::marker::Send
             + 'static;
         /// DecryptAlpha1 decrypts a message using the Dapr encryption scheme and a key stored in the vault.
         async fn decrypt_alpha1(
             &self,
             request: tonic::Request<tonic::Streaming<super::DecryptRequest>>,
-        ) -> std::result::Result<
-            tonic::Response<Self::DecryptAlpha1Stream>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<Self::DecryptAlpha1Stream>, tonic::Status>;
         /// Gets metadata of the sidecar
         async fn get_metadata(
             &self,
             request: tonic::Request<super::GetMetadataRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetMetadataResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetMetadataResponse>, tonic::Status>;
         /// Sets value in extended metadata of the sidecar
         async fn set_metadata(
             &self,
@@ -5265,74 +4814,47 @@ pub mod dapr_server {
         async fn subtle_get_key_alpha1(
             &self,
             request: tonic::Request<super::SubtleGetKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleGetKeyResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleGetKeyResponse>, tonic::Status>;
         /// SubtleEncryptAlpha1 encrypts a small message using a key stored in the vault.
         async fn subtle_encrypt_alpha1(
             &self,
             request: tonic::Request<super::SubtleEncryptRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleEncryptResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleEncryptResponse>, tonic::Status>;
         /// SubtleDecryptAlpha1 decrypts a small message using a key stored in the vault.
         async fn subtle_decrypt_alpha1(
             &self,
             request: tonic::Request<super::SubtleDecryptRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleDecryptResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleDecryptResponse>, tonic::Status>;
         /// SubtleWrapKeyAlpha1 wraps a key using a key stored in the vault.
         async fn subtle_wrap_key_alpha1(
             &self,
             request: tonic::Request<super::SubtleWrapKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleWrapKeyResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleWrapKeyResponse>, tonic::Status>;
         /// SubtleUnwrapKeyAlpha1 unwraps a key using a key stored in the vault.
         async fn subtle_unwrap_key_alpha1(
             &self,
             request: tonic::Request<super::SubtleUnwrapKeyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleUnwrapKeyResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleUnwrapKeyResponse>, tonic::Status>;
         /// SubtleSignAlpha1 signs a message using a key stored in the vault.
         async fn subtle_sign_alpha1(
             &self,
             request: tonic::Request<super::SubtleSignRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleSignResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleSignResponse>, tonic::Status>;
         /// SubtleVerifyAlpha1 verifies the signature of a message using a key stored in the vault.
         async fn subtle_verify_alpha1(
             &self,
             request: tonic::Request<super::SubtleVerifyRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SubtleVerifyResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::SubtleVerifyResponse>, tonic::Status>;
         /// Starts a new instance of a workflow
         async fn start_workflow_alpha1(
             &self,
             request: tonic::Request<super::StartWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::StartWorkflowResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::StartWorkflowResponse>, tonic::Status>;
         /// Gets details about a started workflow instance
         async fn get_workflow_alpha1(
             &self,
             request: tonic::Request<super::GetWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetWorkflowResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetWorkflowResponse>, tonic::Status>;
         /// Purge Workflow
         async fn purge_workflow_alpha1(
             &self,
@@ -5362,18 +4884,12 @@ pub mod dapr_server {
         async fn start_workflow_beta1(
             &self,
             request: tonic::Request<super::StartWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::StartWorkflowResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::StartWorkflowResponse>, tonic::Status>;
         /// Gets details about a started workflow instance
         async fn get_workflow_beta1(
             &self,
             request: tonic::Request<super::GetWorkflowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::GetWorkflowResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::GetWorkflowResponse>, tonic::Status>;
         /// Purge Workflow
         async fn purge_workflow_beta1(
             &self,
@@ -5408,10 +4924,7 @@ pub mod dapr_server {
         async fn schedule_job_alpha1(
             &self,
             request: tonic::Request<super::ScheduleJobRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ScheduleJobResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::ScheduleJobResponse>, tonic::Status>;
         /// Gets a scheduled job
         async fn get_job_alpha1(
             &self,
@@ -5421,18 +4934,17 @@ pub mod dapr_server {
         async fn delete_job_alpha1(
             &self,
             request: tonic::Request<super::DeleteJobRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::DeleteJobResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::DeleteJobResponse>, tonic::Status>;
         /// Converse with a LLM service
         async fn converse_alpha1(
             &self,
             request: tonic::Request<super::ConversationRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ConversationResponse>,
-            tonic::Status,
-        >;
+        ) -> std::result::Result<tonic::Response<super::ConversationResponse>, tonic::Status>;
+        /// Converse with a LLM service via alpha2 api
+        async fn converse_alpha2(
+            &self,
+            request: tonic::Request<super::ConversationRequestAlpha2>,
+        ) -> std::result::Result<tonic::Response<super::ConversationResponseAlpha2>, tonic::Status>;
     }
     /// Dapr service provides APIs to user application to access Dapr building blocks.
     #[derive(Debug)]
@@ -5456,10 +4968,7 @@ pub mod dapr_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -5514,23 +5023,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/InvokeService" => {
                     #[allow(non_camel_case_types)]
                     struct InvokeServiceSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::InvokeServiceRequest>
-                    for InvokeServiceSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::InvokeServiceRequest> for InvokeServiceSvc<T> {
                         type Response = super::super::super::common::v1::InvokeResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::InvokeServiceRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::invoke_service(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::invoke_service(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5559,21 +5061,15 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetState" => {
                     #[allow(non_camel_case_types)]
                     struct GetStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetStateRequest>
-                    for GetStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetStateRequest> for GetStateSvc<T> {
                         type Response = super::GetStateResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetStateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_state(&inner, request).await
-                            };
+                            let fut = async move { <T as Dapr>::get_state(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5602,21 +5098,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetBulkState" => {
                     #[allow(non_camel_case_types)]
                     struct GetBulkStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetBulkStateRequest>
-                    for GetBulkStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetBulkStateRequest> for GetBulkStateSvc<T> {
                         type Response = super::GetBulkStateResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetBulkStateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_bulk_state(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::get_bulk_state(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5645,21 +5136,15 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SaveState" => {
                     #[allow(non_camel_case_types)]
                     struct SaveStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::SaveStateRequest>
-                    for SaveStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SaveStateRequest> for SaveStateSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SaveStateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::save_state(&inner, request).await
-                            };
+                            let fut = async move { <T as Dapr>::save_state(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5688,13 +5173,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/QueryStateAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct QueryStateAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::QueryStateRequest>
-                    for QueryStateAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::QueryStateRequest> for QueryStateAlpha1Svc<T> {
                         type Response = super::QueryStateResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::QueryStateRequest>,
@@ -5731,21 +5212,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/DeleteState" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteStateRequest>
-                    for DeleteStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteStateRequest> for DeleteStateSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DeleteStateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::delete_state(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::delete_state(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5774,15 +5250,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/DeleteBulkState" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteBulkStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::DeleteBulkStateRequest>
-                    for DeleteBulkStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteBulkStateRequest> for DeleteBulkStateSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DeleteBulkStateRequest>,
@@ -5819,25 +5289,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ExecuteStateTransaction" => {
                     #[allow(non_camel_case_types)]
                     struct ExecuteStateTransactionSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::ExecuteStateTransactionRequest>
-                    for ExecuteStateTransactionSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ExecuteStateTransactionRequest>
+                        for ExecuteStateTransactionSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::ExecuteStateTransactionRequest,
-                            >,
+                            request: tonic::Request<super::ExecuteStateTransactionRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::execute_state_transaction(&inner, request)
-                                    .await
+                                <T as Dapr>::execute_state_transaction(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -5867,21 +5330,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/PublishEvent" => {
                     #[allow(non_camel_case_types)]
                     struct PublishEventSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::PublishEventRequest>
-                    for PublishEventSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::PublishEventRequest> for PublishEventSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::PublishEventRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::publish_event(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::publish_event(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -5911,20 +5369,17 @@ pub mod dapr_server {
                     #[allow(non_camel_case_types)]
                     struct BulkPublishEventAlpha1Svc<T: Dapr>(pub Arc<T>);
                     impl<T: Dapr> tonic::server::UnaryService<super::BulkPublishRequest>
-                    for BulkPublishEventAlpha1Svc<T> {
+                        for BulkPublishEventAlpha1Svc<T>
+                    {
                         type Response = super::BulkPublishResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::BulkPublishRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::bulk_publish_event_alpha1(&inner, request)
-                                    .await
+                                <T as Dapr>::bulk_publish_event_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -5954,17 +5409,14 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubscribeTopicEventsAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubscribeTopicEventsAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::StreamingService<
-                        super::SubscribeTopicEventsRequestAlpha1,
-                    > for SubscribeTopicEventsAlpha1Svc<T> {
+                    impl<T: Dapr>
+                        tonic::server::StreamingService<super::SubscribeTopicEventsRequestAlpha1>
+                        for SubscribeTopicEventsAlpha1Svc<T>
+                    {
                         type Response = super::SubscribeTopicEventsResponseAlpha1;
                         type ResponseStream = T::SubscribeTopicEventsAlpha1Stream;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::ResponseStream>,
-                            tonic::Status,
-                        >;
+                        type Future =
+                            BoxFuture<tonic::Response<Self::ResponseStream>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<
@@ -5973,8 +5425,7 @@ pub mod dapr_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::subscribe_topic_events_alpha1(&inner, request)
-                                    .await
+                                <T as Dapr>::subscribe_topic_events_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6004,23 +5455,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/InvokeBinding" => {
                     #[allow(non_camel_case_types)]
                     struct InvokeBindingSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::InvokeBindingRequest>
-                    for InvokeBindingSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::InvokeBindingRequest> for InvokeBindingSvc<T> {
                         type Response = super::InvokeBindingResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::InvokeBindingRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::invoke_binding(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::invoke_binding(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6049,21 +5493,15 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetSecret" => {
                     #[allow(non_camel_case_types)]
                     struct GetSecretSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetSecretRequest>
-                    for GetSecretSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetSecretRequest> for GetSecretSvc<T> {
                         type Response = super::GetSecretResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetSecretRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_secret(&inner, request).await
-                            };
+                            let fut = async move { <T as Dapr>::get_secret(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6092,23 +5530,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetBulkSecret" => {
                     #[allow(non_camel_case_types)]
                     struct GetBulkSecretSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::GetBulkSecretRequest>
-                    for GetBulkSecretSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetBulkSecretRequest> for GetBulkSecretSvc<T> {
                         type Response = super::GetBulkSecretResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetBulkSecretRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_bulk_secret(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::get_bulk_secret(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6137,15 +5568,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/RegisterActorTimer" => {
                     #[allow(non_camel_case_types)]
                     struct RegisterActorTimerSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::RegisterActorTimerRequest>
-                    for RegisterActorTimerSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::RegisterActorTimerRequest>
+                        for RegisterActorTimerSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::RegisterActorTimerRequest>,
@@ -6182,15 +5609,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/UnregisterActorTimer" => {
                     #[allow(non_camel_case_types)]
                     struct UnregisterActorTimerSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::UnregisterActorTimerRequest>
-                    for UnregisterActorTimerSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::UnregisterActorTimerRequest>
+                        for UnregisterActorTimerSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::UnregisterActorTimerRequest>,
@@ -6227,15 +5650,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/RegisterActorReminder" => {
                     #[allow(non_camel_case_types)]
                     struct RegisterActorReminderSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::RegisterActorReminderRequest>
-                    for RegisterActorReminderSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::RegisterActorReminderRequest>
+                        for RegisterActorReminderSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::RegisterActorReminderRequest>,
@@ -6272,25 +5691,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/UnregisterActorReminder" => {
                     #[allow(non_camel_case_types)]
                     struct UnregisterActorReminderSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::UnregisterActorReminderRequest>
-                    for UnregisterActorReminderSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::UnregisterActorReminderRequest>
+                        for UnregisterActorReminderSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::UnregisterActorReminderRequest,
-                            >,
+                            request: tonic::Request<super::UnregisterActorReminderRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::unregister_actor_reminder(&inner, request)
-                                    .await
+                                <T as Dapr>::unregister_actor_reminder(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6320,23 +5732,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetActorState" => {
                     #[allow(non_camel_case_types)]
                     struct GetActorStateSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::GetActorStateRequest>
-                    for GetActorStateSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetActorStateRequest> for GetActorStateSvc<T> {
                         type Response = super::GetActorStateResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetActorStateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_actor_state(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::get_actor_state(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6365,29 +5770,19 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ExecuteActorStateTransaction" => {
                     #[allow(non_camel_case_types)]
                     struct ExecuteActorStateTransactionSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<
-                        super::ExecuteActorStateTransactionRequest,
-                    > for ExecuteActorStateTransactionSvc<T> {
+                    impl<T: Dapr>
+                        tonic::server::UnaryService<super::ExecuteActorStateTransactionRequest>
+                        for ExecuteActorStateTransactionSvc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::ExecuteActorStateTransactionRequest,
-                            >,
+                            request: tonic::Request<super::ExecuteActorStateTransactionRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::execute_actor_state_transaction(
-                                        &inner,
-                                        request,
-                                    )
-                                    .await
+                                <T as Dapr>::execute_actor_state_transaction(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6417,21 +5812,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/InvokeActor" => {
                     #[allow(non_camel_case_types)]
                     struct InvokeActorSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::InvokeActorRequest>
-                    for InvokeActorSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::InvokeActorRequest> for InvokeActorSvc<T> {
                         type Response = super::InvokeActorResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::InvokeActorRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::invoke_actor(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::invoke_actor(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6460,15 +5850,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetConfigurationAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct GetConfigurationAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::GetConfigurationRequest>
-                    for GetConfigurationAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetConfigurationRequest>
+                        for GetConfigurationAlpha1Svc<T>
+                    {
                         type Response = super::GetConfigurationResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetConfigurationRequest>,
@@ -6505,15 +5891,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetConfiguration" => {
                     #[allow(non_camel_case_types)]
                     struct GetConfigurationSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::GetConfigurationRequest>
-                    for GetConfigurationSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetConfigurationRequest>
+                        for GetConfigurationSvc<T>
+                    {
                         type Response = super::GetConfigurationResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetConfigurationRequest>,
@@ -6550,25 +5932,21 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubscribeConfigurationAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubscribeConfigurationAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::ServerStreamingService<
-                        super::SubscribeConfigurationRequest,
-                    > for SubscribeConfigurationAlpha1Svc<T> {
+                    impl<T: Dapr>
+                        tonic::server::ServerStreamingService<super::SubscribeConfigurationRequest>
+                        for SubscribeConfigurationAlpha1Svc<T>
+                    {
                         type Response = super::SubscribeConfigurationResponse;
                         type ResponseStream = T::SubscribeConfigurationAlpha1Stream;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::ResponseStream>,
-                            tonic::Status,
-                        >;
+                        type Future =
+                            BoxFuture<tonic::Response<Self::ResponseStream>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubscribeConfigurationRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::subscribe_configuration_alpha1(&inner, request)
-                                    .await
+                                <T as Dapr>::subscribe_configuration_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6598,17 +5976,14 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubscribeConfiguration" => {
                     #[allow(non_camel_case_types)]
                     struct SubscribeConfigurationSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::ServerStreamingService<
-                        super::SubscribeConfigurationRequest,
-                    > for SubscribeConfigurationSvc<T> {
+                    impl<T: Dapr>
+                        tonic::server::ServerStreamingService<super::SubscribeConfigurationRequest>
+                        for SubscribeConfigurationSvc<T>
+                    {
                         type Response = super::SubscribeConfigurationResponse;
                         type ResponseStream = T::SubscribeConfigurationStream;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::ResponseStream>,
-                            tonic::Status,
-                        >;
+                        type Future =
+                            BoxFuture<tonic::Response<Self::ResponseStream>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubscribeConfigurationRequest>,
@@ -6645,28 +6020,19 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/UnsubscribeConfigurationAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct UnsubscribeConfigurationAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::UnsubscribeConfigurationRequest>
-                    for UnsubscribeConfigurationAlpha1Svc<T> {
+                    impl<T: Dapr>
+                        tonic::server::UnaryService<super::UnsubscribeConfigurationRequest>
+                        for UnsubscribeConfigurationAlpha1Svc<T>
+                    {
                         type Response = super::UnsubscribeConfigurationResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::UnsubscribeConfigurationRequest,
-                            >,
+                            request: tonic::Request<super::UnsubscribeConfigurationRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::unsubscribe_configuration_alpha1(
-                                        &inner,
-                                        request,
-                                    )
-                                    .await
+                                <T as Dapr>::unsubscribe_configuration_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6696,25 +6062,19 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/UnsubscribeConfiguration" => {
                     #[allow(non_camel_case_types)]
                     struct UnsubscribeConfigurationSvc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::UnsubscribeConfigurationRequest>
-                    for UnsubscribeConfigurationSvc<T> {
+                    impl<T: Dapr>
+                        tonic::server::UnaryService<super::UnsubscribeConfigurationRequest>
+                        for UnsubscribeConfigurationSvc<T>
+                    {
                         type Response = super::UnsubscribeConfigurationResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                super::UnsubscribeConfigurationRequest,
-                            >,
+                            request: tonic::Request<super::UnsubscribeConfigurationRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::unsubscribe_configuration(&inner, request)
-                                    .await
+                                <T as Dapr>::unsubscribe_configuration(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -6744,21 +6104,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/TryLockAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct TryLockAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::TryLockRequest>
-                    for TryLockAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::TryLockRequest> for TryLockAlpha1Svc<T> {
                         type Response = super::TryLockResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::TryLockRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::try_lock_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::try_lock_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6787,21 +6142,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/UnlockAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct UnlockAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::UnlockRequest>
-                    for UnlockAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::UnlockRequest> for UnlockAlpha1Svc<T> {
                         type Response = super::UnlockResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::UnlockRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::unlock_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::unlock_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6830,24 +6180,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/EncryptAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct EncryptAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::StreamingService<super::EncryptRequest>
-                    for EncryptAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::StreamingService<super::EncryptRequest> for EncryptAlpha1Svc<T> {
                         type Response = super::EncryptResponse;
                         type ResponseStream = T::EncryptAlpha1Stream;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::ResponseStream>,
-                            tonic::Status,
-                        >;
+                        type Future =
+                            BoxFuture<tonic::Response<Self::ResponseStream>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                tonic::Streaming<super::EncryptRequest>,
-                            >,
+                            request: tonic::Request<tonic::Streaming<super::EncryptRequest>>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::encrypt_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::encrypt_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6876,24 +6220,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/DecryptAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct DecryptAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::StreamingService<super::DecryptRequest>
-                    for DecryptAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::StreamingService<super::DecryptRequest> for DecryptAlpha1Svc<T> {
                         type Response = super::DecryptResponse;
                         type ResponseStream = T::DecryptAlpha1Stream;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::ResponseStream>,
-                            tonic::Status,
-                        >;
+                        type Future =
+                            BoxFuture<tonic::Response<Self::ResponseStream>, tonic::Status>;
                         fn call(
                             &mut self,
-                            request: tonic::Request<
-                                tonic::Streaming<super::DecryptRequest>,
-                            >,
+                            request: tonic::Request<tonic::Streaming<super::DecryptRequest>>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::decrypt_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::decrypt_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6922,21 +6260,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetMetadata" => {
                     #[allow(non_camel_case_types)]
                     struct GetMetadataSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetMetadataRequest>
-                    for GetMetadataSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetMetadataRequest> for GetMetadataSvc<T> {
                         type Response = super::GetMetadataResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetMetadataRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_metadata(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::get_metadata(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -6965,21 +6298,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SetMetadata" => {
                     #[allow(non_camel_case_types)]
                     struct SetMetadataSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::SetMetadataRequest>
-                    for SetMetadataSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SetMetadataRequest> for SetMetadataSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SetMetadataRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::set_metadata(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::set_metadata(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -7008,13 +6336,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleGetKeyAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleGetKeyAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleGetKeyRequest>
-                    for SubtleGetKeyAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleGetKeyRequest> for SubtleGetKeyAlpha1Svc<T> {
                         type Response = super::SubtleGetKeyResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleGetKeyRequest>,
@@ -7051,15 +6375,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleEncryptAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleEncryptAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::SubtleEncryptRequest>
-                    for SubtleEncryptAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleEncryptRequest>
+                        for SubtleEncryptAlpha1Svc<T>
+                    {
                         type Response = super::SubtleEncryptResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleEncryptRequest>,
@@ -7096,15 +6416,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleDecryptAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleDecryptAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::SubtleDecryptRequest>
-                    for SubtleDecryptAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleDecryptRequest>
+                        for SubtleDecryptAlpha1Svc<T>
+                    {
                         type Response = super::SubtleDecryptResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleDecryptRequest>,
@@ -7141,15 +6457,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleWrapKeyAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleWrapKeyAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::SubtleWrapKeyRequest>
-                    for SubtleWrapKeyAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleWrapKeyRequest>
+                        for SubtleWrapKeyAlpha1Svc<T>
+                    {
                         type Response = super::SubtleWrapKeyResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleWrapKeyRequest>,
@@ -7186,15 +6498,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleUnwrapKeyAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleUnwrapKeyAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::SubtleUnwrapKeyRequest>
-                    for SubtleUnwrapKeyAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleUnwrapKeyRequest>
+                        for SubtleUnwrapKeyAlpha1Svc<T>
+                    {
                         type Response = super::SubtleUnwrapKeyResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleUnwrapKeyRequest>,
@@ -7231,13 +6539,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleSignAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleSignAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleSignRequest>
-                    for SubtleSignAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleSignRequest> for SubtleSignAlpha1Svc<T> {
                         type Response = super::SubtleSignResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleSignRequest>,
@@ -7274,13 +6578,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/SubtleVerifyAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct SubtleVerifyAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleVerifyRequest>
-                    for SubtleVerifyAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::SubtleVerifyRequest> for SubtleVerifyAlpha1Svc<T> {
                         type Response = super::SubtleVerifyResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::SubtleVerifyRequest>,
@@ -7317,15 +6617,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/StartWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct StartWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::StartWorkflowRequest>
-                    for StartWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::StartWorkflowRequest>
+                        for StartWorkflowAlpha1Svc<T>
+                    {
                         type Response = super::StartWorkflowResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::StartWorkflowRequest>,
@@ -7362,13 +6658,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct GetWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetWorkflowRequest>
-                    for GetWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetWorkflowRequest> for GetWorkflowAlpha1Svc<T> {
                         type Response = super::GetWorkflowResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetWorkflowRequest>,
@@ -7405,15 +6697,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/PurgeWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct PurgeWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::PurgeWorkflowRequest>
-                    for PurgeWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::PurgeWorkflowRequest>
+                        for PurgeWorkflowAlpha1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::PurgeWorkflowRequest>,
@@ -7450,23 +6738,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/TerminateWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct TerminateWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::TerminateWorkflowRequest>
-                    for TerminateWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::TerminateWorkflowRequest>
+                        for TerminateWorkflowAlpha1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::TerminateWorkflowRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::terminate_workflow_alpha1(&inner, request)
-                                    .await
+                                <T as Dapr>::terminate_workflow_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -7496,15 +6779,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/PauseWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct PauseWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::PauseWorkflowRequest>
-                    for PauseWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::PauseWorkflowRequest>
+                        for PauseWorkflowAlpha1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::PauseWorkflowRequest>,
@@ -7541,15 +6820,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ResumeWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct ResumeWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::ResumeWorkflowRequest>
-                    for ResumeWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ResumeWorkflowRequest>
+                        for ResumeWorkflowAlpha1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ResumeWorkflowRequest>,
@@ -7586,23 +6861,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/RaiseEventWorkflowAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct RaiseEventWorkflowAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::RaiseEventWorkflowRequest>
-                    for RaiseEventWorkflowAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::RaiseEventWorkflowRequest>
+                        for RaiseEventWorkflowAlpha1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::RaiseEventWorkflowRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::raise_event_workflow_alpha1(&inner, request)
-                                    .await
+                                <T as Dapr>::raise_event_workflow_alpha1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -7632,15 +6902,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/StartWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct StartWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::StartWorkflowRequest>
-                    for StartWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::StartWorkflowRequest>
+                        for StartWorkflowBeta1Svc<T>
+                    {
                         type Response = super::StartWorkflowResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::StartWorkflowRequest>,
@@ -7677,13 +6943,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct GetWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetWorkflowRequest>
-                    for GetWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetWorkflowRequest> for GetWorkflowBeta1Svc<T> {
                         type Response = super::GetWorkflowResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetWorkflowRequest>,
@@ -7720,15 +6982,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/PurgeWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct PurgeWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::PurgeWorkflowRequest>
-                    for PurgeWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::PurgeWorkflowRequest>
+                        for PurgeWorkflowBeta1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::PurgeWorkflowRequest>,
@@ -7765,15 +7023,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/TerminateWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct TerminateWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::TerminateWorkflowRequest>
-                    for TerminateWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::TerminateWorkflowRequest>
+                        for TerminateWorkflowBeta1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::TerminateWorkflowRequest>,
@@ -7810,15 +7064,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/PauseWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct PauseWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::PauseWorkflowRequest>
-                    for PauseWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::PauseWorkflowRequest>
+                        for PauseWorkflowBeta1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::PauseWorkflowRequest>,
@@ -7855,15 +7105,11 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ResumeWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct ResumeWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::ResumeWorkflowRequest>
-                    for ResumeWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ResumeWorkflowRequest>
+                        for ResumeWorkflowBeta1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ResumeWorkflowRequest>,
@@ -7900,23 +7146,18 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/RaiseEventWorkflowBeta1" => {
                     #[allow(non_camel_case_types)]
                     struct RaiseEventWorkflowBeta1Svc<T: Dapr>(pub Arc<T>);
-                    impl<
-                        T: Dapr,
-                    > tonic::server::UnaryService<super::RaiseEventWorkflowRequest>
-                    for RaiseEventWorkflowBeta1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::RaiseEventWorkflowRequest>
+                        for RaiseEventWorkflowBeta1Svc<T>
+                    {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::RaiseEventWorkflowRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as Dapr>::raise_event_workflow_beta1(&inner, request)
-                                    .await
+                                <T as Dapr>::raise_event_workflow_beta1(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -7946,21 +7187,15 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/Shutdown" => {
                     #[allow(non_camel_case_types)]
                     struct ShutdownSvc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::ShutdownRequest>
-                    for ShutdownSvc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ShutdownRequest> for ShutdownSvc<T> {
                         type Response = ();
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ShutdownRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::shutdown(&inner, request).await
-                            };
+                            let fut = async move { <T as Dapr>::shutdown(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -7989,13 +7224,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ScheduleJobAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct ScheduleJobAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::ScheduleJobRequest>
-                    for ScheduleJobAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ScheduleJobRequest> for ScheduleJobAlpha1Svc<T> {
                         type Response = super::ScheduleJobResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ScheduleJobRequest>,
@@ -8032,21 +7263,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/GetJobAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct GetJobAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::GetJobRequest>
-                    for GetJobAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetJobRequest> for GetJobAlpha1Svc<T> {
                         type Response = super::GetJobResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::GetJobRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::get_job_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::get_job_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -8075,13 +7301,9 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/DeleteJobAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteJobAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteJobRequest>
-                    for DeleteJobAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteJobRequest> for DeleteJobAlpha1Svc<T> {
                         type Response = super::DeleteJobResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DeleteJobRequest>,
@@ -8118,21 +7340,16 @@ pub mod dapr_server {
                 "/dapr.proto.runtime.v1.Dapr/ConverseAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct ConverseAlpha1Svc<T: Dapr>(pub Arc<T>);
-                    impl<T: Dapr> tonic::server::UnaryService<super::ConversationRequest>
-                    for ConverseAlpha1Svc<T> {
+                    impl<T: Dapr> tonic::server::UnaryService<super::ConversationRequest> for ConverseAlpha1Svc<T> {
                         type Response = super::ConversationResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::ConversationRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Dapr>::converse_alpha1(&inner, request).await
-                            };
+                            let fut =
+                                async move { <T as Dapr>::converse_alpha1(&inner, request).await };
                             Box::pin(fut)
                         }
                     }
@@ -8158,23 +7375,59 @@ pub mod dapr_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        let mut response = http::Response::new(empty_body());
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
+                "/dapr.proto.runtime.v1.Dapr/ConverseAlpha2" => {
+                    #[allow(non_camel_case_types)]
+                    struct ConverseAlpha2Svc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::ConversationRequestAlpha2>
+                        for ConverseAlpha2Svc<T>
+                    {
+                        type Response = super::ConversationResponseAlpha2;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ConversationRequestAlpha2>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut =
+                                async move { <T as Dapr>::converse_alpha2(&inner, request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ConverseAlpha2Svc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
-                    })
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
                 }
+                _ => Box::pin(async move {
+                    let mut response = http::Response::new(empty_body());
+                    let headers = response.headers_mut();
+                    headers.insert(
+                        tonic::Status::GRPC_STATUS,
+                        (tonic::Code::Unimplemented as i32).into(),
+                    );
+                    headers.insert(
+                        http::header::CONTENT_TYPE,
+                        tonic::metadata::GRPC_CONTENT_TYPE,
+                    );
+                    Ok(response)
+                }),
             }
         }
     }

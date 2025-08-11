@@ -75,6 +75,10 @@ name = "jobs"
 path = "src/jobs/jobs.rs"
 
 [[example]]
+name = "jobs-failurepolicy"
+path = "src/jobs-failurepolicy/jobs_failurepolicy.rs"
+
+[[example]]
 name = "pubsub-publisher"
 path = "src/pubsub/publisher.rs"
 
