@@ -51,16 +51,16 @@ fn proto_gen(
         .map(|path| format!("{}/{}", root_dir.to_str().unwrap(), path))
         .collect::<Vec<_>>();
 
-    println!("included {:?}", include_dirs);
+    println!("included {include_dirs:?}");
 
     let interface = interface
         .iter()
         .map(|path| format!("{}/{}", root_dir.to_str().unwrap(), path))
         .collect::<Vec<_>>();
-    println!("interface {:?}", interface);
+    println!("interface {interface:?}");
 
     let out_dir = root_dir.join(out_dir);
-    println!("outdir {:?}", out_dir);
+    println!("outdir {out_dir:?}");
 
     tonic_build::configure()
         .build_client(build_client)

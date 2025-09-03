@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use dapr::client::JobBuilder;
+use dapr::client::{JobBuilder, JobFailurePolicyBuilder, JobFailurePolicyType};
 use dapr::dapr::proto::runtime::v1::{
     app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse,
 };
@@ -41,7 +41,8 @@ async fn backup_job_handler(request: JobEventRequest) -> Result<JobEventResponse
         println!("job received: {backup_val:?}");
     }
 
-    Ok(JobEventResponse::default())
+    // Return a failure response to simulate a job failure
+    Err(Status::internal("Simulated job failure"))
 }
 
 #[tokio::main]
@@ -108,6 +109,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let job = JobBuilder::new("prod-db-backup")
         .with_schedule("@every 1s")
         .with_data(any)
+        .with_failure_policy(JobFailurePolicyBuilder::new(JobFailurePolicyType::Drop {}).build())
         .build();
 
     let _schedule_resp = client.schedule_job_alpha1(job, None).await?;

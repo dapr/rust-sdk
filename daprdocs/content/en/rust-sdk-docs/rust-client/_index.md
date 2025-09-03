@@ -17,8 +17,8 @@ stable release and will likely involve breaking changes.
 
 ## Prerequisites
 
-- [Dapr CLI]({{< ref install-dapr-cli.md >}}) installed
-- Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
+- [Dapr CLI]({{% ref install-dapr-cli.md %}}) installed
+- Initialized [Dapr environment]({{% ref install-dapr-selfhost.md %}})
 - [Rust installed](https://www.rust-lang.org/tools/install)
 
 ## Import the client package
@@ -54,7 +54,7 @@ let mut client = dapr::Client::<dapr::client::TonicClient>::connect_with_port(ad
 ## Building blocks
 
 The Rust SDK allows you to interface with the
-[Dapr building blocks]({{< ref building-blocks >}}).
+[Dapr building blocks]({{% ref building-blocks %}}).
 
 ### Service Invocation (gRPC)
 
@@ -71,7 +71,7 @@ let response = client
 ```
 
 For a full guide on service invocation, visit
-[How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
+[How-To: Invoke a service]({{% ref howto-invoke-discover-services.md %}}).
 
 ### State Management
 
@@ -102,7 +102,7 @@ client
 Multiple states can be sent with the `save_bulk_states` method.
 
 For a full guide on state management, visit
-[How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+[How-To: Save & get state]({{% ref howto-get-save-state.md %}}).
 
 ### Publish Messages
 
@@ -120,7 +120,7 @@ client
 ```
 
 For a full guide on pub/sub, visit
-[How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
+[How-To: Publish & subscribe]({{% ref howto-publish-subscribe.md %}}).
 
 ## Related links
 

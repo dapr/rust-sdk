@@ -52,7 +52,7 @@ async fn unsubscribe(client: &mut DaprClient, subscription_id: &str) {
         .await
     {
         Ok(_) => println!("App unsubscribed from config changes"),
-        Err(e) => println!("Error unsubscribing from config updates: {}", e),
+        Err(e) => println!("Error unsubscribing from config updates: {e}"),
     }
     std::process::exit(0);
 }

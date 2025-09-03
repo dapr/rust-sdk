@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let callback_service = AppCallbackService {};
 
-    println!("AppCallback server listening on: {}", server_address);
+    println!("AppCallback server listening on: {server_address}");
     // Create a gRPC server with the callback_service.
     Server::builder()
         .add_service(AppCallbackServer::new(callback_service))
