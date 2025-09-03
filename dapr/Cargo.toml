@@ -30,7 +30,11 @@ axum-test = "=16.4.0" # TODO: Remove problematic dep
 litemap = "=0.7.4" # TODO: Remove pinned - linked to axum_test
 zerofrom = "=0.1.5" # TODO: Remove pinned - linked to axum_test
 reserve-port = "=2.1.0" # TODO: Remove pinned - linked to axum_test
-idna_adapter = "=1.2.0"
+idna_adapter = "=1.2.0" # TODO: Remove pinned - linked to axum_test
+deranged = "=0.4.0" # TODO: Remove pinned - linked to axum_test
+time = "=0.3.41" # TODO: Remove pinned - linked to axum_test
+time-core = "=0.1.4" # TODO: Remove pinned - linked to axum_test
+time-macros = "=0.2.22" # TODO: Remove pinned - linked to axum_test
 
 once_cell = "1.19"
 dapr = { path = "./" }
