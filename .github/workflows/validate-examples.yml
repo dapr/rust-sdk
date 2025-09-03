@@ -220,7 +220,7 @@ jobs:
       fail-fast: false
       matrix:
         examples:
-          [ "actors", "bindings", "client", "configuration", "conversation", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "pubsub", "query_state", "secrets-bulk" ]
+          [ "actors", "bindings", "client", "configuration", "conversation", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "jobs-failurepolicy", "pubsub", "query_state", "secrets-bulk" ]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
