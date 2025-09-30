@@ -18,12 +18,12 @@ struct Refund {
 
 #[topic(pub_sub_name = "pubsub", topic = "A")]
 async fn handle_a_event(order: Order) {
-    println!("Topic A - {:#?}", order)
+    println!("Topic A - {order:#?}")
 }
 
 #[topic(pub_sub_name = "pubsub", topic = "B")]
 async fn handle_b_event(refund: Refund) {
-    println!("Topic B - {:#?}", refund)
+    println!("Topic B - {refund:#?}")
 }
 
 #[tokio::main]
@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     callback_service.add_handler(HandleBEvent.get_handler());
 
-    println!("AppCallback server listening on: {}", addr);
+    println!("AppCallback server listening on: {addr}");
 
     // Create a gRPC server with the callback_service.
     Server::builder()

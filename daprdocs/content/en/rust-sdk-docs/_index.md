@@ -22,6 +22,6 @@ A client library to help build Dapr applications using Rust. This client is targ
 {{< card title="**Client**">}}
   Use the Rust Client SDK for invoking public Dapr APIs
 
-  [**Learn more about the Rust Client SDK**]({{< ref rust-client >}})
+  [**Learn more about the Rust Client SDK**]({{% ref rust-client %}})
 {{< /card >}}
 {{< /cardpane >}}

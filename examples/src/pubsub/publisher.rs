@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for count in 0..10 {
         let order = Order {
             order_number: count,
-            order_details: format!("Count is {}", count),
+            order_details: format!("Count is {count}"),
         };
         // message metadata
         let mut metadata = HashMap::<String, String>::new();

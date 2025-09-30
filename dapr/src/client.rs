@@ -1,17 +1,18 @@
-use std::collections::HashMap;
-
+use crate::dapr::proto::common::v1::job_failure_policy::Policy;
+use crate::dapr::proto::common::v1::JobFailurePolicyConstant;
+use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
+use crate::error::Error;
 use async_trait::async_trait;
 use futures::StreamExt;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
+use std::time::Duration;
 use tokio::io::AsyncRead;
 use tonic::codegen::tokio_stream;
 use tonic::{transport::Channel as TonicChannel, Request};
 use tonic::{Status, Streaming};
-
-use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
-use crate::error::Error;
 
 #[derive(Clone)]
 pub struct Client<T>(T);
@@ -25,7 +26,7 @@ impl<T: DaprInterface> Client<T> {
     pub async fn connect(addr: String) -> Result<Self, Error> {
         // Get the Dapr port to create a connection
         let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-        let address = format!("{}:{}", addr, port);
+        let address = format!("{addr}:{port}");
 
         Ok(Client(T::connect(address).await?))
     }
@@ -45,7 +46,7 @@ impl<T: DaprInterface> Client<T> {
             }
         };
 
-        let address = format!("{}:{}", addr, port);
+        let address = format!("{addr}:{port}");
 
         Ok(Client(T::connect(address).await?))
     }
@@ -559,9 +560,15 @@ impl<T: DaprInterface> Client<T> {
     /// # Arguments
     ///
     /// * job - The job to schedule
-    pub async fn schedule_job_alpha1(&mut self, job: Job) -> Result<ScheduleJobResponse, Error> {
+    /// * overwrite - Optional flag to overwrite an existing job with the same name
+    pub async fn schedule_job_alpha1(
+        &mut self,
+        job: Job,
+        overwrite: Option<bool>,
+    ) -> Result<ScheduleJobResponse, Error> {
         let request = ScheduleJobRequest {
             job: Some(job.clone()),
+            overwrite: overwrite.unwrap_or(false),
         };
         self.0.schedule_job_alpha1(request).await
     }
@@ -981,6 +988,9 @@ pub type DecryptRequestOptions = crate::dapr::proto::runtime::v1::DecryptRequest
 /// The basic job structure
 pub type Job = crate::dapr::proto::runtime::v1::Job;
 
+/// A failure policy for a job
+pub type JobFailurePolicy = crate::dapr::proto::common::v1::JobFailurePolicy;
+
 /// A request to schedule a job
 pub type ScheduleJobRequest = crate::dapr::proto::runtime::v1::ScheduleJobRequest;
 
@@ -1040,6 +1050,7 @@ pub struct JobBuilder {
     ttl: Option<String>,
     repeats: Option<u32>,
     due_time: Option<String>,
+    failure_policy: Option<JobFailurePolicy>,
 }
 
 impl JobBuilder {
@@ -1052,6 +1063,7 @@ impl JobBuilder {
             ttl: None,
             repeats: None,
             due_time: None,
+            failure_policy: None,
         }
     }
 
@@ -1080,6 +1092,11 @@ impl JobBuilder {
         self
     }
 
+    pub fn with_failure_policy(mut self, policy: JobFailurePolicy) -> Self {
+        self.failure_policy = Some(policy);
+        self
+    }
+
     pub fn build(self) -> Job {
         Job {
             schedule: self.schedule,
@@ -1088,6 +1105,57 @@ impl JobBuilder {
             ttl: self.ttl,
             repeats: self.repeats,
             due_time: self.due_time,
+            failure_policy: self.failure_policy,
+        }
+    }
+}
+
+// Enum for a job failure policy
+pub enum JobFailurePolicyType {
+    Drop {},
+    Constant {},
+}
+
+pub struct JobFailurePolicyBuilder {
+    policy: JobFailurePolicyType,
+    pub retry_interval: Option<Duration>,
+    pub max_retries: Option<u32>,
+}
+
+impl JobFailurePolicyBuilder {
+    pub fn new(policy: JobFailurePolicyType) -> Self {
+        JobFailurePolicyBuilder {
+            policy,
+            retry_interval: None,
+            max_retries: None,
+        }
+    }
+
+    pub fn with_retry_interval(mut self, interval: Duration) -> Self {
+        // Convert interval string (e.g., "5s") to ProstDuration
+        self.retry_interval = Some(interval);
+        self
+    }
+
+    pub fn with_max_retries(mut self, max_retries: u32) -> Self {
+        self.max_retries = Some(max_retries);
+        self
+    }
+
+    pub fn build(self) -> common_v1::JobFailurePolicy {
+        match self.policy {
+            JobFailurePolicyType::Drop {} => common_v1::JobFailurePolicy {
+                policy: Some(Policy::Drop(Default::default())),
+            },
+            JobFailurePolicyType::Constant {} => JobFailurePolicy {
+                policy: Some(Policy::Constant(JobFailurePolicyConstant {
+                    interval: self.retry_interval.map(|interval| {
+                        prost_types::Duration::try_from(interval)
+                            .expect("Failed to convert Duration")
+                    }),
+                    max_retries: self.max_retries,
+                })),
+            },
         }
     }
 }

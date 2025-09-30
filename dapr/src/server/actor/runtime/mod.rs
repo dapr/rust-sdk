@@ -174,7 +174,7 @@ impl ActorTypeRegistration {
         T: 'static,
     {
         let actor_type = self.name.clone();
-        let method_path = format!("/actors/{}/:actor_id/method/{}", actor_type, method_name);
+        let method_path = format!("/actors/{actor_type}/:actor_id/method/{method_name}");
 
         let reg_func = move |router: Router, runtime: Arc<ActorRuntime>| {
             router.route(
@@ -224,7 +224,7 @@ impl ActorRuntime {
         let name = registration.name.clone();
         let mut g = self.registered_actors_types.write().await;
         g.insert(name.clone(), registration);
-        log::info!("registered actor {}", name);
+        log::info!("registered actor {name}");
     }
 
     pub async fn configure_method_routes(
