@@ -19,9 +19,9 @@ The Dapr Rust-SDK is currently in Alpha. Work is underway to bring it to a stabl
 A client library to help build Dapr applications using Rust. This client is targeting support for all public Dapr APIs while focusing on idiomatic Rust experiences and developer productivity.
 
 {{< cardpane >}}
-{{< card title="**Client**">}}
+{{% card title="**Client**"%}}
   Use the Rust Client SDK for invoking public Dapr APIs
 
   [**Learn more about the Rust Client SDK**]({{% ref rust-client %}})
-{{< /card >}}
+{{% /card %}}
 {{< /cardpane >}}
