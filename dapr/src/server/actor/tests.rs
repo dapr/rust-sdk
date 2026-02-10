@@ -2,9 +2,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use axum::{Json, Router};
-use axum::body::{Body as AxumBody, to_bytes as axum_to_bytes};
+use axum::body::{to_bytes as axum_to_bytes, Body as AxumBody};
 use axum::http::Request as AxumRequest;
+use axum::{Json, Router};
 use dapr::server::{
     actor::{runtime::ActorTypeRegistration, Actor, ActorError},
     DaprHttpServer,
@@ -105,7 +105,9 @@ async fn test_actor_invoke() {
         .body(AxumBody::from(req_body))
         .unwrap();
 
-    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req).await.unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req)
+        .await
+        .unwrap();
     assert!(resp.status().is_success());
     let bytes = axum_to_bytes(resp.into_body(), 64 * 1024).await.unwrap();
     let resp_json: MyResponse = serde_json::from_slice(&bytes).unwrap();
@@ -136,7 +138,9 @@ async fn test_actor_invoke() {
         .body(AxumBody::from(req_body2))
         .unwrap();
 
-    let resp2 = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req2).await.unwrap();
+    let resp2 = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req2)
+        .await
+        .unwrap();
     assert!(resp2.status().is_success());
 
     assert_eq!(
@@ -191,7 +195,9 @@ async fn test_actor_deactivate() {
         .header("content-type", "application/json")
         .body(AxumBody::from(req_body))
         .unwrap();
-    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req).await.unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req)
+        .await
+        .unwrap();
     assert!(resp.status().is_success());
 
     // Deactivate - first should succeed
@@ -200,7 +206,10 @@ async fn test_actor_deactivate() {
         .uri(format!("/actors/MyActor/{actor_id}"))
         .body(AxumBody::empty())
         .unwrap();
-    let delete_resp1 = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), delete_req).await.unwrap();
+    let delete_resp1 =
+        tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), delete_req)
+            .await
+            .unwrap();
     assert!(delete_resp1.status().is_success());
 
     // Deactivate again - should be not found
@@ -209,7 +218,10 @@ async fn test_actor_deactivate() {
         .uri(format!("/actors/MyActor/{actor_id}"))
         .body(AxumBody::empty())
         .unwrap();
-    let delete_resp2 = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), delete_req2).await.unwrap();
+    let delete_resp2 =
+        tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), delete_req2)
+            .await
+            .unwrap();
     assert_eq!(delete_resp2.status().as_u16(), 404);
 
     assert_eq!(
