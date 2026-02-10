@@ -7,6 +7,9 @@ env:
 jobs:
   run:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     defaults:
       run:
         working-directory: ./.github/workflows/dapr-bot

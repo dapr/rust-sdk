@@ -23,6 +23,8 @@ jobs:
   lint:
     name: Check and Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - name: Install Rust
@@ -51,6 +53,8 @@ jobs:
   build:
     name: Test and Build on rust-${{ matrix.rust-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -79,6 +83,8 @@ jobs:
   test-docs:
     name: Check Docs - ${{ matrix.crate }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -96,6 +102,8 @@ jobs:
   publish-dry:
     name: Publish Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -122,6 +130,8 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [test-docs, lint, build, publish-dry]
     if: startswith(github.ref, 'refs/tags/v')
     strategy:
