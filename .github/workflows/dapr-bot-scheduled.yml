@@ -20,6 +20,9 @@ jobs:
   prune_stale:
     name: Prune Stale
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
     - name: Prune Stale
       uses: actions/stale@v9.0.0
