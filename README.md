@@ -53,7 +53,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.16"
+dapr = "0.18"
 ```
 
 Here's a basic example to create a client:

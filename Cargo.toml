@@ -30,7 +30,7 @@ tonic-build = "0.12.3"
 getrandom = { git = "https://github.com/rust-random/getrandom", rev = "38e4ad38309a85b56eef4fc759535ccfc322ba9a" }
 
 [workspace.package]
-version = "0.16.2"
+version = "0.18.0-rc.0"
 authors = [
     "Mike Nguyen <hey@mike.ee>",
     "The Dapr Authors <dapr@dapr.io>"
