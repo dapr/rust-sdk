@@ -47,12 +47,8 @@ fn main() {
         true,
         true,
         "examples/src/invoke/protos/",
-        &[
-            root_dir.join("examples/proto/helloworld/helloworld.proto"),
-        ],
-        &[
-            root_dir.join("examples/proto/helloworld"),
-        ],
+        &[root_dir.join("examples/proto/helloworld/helloworld.proto")],
+        &[root_dir.join("examples/proto/helloworld")],
     );
 }
 
@@ -66,13 +62,23 @@ fn proto_gen(
 ) {
     let protos_display = protos
         .iter()
-        .map(|p| p.strip_prefix(&root_dir).unwrap_or(p).to_string_lossy().to_string())
+        .map(|p| {
+            p.strip_prefix(&root_dir)
+                .unwrap_or(p)
+                .to_string_lossy()
+                .to_string()
+        })
         .collect::<Vec<_>>();
     println!("protos: {protos_display:?}");
 
     let includes_display = include_dirs
         .iter()
-        .map(|p| p.strip_prefix(&root_dir).unwrap_or(p).to_string_lossy().to_string())
+        .map(|p| {
+            p.strip_prefix(&root_dir)
+                .unwrap_or(p)
+                .to_string_lossy()
+                .to_string()
+        })
         .collect::<Vec<_>>();
     println!("includes {includes_display:?}");
 
