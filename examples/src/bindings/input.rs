@@ -4,7 +4,8 @@ use dapr::dapr::proto::common::v1::{InvokeRequest, InvokeResponse};
 use dapr::dapr::proto::runtime::v1::{
     app_callback_server::{AppCallback, AppCallbackServer},
     BindingEventRequest, BindingEventResponse, ListInputBindingsResponse,
-    ListTopicSubscriptionsResponse, TopicEventRequest, TopicEventResponse,
+    ListTopicSubscriptionsResponse, TopicEventBulkRequest, TopicEventBulkResponse,
+    TopicEventRequest, TopicEventResponse,
 };
 
 #[derive(Default)]
@@ -66,6 +67,14 @@ impl AppCallback for AppCallbackService {
         println!("Message: {}", &message);
 
         Ok(Response::new(BindingEventResponse::default()))
+    }
+
+    /// Listens events from the pubsub in bulk.
+    async fn on_bulk_topic_event(
+        &self,
+        _request: Request<TopicEventBulkRequest>,
+    ) -> Result<Response<TopicEventBulkResponse>, Status> {
+        todo!("on_bulk_topic_event is not implemented yet")
     }
 }
 

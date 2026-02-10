@@ -4,9 +4,9 @@ use dapr::{
 };
 use tonic::{transport::Server, Request, Response, Status};
 
-use prost::Message;
-
+use dapr::dapr::proto::runtime::v1::{TopicEventBulkRequest, TopicEventBulkResponse};
 use hello_world::{HelloReply, HelloRequest};
+use prost::Message;
 
 pub mod hello_world {
     include!("../protos/helloworld.rs");
@@ -88,6 +88,15 @@ impl AppCallback for AppCallbackService {
         _request: Request<BindingEventRequest>,
     ) -> Result<Response<BindingEventResponse>, Status> {
         Ok(Response::new(BindingEventResponse::default()))
+    }
+
+    /// Listens events from the pubsub with bulk subscribe.
+    async fn on_bulk_topic_event(
+        &self,
+        _request: Request<TopicEventBulkRequest>,
+    ) -> Result<Response<TopicEventBulkResponse>, Status> {
+        // TODO: implement bulk topic event handling logic here.
+        Ok(Response::new(TopicEventBulkResponse::default()))
     }
 }
 
