@@ -32,6 +32,14 @@ pub type BindingEventRequest = runtime::v1::BindingEventRequest;
 /// send data to output bindings optionally.
 pub type BindingEventResponse = runtime::v1::BindingEventResponse;
 
+/// TopicEventBulkRequest is the message for bulk topic event request.
+/// It includes multiple events in one request.
+pub type TopicEventBulkRequest = runtime::v1::TopicEventBulkRequest;
+
+/// TopicEventBulkResponse is the message for bulk topic event response.
+/// It includes the result for each event in the request.
+pub type TopicEventBulkResponse = runtime::v1::TopicEventBulkResponse;
+
 impl ListTopicSubscriptionsResponse {
     /// Create `ListTopicSubscriptionsResponse` with a topic.
     pub fn topic(pubsub_name: String, topic: String) -> Self {
@@ -88,7 +96,7 @@ impl AppCallback for AppCallbackService {
         &self,
         _request: Request<common::v1::InvokeRequest>,
     ) -> Result<Response<common::v1::InvokeResponse>, Status> {
-        Ok(Response::new(InvokeResponse::default()))
+        todo!("on_invoke is not implemented yet")
     }
 
     async fn list_topic_subscriptions(
@@ -132,14 +140,21 @@ impl AppCallback for AppCallbackService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<runtime::v1::ListInputBindingsResponse>, Status> {
-        Ok(Response::new(ListInputBindingsResponse::default()))
+        todo!("list_input_bindings is not implemented yet")
     }
 
     async fn on_binding_event(
         &self,
-        _request: Request<runtime::v1::BindingEventRequest>,
-    ) -> Result<Response<runtime::v1::BindingEventResponse>, Status> {
-        Ok(Response::new(BindingEventResponse::default()))
+        _request: Request<BindingEventRequest>,
+    ) -> Result<Response<BindingEventResponse>, Status> {
+        todo!("on_binding_event is not implemented yet")
+    }
+
+    async fn on_bulk_topic_event(
+        &self,
+        _request: Request<TopicEventBulkRequest>,
+    ) -> Result<Response<TopicEventBulkResponse>, Status> {
+        todo!("on_bulk_topic_event is not implemented yet")
     }
 }
 

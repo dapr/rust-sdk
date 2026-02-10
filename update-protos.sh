@@ -37,6 +37,13 @@ checkHttpRequestCLI() {
     fi
 }
 
+checkJq() {
+    if ! type "jq" > /dev/null; then
+        echo "jq is required to parse GitHub API JSON. Please install jq and try again."
+        exit 1
+    fi
+}
+
 setRuntimeReleaseTag() {
     local OPTIND
     while getopts ":v:" opt; do
@@ -71,7 +78,7 @@ downloadFile() {
     if [ "$HTTP_REQUEST_CLI" == "curl" ]; then
         (cd ${FILE_PATH} && curl -SsL "$PROTO_URL" -o "${FILE_NAME}.proto")
     else
-        wget -q -P "$PROTO_URL" "${FILE_PATH}/${FILE_NAME}.proto"
+        wget -q -O "${FILE_PATH}/${FILE_NAME}.proto" "$PROTO_URL"
     fi
 
     if [ ! -e "${FILE_PATH}/${FILE_NAME}.proto" ]; then
@@ -79,6 +86,34 @@ downloadFile() {
         ret_val=$FILE_NAME
         exit 1
     fi
+}
+
+downloadAllFromGitHubDir() {
+    FOLDER_NAME=$1
+    FILE_PATH="${PROTO_PATH}/${FOLDER_NAME}/v1"
+    API_URL="https://api.github.com/repos/dapr/dapr/contents/dapr/proto/${FOLDER_NAME}/v1?ref=${RUNTIME_RELEASE_TAG}"
+
+    echo "Fetching file list from $API_URL ..."
+    if [ "$HTTP_REQUEST_CLI" == "curl" ]; then
+        resp=$(curl -sS "$API_URL") || { echo "Failed to fetch file list from $API_URL"; exit 1; }
+    else
+        resp=$(wget -q -O - "$API_URL") || { echo "Failed to fetch file list from $API_URL"; exit 1; }
+    fi
+
+    proto_files=$(echo "$resp" | jq -r '.[] | select(.name | endswith(".proto")) | .name' || true)
+
+    if [ -z "$proto_files" ]; then
+        echo "No .proto files found in $API_URL"
+        exit 1
+    fi
+
+    mkdir -p "${FILE_PATH}"
+
+    for f in $proto_files; do
+        base="${f%.proto}"
+        echo "Fetching ${base}.proto"
+        downloadFile "$FOLDER_NAME" "$base"
+    done
 }
 
 fail_trap() {
@@ -95,7 +130,7 @@ fail_trap() {
 trap "fail_trap" EXIT
 
 checkHttpRequestCLI
+checkJq
 setRuntimeReleaseTag "$@"
-downloadFile $COMMON $COMMON
-downloadFile $RUNTIME $DAPR
-downloadFile $RUNTIME $APPCALLBACK
+downloadAllFromGitHubDir $COMMON
+downloadAllFromGitHubDir $RUNTIME

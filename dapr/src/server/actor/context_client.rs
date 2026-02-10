@@ -1,4 +1,5 @@
 use crate::client::TonicClient;
+use crate::dapr::proto::common::v1::JobFailurePolicy;
 use crate::dapr::proto::runtime::v1 as dapr_v1;
 use crate::error::Error as DaprError;
 use prost_types::Any;
@@ -100,6 +101,9 @@ impl ActorContextClient {
     /// * `period` - The time interval between invocations of the reminder.
     /// * `data` - The data to pass to the reminder when it is invoked.
     /// * `ttl` - The time to live for the reminder.
+    /// * `overwrite` - Whether to overwrite an existing reminder with the same name. Defaults to true if not set.
+    /// * `failure_policy` - The job failure policy to apply to this reminder. If not set, the reminder will use the default job failure policy configured in Dapr. Use the client::JobFailurePolicyBuilder to construct a JobFailurePolicy with the desired settings.
+    #[allow(clippy::too_many_arguments)]
     pub async fn register_actor_reminder<I>(
         &mut self,
         name: I,
@@ -107,6 +111,8 @@ impl ActorContextClient {
         period: Option<Duration>,
         data: Vec<u8>,
         ttl: Option<Duration>,
+        overwrite: Option<bool>,
+        failure_policy: Option<JobFailurePolicy>,
     ) -> Result<(), DaprError>
     where
         I: Into<String>,
@@ -129,6 +135,9 @@ impl ActorContextClient {
                     None => "".to_string(),
                     Some(t) => chrono::Duration::from_std(t).unwrap().to_string(),
                 },
+                // Defaults to true if not set, but we want to be explicit about it here.
+                overwrite: Option::from(overwrite.unwrap_or(true)),
+                failure_policy,
             })
             .await?
             .into_inner();

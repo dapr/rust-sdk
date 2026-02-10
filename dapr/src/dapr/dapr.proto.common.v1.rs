@@ -20,7 +20,17 @@ pub mod http_extension {
     /// Type of HTTP 1.1 Methods
     /// RFC 7231: <https://tools.ietf.org/html/rfc7231#page-24>
     /// RFC 5789: <https://datatracker.ietf.org/doc/html/rfc5789>
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Verb {
         None = 0,
@@ -138,8 +148,10 @@ pub struct StateItem {
     pub etag: ::core::option::Option<Etag>,
     /// The metadata which will be passed to state store component.
     #[prost(map = "string, string", tag = "4")]
-    pub metadata:
-        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
     /// Options for concurrency and consistency to save the state.
     #[prost(message, optional, tag = "5")]
     pub options: ::core::option::Option<StateOptions>,
@@ -162,7 +174,17 @@ pub struct StateOptions {
 /// Nested message and enum types in `StateOptions`.
 pub mod state_options {
     /// Enum describing the supported concurrency for state.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum StateConcurrency {
         ConcurrencyUnspecified = 0,
@@ -192,7 +214,17 @@ pub mod state_options {
         }
     }
     /// Enum describing the supported consistency for state.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum StateConsistency {
         ConsistencyUnspecified = 0,
@@ -233,8 +265,10 @@ pub struct ConfigurationItem {
     pub version: ::prost::alloc::string::String,
     /// the metadata which will be passed to/from configuration store component.
     #[prost(map = "string, string", tag = "3")]
-    pub metadata:
-        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
 }
 /// JobFailurePolicy defines the policy to apply when a job fails to trigger.
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
