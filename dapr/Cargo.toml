@@ -26,15 +26,6 @@ tokio-util = { workspace = true, features = ["io"] }
 
 
 [dev-dependencies]
-axum-test = "=16.4.0" # TODO: Remove problematic dep
-litemap = "=0.7.4" # TODO: Remove pinned - linked to axum_test
-zerofrom = "=0.1.5" # TODO: Remove pinned - linked to axum_test
-reserve-port = "=2.1.0" # TODO: Remove pinned - linked to axum_test
-idna_adapter = "=1.2.0" # TODO: Remove pinned - linked to axum_test
-deranged = "=0.4.0" # TODO: Remove pinned - linked to axum_test
-time = "=0.3.41" # TODO: Remove pinned - linked to axum_test
-time-core = "=0.1.4" # TODO: Remove pinned - linked to axum_test
-time-macros = "=0.2.22" # TODO: Remove pinned - linked to axum_test
 indexmap = "=2.11.4"
 
 once_cell = "1.19"
@@ -43,3 +34,5 @@ dapr-macros = { path = "../dapr-macros" }
 tokio = { workspace = true, features = ["full"] }
 uuid = { version = "1.10", features = ["v4"] }
 tokio-stream = { workspace = true }
+hyper = "1.8.1"
+tower = "0.5.3"
