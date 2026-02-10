@@ -25,6 +25,10 @@ tokio-util = "0.7"
 tonic = "0.12.3"
 tonic-build = "0.12.3"
 
+[patch.crates-io]
+# Pinning getrandom to 0.3.x to maintain compatibility with MSRV 1.78.0, as getrandom 0.4.x requires Rust 1.85.0 or later
+getrandom = { git = "https://github.com/rust-random/getrandom", rev = "38e4ad38309a85b56eef4fc759535ccfc322ba9a" }
+
 [workspace.package]
 version = "0.16.2"
 authors = [
