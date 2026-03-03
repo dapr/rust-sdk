@@ -25,9 +25,9 @@ name: Run app example
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP == Found secret1 with value: TestSecret1'
-  - '== APP == Found secret2 with value: TestSecret2'
-  - '== APP == Found secret3 with value: TestSecret3'
+  - 'Found secret1 with value: TestSecret1'
+  - 'Found secret2 with value: TestSecret2'
+  - 'Found secret3 with value: TestSecret3'
 background: true
 sleep: 15
 timeout_seconds: 30
@@ -41,8 +41,8 @@ dapr run --app-id=rustapp --dapr-grpc-port 3500 --resources-path ./resources/ ca
 
 If everything went well you should see the following output along with dapr logs:
 ```
-== APP == Found secret1 with value: TestSecret1
-== APP == Found secret2 with value: TestSecret2
-== APP == Found secret3 with value: TestSecret3
+Found secret1 with value: TestSecret1
+Found secret2 with value: TestSecret2
+Found secret3 with value: TestSecret3
 ```
 _Note: The order of the secrets returned is not ordered_
