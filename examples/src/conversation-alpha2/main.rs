@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build();
 
     // Build request
-    let request = ConversationRequestAlpha2Builder::new("conversation-echo", vec![input])
+    let request = ConversationRequestAlpha2Builder::new("echo", vec![input])
         .with_metadata(HashMap::new())
         .with_scrub_pii(false)
         .with_temperature(0.7)
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Call llm
     match client.converse_alpha2(request).await {
         Ok(response) => {
-            println!("conversation input: {:?}", user_msg.content);
+            println!("conversation input: {:?}", user_msg.content[0].text);
             if let Some(output) = response.outputs.get(0) {
                 if let Some(choice) = output.choices.get(0) {
                     if let Some(message) = &choice.message {
