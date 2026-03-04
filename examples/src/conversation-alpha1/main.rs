@@ -1,4 +1,5 @@
 use dapr::client::{ConversationInputBuilder, ConversationRequestBuilder};
+use std::time::Duration;
 
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
 
