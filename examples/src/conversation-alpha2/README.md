@@ -40,7 +40,7 @@ timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id=conversation --resources-path ./config --dapr-grpc-port 3500 -- cargo run --example conversation
+dapr run --app-id=conversation --resources-path ./config --dapr-grpc-port 3500 -- cargo run --example conversation-alpha2
 ```
 
 <!-- END_STEP -->

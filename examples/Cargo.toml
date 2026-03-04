@@ -47,8 +47,12 @@ name = "configuration"
 path = "src/configuration/main.rs"
 
 [[example]]
-name = "conversation"
-path = "src/conversation/main.rs"
+name = "conversation-alpha1"
+path = "src/conversation-alpha1/main.rs"
+
+[[example]]
+name = "conversation-alpha2"
+path = "src/conversation-alpha2/main.rs"
 
 [[example]]
 name = "crypto"

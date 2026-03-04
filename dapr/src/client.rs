@@ -608,6 +608,18 @@ impl<T: DaprInterface> Client<T> {
     ) -> Result<ConversationResponse, Error> {
         self.0.converse_alpha1(request).await
     }
+
+    /// Converse with an LLM using alpha2
+    ///
+    /// # Arguments
+    ///
+    /// * ConversationRequestAlpha2 - The request containing inputs to send to the LLM
+    pub async fn converse_alpha2(
+        &mut self,
+        request: ConversationRequestAlpha2,
+    ) -> Result<ConversationResponseAlpha2, Error> {
+        self.0.converse_alpha2(request).await
+    }
 }
 
 #[async_trait]
@@ -675,6 +687,10 @@ pub trait DaprInterface: Sized {
         &mut self,
         request: ConversationRequest,
     ) -> Result<ConversationResponse, Error>;
+    async fn converse_alpha2(
+        &mut self,
+        request: ConversationRequestAlpha2,
+    ) -> Result<ConversationResponseAlpha2, Error>;
 }
 
 #[async_trait]
@@ -879,6 +895,15 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
             .await?
             .into_inner())
     }
+    async fn converse_alpha2(
+        &mut self,
+        request: ConversationRequestAlpha2,
+    ) -> Result<ConversationResponseAlpha2, Error> {
+        Ok(self
+            .converse_alpha2(Request::new(request))
+            .await?
+            .into_inner())
+    }
 }
 
 /// A request from invoking a service
@@ -1020,6 +1045,15 @@ pub type ConversationResult = crate::dapr::proto::runtime::v1::ConversationResul
 
 /// An input to the conversation
 pub type ConversationInput = crate::dapr::proto::runtime::v1::ConversationInput;
+
+/// A request to converse with an LLM (alpha2)
+pub type ConversationRequestAlpha2 = crate::dapr::proto::runtime::v1::ConversationRequestAlpha2;
+
+/// A response from conversing with an LLM (alpha2)
+pub type ConversationResponseAlpha2 = crate::dapr::proto::runtime::v1::ConversationResponseAlpha2;
+
+/// An input to the conversation (alpha2)
+pub type ConversationInputAlpha2 = crate::dapr::proto::runtime::v1::ConversationInputAlpha2;
 
 type StreamPayload = crate::dapr::proto::common::v1::StreamPayload;
 impl<K> From<(K, Vec<u8>)> for common_v1::StateItem
@@ -1215,6 +1249,147 @@ impl ConversationRequestBuilder {
             metadata: self.metadata,
             scrub_pii: self.scrub_pii,
             temperature: self.temperature,
+        }
+    }
+}
+
+pub struct ConversationInputAlpha2Builder {
+    messages: Vec<crate::dapr::proto::runtime::v1::ConversationMessage>,
+    scrub_pii: Option<bool>,
+}
+impl ConversationInputAlpha2Builder {
+    pub fn new(messages: Vec<crate::dapr::proto::runtime::v1::ConversationMessage>) -> Self {
+        ConversationInputAlpha2Builder {
+            messages,
+            scrub_pii: None,
+        }
+    }
+    pub fn with_scrub_pii(mut self, scrub: bool) -> Self {
+        self.scrub_pii = Some(scrub);
+        self
+    }
+    pub fn build(self) -> ConversationInputAlpha2 {
+        ConversationInputAlpha2 {
+            messages: self.messages,
+            scrub_pii: self.scrub_pii,
+        }
+    }
+}
+pub struct ConversationRequestAlpha2Builder {
+    name: String,
+    inputs: Vec<ConversationInputAlpha2>,
+    metadata: HashMap<String, String>,
+    scrub_pii: Option<bool>,
+    temperature: Option<f64>,
+    parameters: HashMap<String, prost_types::Any>,
+    tools: Vec<crate::dapr::proto::runtime::v1::ConversationTools>,
+    response_format: Option<prost_types::Struct>,
+    prompt_cache_retention: Option<prost_types::Duration>,
+}
+impl ConversationRequestAlpha2Builder {
+    pub fn new(name: &str, inputs: Vec<ConversationInputAlpha2>) -> Self {
+        ConversationRequestAlpha2Builder {
+            name: name.to_string(),
+            inputs,
+            metadata: Default::default(),
+            scrub_pii: None,
+            temperature: None,
+            parameters: Default::default(),
+            tools: Default::default(),
+            response_format: None,
+            prompt_cache_retention: None,
+        }
+    }
+    pub fn with_metadata(mut self, metadata: HashMap<String, String>) -> Self {
+        self.metadata = metadata;
+        self
+    }
+    pub fn with_scrub_pii(mut self, scrub: bool) -> Self {
+        self.scrub_pii = Some(scrub);
+        self
+    }
+    pub fn with_temperature(mut self, temp: f64) -> Self {
+        self.temperature = Some(temp);
+        self
+    }
+    pub fn with_parameters(mut self, params: HashMap<String, prost_types::Any>) -> Self {
+        self.parameters = params;
+        self
+    }
+    pub fn with_tools(
+        mut self,
+        tools: Vec<crate::dapr::proto::runtime::v1::ConversationTools>,
+    ) -> Self {
+        self.tools = tools;
+        self
+    }
+    pub fn with_response_format(mut self, format: prost_types::Struct) -> Self {
+        self.response_format = Some(format);
+        self
+    }
+    pub fn with_prompt_cache_retention(mut self, retention: prost_types::Duration) -> Self {
+        self.prompt_cache_retention = Some(retention);
+        self
+    }
+    pub fn build(self) -> ConversationRequestAlpha2 {
+        ConversationRequestAlpha2 {
+            name: self.name,
+            inputs: self.inputs,
+            metadata: self.metadata,
+            scrub_pii: self.scrub_pii,
+            temperature: self.temperature,
+            parameters: self.parameters,
+            tools: self.tools,
+            response_format: self.response_format,
+            prompt_cache_retention: self.prompt_cache_retention,
+            ..Default::default()
+        }
+    }
+}
+
+pub use crate::dapr::proto::runtime::v1::{
+    conversation_message, conversation_tool_calls, ConversationMessage, ConversationMessageContent,
+    ConversationMessageOfAssistant, ConversationMessageOfDeveloper, ConversationMessageOfSystem,
+    ConversationMessageOfTool, ConversationMessageOfUser, ConversationToolCalls,
+    ConversationToolCallsOfFunction, ConversationTools,
+};
+
+impl From<ConversationMessageOfUser> for ConversationMessage {
+    fn from(msg: ConversationMessageOfUser) -> Self {
+        ConversationMessage {
+            message_types: Some(conversation_message::MessageTypes::OfUser(msg)),
+        }
+    }
+}
+
+impl From<ConversationMessageOfSystem> for ConversationMessage {
+    fn from(msg: ConversationMessageOfSystem) -> Self {
+        ConversationMessage {
+            message_types: Some(conversation_message::MessageTypes::OfSystem(msg)),
+        }
+    }
+}
+
+impl From<ConversationMessageOfDeveloper> for ConversationMessage {
+    fn from(msg: ConversationMessageOfDeveloper) -> Self {
+        ConversationMessage {
+            message_types: Some(conversation_message::MessageTypes::OfDeveloper(msg)),
+        }
+    }
+}
+
+impl From<ConversationMessageOfAssistant> for ConversationMessage {
+    fn from(msg: ConversationMessageOfAssistant) -> Self {
+        ConversationMessage {
+            message_types: Some(conversation_message::MessageTypes::OfAssistant(msg)),
+        }
+    }
+}
+
+impl From<ConversationMessageOfTool> for ConversationMessage {
+    fn from(msg: ConversationMessageOfTool) -> Self {
+        ConversationMessage {
+            message_types: Some(conversation_message::MessageTypes::OfTool(msg)),
         }
     }
 }
