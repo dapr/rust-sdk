@@ -24,9 +24,9 @@ cargo build --examples
 name: Run client example
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Successfully saved!'
-  - '== APP == Value is "world"'
-  - '== APP == Deleted value: []'
+  - 'Successfully saved!'
+  - 'Value is "world"'
+  - 'Deleted value: []'
 background: true
 sleep: 15
 timeout_seconds: 30
@@ -44,4 +44,3 @@ Successfully saved!
 Value is "world"
 Deleted value: []
 ```
-

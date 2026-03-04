@@ -43,10 +43,10 @@ docker exec dapr_redis redis-cli MSET hello "world"
 name: Run configuration app
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Configuration value: ConfigurationItem { value: "world"'
-  - '== APP == App subscribed to config changes with subscription id:'
-  - '== APP == Configuration value: {"hello": ConfigurationItem { value: "world2"'
-  - '== APP == App unsubscribed from config changes'
+  - 'Configuration value: ConfigurationItem { value: "world"'
+  - 'App subscribed to config changes with subscription id:'
+  - 'Configuration value: {"hello": ConfigurationItem { value: "world2"'
+  - 'App unsubscribed from config changes'
 background: true
 sleep: 15
 timeout_seconds: 30
