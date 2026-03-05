@@ -154,6 +154,6 @@ jobs:
         version: ${{ env.PROTOC_VERSION }}
     - uses: actions/checkout@v4
     - name: cargo publish - ${{ matrix.crate }}
-      env:
-          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
-      run: cargo publish --manifest-path ${{ matrix.crate }}/Cargo.toml --token ${{ env.CARGO_TOKEN }}
+      run: |
+        cargo login ${{ secrets.CARGO_TOKEN }}
+        cargo publish --manifest-path ${{ matrix.crate }}/Cargo.toml
