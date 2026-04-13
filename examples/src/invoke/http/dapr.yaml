@@ -1,0 +1,15 @@
+version: 1
+common:
+  daprdLogDestination: console
+apps:
+  - appID: invoke-http-server
+    appDirPath: ./
+    appProtocol: http
+    appPort: 8080
+    logLevel: debug
+    command: ["cargo", "run", "--example", "invoke-http-server"]
+  - appID: invoke-http-client
+    appDirPath: ./
+    appProtocol: http
+    logLevel: debug
+    command: ["cargo", "run", "--example", "invoke-http-client"]
