@@ -52,7 +52,11 @@ dapr run --app-id workflow-taskexecutionid \
 
 ## Result
 
-The workflow schedules the `RetryN` activity twice with a retry policy. `RetryN`
-uses the activity task execution ID as a deterministic key so replay does not
-increment the retry counter, fails until the final retry attempt, and then
-completes successfully.
+The workflow schedules the `RetryN` activity twice with a retry policy. Each
+invocation is tagged with a unique `invocation_id` that the workflow includes
+in the activity input. Because Dapr replays the same input on every retry of a
+given scheduled task, `RetryN` combines `orchestration_id` and `invocation_id`
+into a deterministic deduplication key that is stable across retries of one logical
+activity call but differs between distinct invocations. The activity fails
+until the final retry attempt, then completes successfully — producing two
+independent `RetryN 1..5` sequences.
