@@ -121,7 +121,7 @@ impl DaprHttpServer {
     pub async fn try_new_with_dapr_port(
         dapr_port: u16,
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        let dapr_addr = format!("https://127.0.0.1:{dapr_port}");
+        let dapr_addr = format!("http://127.0.0.1:{dapr_port}");
 
         let cc = TonicClient::connect(dapr_addr).await?;
         let rt = ActorRuntime::new(cc);

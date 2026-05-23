@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Get the Dapr port and create a connection
     let port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
-    let address = format!("https://127.0.0.1:{port}");
+    let address = format!("http://127.0.0.1:{port}");
 
     let mut client = GreeterClient::connect(address).await?;
 

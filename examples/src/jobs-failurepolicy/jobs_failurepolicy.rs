@@ -80,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Client
 
-    let client_addr = "https://127.0.0.1".to_string();
+    let client_addr = "http://127.0.0.1".to_string();
 
     let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
     let address = format!("{client_addr}:{port}");
