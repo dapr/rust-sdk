@@ -1,6 +1,6 @@
 use std::{convert::From, env::VarError, fmt, fmt::Display, num::ParseIntError};
 
-use tonic::{transport::Error as TonicError, Status as TonicStatus};
+use tonic::{Status as TonicStatus, transport::Error as TonicError};
 
 #[derive(Debug)]
 pub enum Error {

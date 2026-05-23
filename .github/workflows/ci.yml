@@ -61,7 +61,7 @@ jobs:
         rust-version:
           - "stable"
           - "nightly"
-          - "1.78.0" # MSRV
+          - "1.88" # MSRV
 
     steps:
     - name: Install Rust

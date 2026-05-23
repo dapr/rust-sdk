@@ -2,12 +2,12 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use axum::body::{to_bytes as axum_to_bytes, Body as AxumBody};
+use axum::body::{Body as AxumBody, to_bytes as axum_to_bytes};
 use axum::http::Request as AxumRequest;
 use axum::{Json, Router};
 use dapr::server::{
-    actor::{runtime::ActorTypeRegistration, Actor, ActorError},
     DaprHttpServer,
+    actor::{Actor, ActorError, runtime::ActorTypeRegistration},
 };
 use dapr_macros::actor;
 use once_cell::sync::Lazy;

@@ -1,7 +1,7 @@
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Set the Dapr address
-    let addr = "https://127.0.0.1".to_string();
+    let addr = "http://127.0.0.1".to_string();
 
     // Create the client
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;

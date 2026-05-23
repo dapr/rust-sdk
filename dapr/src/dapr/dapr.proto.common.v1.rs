@@ -6,7 +6,7 @@
 /// `POST <http://localhost:3500/v1.0/invoke/<app_id>/method/<method>?query1=value1&query2=value2`>
 ///
 /// Dapr runtime will parse POST as a verb and extract querystring to quersytring map.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct HttpExtension {
     /// Required. HTTP verb.
     #[prost(enumeration = "http_extension::Verb", tag = "1")]
@@ -84,7 +84,7 @@ pub mod http_extension {
 /// InvokeRequest is the message to invoke a method with the data.
 /// This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 /// of AppCallback gRPC service.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct InvokeRequest {
     /// Required. method is a method name which will be invoked by caller.
     #[prost(string, tag = "1")]
@@ -110,7 +110,7 @@ pub struct InvokeRequest {
 /// from app callback.
 /// This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 /// of AppCallback gRPC service.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct InvokeResponse {
     /// Required in unary RPCs. The content body of InvokeService response.
     #[prost(message, optional, tag = "1")]
@@ -121,7 +121,7 @@ pub struct InvokeResponse {
 }
 /// Chunk of data sent in a streaming request or response.
 /// This is used in requests including InternalInvokeRequestStream.
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct StreamPayload {
     /// Data sent in the chunk.
     /// The amount of data included in each chunk is up to the discretion of the sender, and can be empty.
@@ -157,14 +157,14 @@ pub struct StateItem {
     pub options: ::core::option::Option<StateOptions>,
 }
 /// Etag represents a state item version
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct Etag {
     /// value sets the etag value
     #[prost(string, tag = "1")]
     pub value: ::prost::alloc::string::String,
 }
 /// StateOptions configures concurrency and consistency for state operations
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct StateOptions {
     #[prost(enumeration = "state_options::StateConcurrency", tag = "1")]
     pub concurrency: i32,
@@ -271,7 +271,7 @@ pub struct ConfigurationItem {
     >,
 }
 /// JobFailurePolicy defines the policy to apply when a job fails to trigger.
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct JobFailurePolicy {
     /// policy is the policy to apply when a job fails to trigger.
     #[prost(oneof = "job_failure_policy::Policy", tags = "1, 2")]
@@ -280,7 +280,7 @@ pub struct JobFailurePolicy {
 /// Nested message and enum types in `JobFailurePolicy`.
 pub mod job_failure_policy {
     /// policy is the policy to apply when a job fails to trigger.
-    #[derive(Clone, Copy, PartialEq, ::prost::Oneof)]
+    #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Oneof)]
     pub enum Policy {
         #[prost(message, tag = "1")]
         Drop(super::JobFailurePolicyDrop),
@@ -289,10 +289,10 @@ pub mod job_failure_policy {
     }
 }
 /// JobFailurePolicyDrop is a policy which drops the job tick when the job fails to trigger.
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct JobFailurePolicyDrop {}
 /// JobFailurePolicyConstant is a policy which retries the job at a consistent interval when the job fails to trigger.
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct JobFailurePolicyConstant {
     /// interval is the constant delay to wait before retrying the job.
     #[prost(message, optional, tag = "1")]

@@ -30,3 +30,6 @@ pub mod dapr {
 pub mod error;
 /// Module containing the 'Server' implementation.
 pub mod server;
+/// Module containing the Dapr Workflow client and worker interface.
+#[cfg(feature = "workflow")]
+pub mod workflow;

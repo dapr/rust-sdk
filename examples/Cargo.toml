@@ -10,7 +10,7 @@ rust-version.workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
-dapr = { path = "../dapr" }
+dapr = { path = "../dapr", features = ["workflow"] }
 dapr-macros = { path = "../dapr-macros" }
 env_logger = "0.11"
 log = "0.4"
@@ -19,6 +19,7 @@ serde_json = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tokio-stream = { workspace = true }
 tonic = { workspace = true }
+tonic-prost = { workspace = true }
 prost = { workspace = true }
 prost-types = { workspace = true }
 
@@ -81,6 +82,26 @@ path = "src/jobs/jobs.rs"
 [[example]]
 name = "jobs-failurepolicy"
 path = "src/jobs-failurepolicy/jobs_failurepolicy.rs"
+
+[[example]]
+name = "workflow"
+path = "src/workflow/main.rs"
+
+[[example]]
+name = "workflow-history-propagation"
+path = "src/workflow-history-propagation/main.rs"
+
+[[example]]
+name = "workflow-parallel"
+path = "src/workflow-parallel/main.rs"
+
+[[example]]
+name = "workflow-sustained"
+path = "src/workflow-sustained/main.rs"
+
+[[example]]
+name = "workflow-taskexecutionid"
+path = "src/workflow-taskexecutionid/main.rs"
 
 [[example]]
 name = "pubsub-publisher"

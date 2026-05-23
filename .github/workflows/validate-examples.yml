@@ -220,7 +220,7 @@ jobs:
       fail-fast: false
       matrix:
         examples:
-          [ "actors", "bindings", "client", "configuration", "conversation-alpha1", "conversation-alpha2", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "jobs-failurepolicy", "pubsub", "query_state", "secrets-bulk" ]
+          [ "actors", "bindings", "client", "configuration", "conversation-alpha1", "conversation-alpha2", "crypto", "invoke/grpc", "invoke/grpc-proxying", "jobs", "jobs-failurepolicy", "pubsub", "query_state", "secrets-bulk", "workflow", "workflow-history-propagation", "workflow-parallel", "workflow-sustained", "workflow-taskexecutionid" ]
     steps:
       - name: Check out code
         uses: actions/checkout@v4

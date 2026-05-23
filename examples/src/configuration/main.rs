@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::time::sleep(std::time::Duration::new(2, 0)).await;
 
     // Set the Dapr address
-    let addr = "https://127.0.0.1".to_string();
+    let addr = "http://127.0.0.1".to_string();
 
     // Create the client
     let mut client = DaprClient::connect(addr).await?;

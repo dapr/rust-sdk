@@ -2,7 +2,7 @@ use dapr::{
     appcallback::*,
     dapr::proto::runtime::v1::app_callback_server::{AppCallback, AppCallbackServer},
 };
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{Request, Response, Status, transport::Server};
 
 use dapr::dapr::proto::runtime::v1::{TopicEventBulkRequest, TopicEventBulkResponse};
 use hello_world::{HelloReply, HelloRequest};
