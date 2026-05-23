@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use hello_world::{greeter_client::GreeterClient, HelloRequest};
+use hello_world::{HelloRequest, greeter_client::GreeterClient};
 
 use tonic::metadata::MetadataValue;
 

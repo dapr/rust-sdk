@@ -2,15 +2,15 @@ use std::time::Duration;
 
 use dapr::client::JobBuilder;
 use dapr::dapr::proto::runtime::v1::{
-    app_callback_alpha_server::AppCallbackAlphaServer, JobEventRequest, JobEventResponse,
+    JobEventRequest, JobEventResponse, app_callback_alpha_server::AppCallbackAlphaServer,
 };
 use dapr::server::appcallbackalpha::{AppCallbackServiceAlpha, JobHandlerMethod};
 use dapr::{add_job_handler_alpha, serde_json};
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
-use tonic::transport::Server;
 use tonic::Status;
+use tonic::transport::Server;
 
 type DaprClient = dapr::Client<dapr::client::TonicClient>;
 

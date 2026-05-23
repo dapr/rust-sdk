@@ -1,6 +1,6 @@
 use crate::hello_world::greeter_server::{Greeter, GreeterServer};
 use crate::hello_world::{HelloReply, HelloRequest};
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{Request, Response, Status, transport::Server};
 
 pub mod hello_world {
     include!("../protos/helloworld.rs");

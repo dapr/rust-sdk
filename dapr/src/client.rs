@@ -1,7 +1,9 @@
-use crate::dapr::proto::common::v1::job_failure_policy::Policy;
 use crate::dapr::proto::common::v1::JobFailurePolicyConstant;
+use crate::dapr::proto::common::v1::job_failure_policy::Policy;
 use crate::dapr::proto::{common::v1 as common_v1, runtime::v1 as dapr_v1};
 use crate::error::Error;
+#[cfg(feature = "workflow")]
+use crate::workflow;
 use async_trait::async_trait;
 use futures::StreamExt;
 use prost_types::Any;
@@ -11,11 +13,11 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tokio::io::AsyncRead;
 use tonic::codegen::tokio_stream;
-use tonic::{transport::Channel as TonicChannel, Request};
+use tonic::{Request, transport::Channel as TonicChannel};
 use tonic::{Status, Streaming};
 
 #[derive(Clone)]
-pub struct Client<T>(T);
+pub struct Client<T>(T, String);
 
 impl<T: DaprInterface> Client<T> {
     /// Connect to a Dapr enabled app.
@@ -28,7 +30,7 @@ impl<T: DaprInterface> Client<T> {
         let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
         let address = format!("{addr}:{port}");
 
-        Ok(Client(T::connect(address).await?))
+        Ok(Client(T::connect(address.clone()).await?, address))
     }
 
     /// Connect to the Dapr sidecar with a specific port.
@@ -48,7 +50,13 @@ impl<T: DaprInterface> Client<T> {
 
         let address = format!("{addr}:{port}");
 
-        Ok(Client(T::connect(address).await?))
+        Ok(Client(T::connect(address.clone()).await?, address))
+    }
+
+    /// Create a workflow client connected to the same Dapr sidecar.
+    #[cfg(feature = "workflow")]
+    pub async fn new_workflow_client(&self) -> workflow::Result<workflow::WorkflowClient> {
+        workflow::WorkflowClient::new_with_address(self.1.clone()).await
     }
 
     /// Invoke a method in a Dapr enabled app.
@@ -667,7 +675,7 @@ pub trait DaprInterface: Sized {
     ) -> Result<UnsubscribeConfigurationResponse, Error>;
 
     async fn encrypt(&mut self, payload: Vec<EncryptRequest>)
-        -> Result<Vec<StreamPayload>, Status>;
+    -> Result<Vec<StreamPayload>, Status>;
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
 
@@ -832,10 +840,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         let mut stream = stream.into_inner();
         let mut return_data = vec![];
         while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp {
-                if let Some(data) = resp.payload {
-                    return_data.push(data)
-                }
+            if let Ok(resp) = resp
+                && let Some(data) = resp.payload
+            {
+                return_data.push(data)
             }
         }
         Ok(return_data)
@@ -853,10 +861,10 @@ impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
         let mut stream = stream.into_inner();
         let mut data = vec![];
         while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp {
-                if let Some(mut payload) = resp.payload {
-                    data.append(payload.data.as_mut())
-                }
+            if let Ok(resp) = resp
+                && let Some(mut payload) = resp.payload
+            {
+                data.append(payload.data.as_mut())
             }
         }
         Ok(data)
@@ -1348,10 +1356,10 @@ impl ConversationRequestAlpha2Builder {
 }
 
 pub use crate::dapr::proto::runtime::v1::{
-    conversation_message, conversation_tool_calls, ConversationMessage, ConversationMessageContent,
-    ConversationMessageOfAssistant, ConversationMessageOfDeveloper, ConversationMessageOfSystem,
-    ConversationMessageOfTool, ConversationMessageOfUser, ConversationToolCalls,
-    ConversationToolCallsOfFunction, ConversationTools,
+    ConversationMessage, ConversationMessageContent, ConversationMessageOfAssistant,
+    ConversationMessageOfDeveloper, ConversationMessageOfSystem, ConversationMessageOfTool,
+    ConversationMessageOfUser, ConversationToolCalls, ConversationToolCallsOfFunction,
+    ConversationTools, conversation_message, conversation_tool_calls,
 };
 
 impl From<ConversationMessageOfUser> for ConversationMessage {

@@ -43,7 +43,7 @@ resiliency.
 
 ## Prerequisites
 
-Ensure you have Rust version 1.78 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
+Ensure you have Rust version 1.85 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
 These crates no longer require protoc unless to recompile the protobuf files.
 
@@ -71,6 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
 }
 ```
+
+## Workflows
+
+Workflows are available through the default-on `workflow` cargo feature and the `dapr::workflow` module. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
 
 ## Explore more examples
 

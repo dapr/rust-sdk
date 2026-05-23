@@ -1,10 +1,10 @@
-use axum::{handler::Handler, routing::put, Router};
+use axum::{Router, handler::Handler, routing::put};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::client::TonicClient;
 
-use super::{context_client::ActorContextClient, Actor, ActorError, ActorFactory};
+use super::{Actor, ActorError, ActorFactory, context_client::ActorContextClient};
 
 #[derive(Clone)]
 pub struct ActorState {

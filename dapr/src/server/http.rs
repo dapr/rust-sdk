@@ -1,9 +1,9 @@
 use axum::{
+    Json, Router,
     extract::{OriginalUri, Path, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{delete, get, put},
-    Json, Router,
 };
 use futures::{Future, FutureExt};
 use std::{pin::Pin, sync::Arc};

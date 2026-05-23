@@ -3,7 +3,7 @@ use std::iter;
 use proc_macro2::TokenTree;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, Ident, LitStr};
+use syn::{Ident, LitStr, parse_macro_input};
 
 use proc_macro::TokenStream;
 

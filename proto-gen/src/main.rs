@@ -85,7 +85,7 @@ fn proto_gen(
     let out_dir = root_dir.join(out_dir);
     println!("outdir {out_dir:?}");
 
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .build_client(build_client)
         .build_server(build_server)
         .build_transport(true)
