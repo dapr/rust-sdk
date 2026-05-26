@@ -41,7 +41,6 @@ impl AppCallback for AppCallbackService {
     /// NOTE: Dapr runtime will call this method to get
     /// the list of bindings the app wants to subscribe to.
     /// In this example, the app is subscribing to a local pubsub binding named "binding-example"
-
     async fn list_input_bindings(
         &self,
         _request: Request<()>,

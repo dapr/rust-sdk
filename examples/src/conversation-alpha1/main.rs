@@ -1,18 +1,13 @@
 use dapr::client::{ConversationInputBuilder, ConversationRequestBuilder};
 use std::time::Duration;
 
-type DaprClient = dapr::Client<dapr::client::TonicClient>;
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sleep to allow for the server to become available
     tokio::time::sleep(Duration::from_secs(5)).await;
 
-    // Set the Dapr address
-    let address = "http://127.0.0.1".to_string();
-    let port = "3500".to_string();
-
-    let mut client = DaprClient::connect_with_port(address, port).await?;
+    // Connect using env vars
+    let mut client = dapr::Client::new().await?;
 
     let input = ConversationInputBuilder::new("hello world").build();
 

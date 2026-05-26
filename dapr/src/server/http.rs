@@ -9,7 +9,7 @@ use futures::{Future, FutureExt};
 use std::{pin::Pin, sync::Arc};
 use tokio::net::TcpListener;
 
-use super::super::client::TonicClient;
+use super::super::client::{AppApiTokenLayer, TonicClient};
 use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 
 /// The Dapr HTTP server.
@@ -80,6 +80,7 @@ use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 pub struct DaprHttpServer {
     actor_runtime: Arc<ActorRuntime>,
     shutdown_signal: Option<Pin<Box<dyn Future<Output = ()> + Send>>>,
+    app_api_token_layer: AppApiTokenLayer,
 }
 
 impl DaprHttpServer {
@@ -129,7 +130,25 @@ impl DaprHttpServer {
         Ok(DaprHttpServer {
             actor_runtime: Arc::new(rt),
             shutdown_signal: None,
+            // Reads `APP_API_TOKEN` from the environment. Permissive if unset.
+            app_api_token_layer: AppApiTokenLayer::from_env(),
         })
+    }
+
+    /// Override the [`AppApiTokenLayer`] used to authenticate inbound
+    /// requests from the Dapr sidecar.
+    ///
+    /// By default, the server reads `APP_API_TOKEN` from the environment;
+    /// when the env var is unset the layer is a no-op. Use this method to
+    /// supply an explicit expected token (e.g. read from a secret store) or
+    /// to disable enforcement entirely with `AppApiTokenLayer::new(None)`.
+    ///
+    /// The `/healthz` endpoint is always exempt from the token check so
+    /// that infrastructure liveness probes continue to work.
+    /// @mikeee: reconsider this exemption in the future, as it may have security implications.
+    pub fn with_app_api_token_layer(mut self, layer: AppApiTokenLayer) -> Self {
+        self.app_api_token_layer = layer;
+        self
     }
 
     pub fn with_graceful_shutdown<F>(self, signal: F) -> Self
@@ -190,8 +209,11 @@ impl DaprHttpServer {
     async fn build_router(&mut self) -> Router {
         let rt = self.actor_runtime.clone();
 
-        let app = Router::new()
-            .route("/healthz", get(health_check))
+        // All actor / config endpoints — protected by the APP_API_TOKEN
+        // layer when configured. `/healthz` is intentionally excluded so
+        // that infrastructure liveness probes don't need to present the
+        // token.
+        let protected = Router::new()
             .route(
                 "/dapr/config",
                 get(registered_actors).with_state(rt.clone()),
@@ -207,12 +229,18 @@ impl DaprHttpServer {
             .route(
                 "/actors/:actor_type/:actor_id/method/timer/:timer_name",
                 put(invoke_timer).with_state(rt.clone()),
-            )
-            .fallback(fallback_handler);
+            );
 
-        self.actor_runtime
-            .configure_method_routes(app, rt.clone())
+        let protected = self
+            .actor_runtime
+            .configure_method_routes(protected, rt.clone())
             .await
+            .layer(self.app_api_token_layer.clone());
+
+        Router::new()
+            .route("/healthz", get(health_check))
+            .merge(protected)
+            .fallback(fallback_handler)
     }
 }
 

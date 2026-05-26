@@ -7,17 +7,13 @@ pub mod hello_world {
     include!("../protos/helloworld.rs");
 }
 
-type DaprClient = dapr::Client<dapr::client::TonicClient>;
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sleep to allow for the server to become available
     tokio::time::sleep(Duration::from_secs(5)).await;
 
-    // Set the Dapr address
-    let address = "http://127.0.0.1".to_string();
-
-    let mut client = DaprClient::connect(address).await?;
+    // Connect to the Dapr sidecar.
+    let mut client = dapr::Client::new().await?;
 
     let request = hello_world::HelloRequest {
         name: "Test".to_string(),

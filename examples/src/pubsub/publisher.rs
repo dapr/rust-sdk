@@ -24,10 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::time::sleep(Duration::from_secs(2)).await;
 
     // Set address for Dapr connection
-    let addr = "http://127.0.0.1".to_string();
-
     // Create the client
-    let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?;
+    let mut client = dapr::Client::new().await?;
 
     // name of the pubsub component
     let pubsub_name = "pubsub".to_string();

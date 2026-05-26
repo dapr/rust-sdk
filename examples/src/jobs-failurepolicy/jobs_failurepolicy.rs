@@ -11,9 +11,6 @@ use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 use tonic::Status;
 use tonic::transport::Server;
-
-type DaprClient = dapr::Client<dapr::client::TonicClient>;
-
 #[derive(Serialize, Deserialize, Debug)]
 struct Backup {
     task: String,
@@ -34,9 +31,9 @@ async fn ping_pong_handler(_request: JobEventRequest) -> Result<JobEventResponse
 async fn backup_job_handler(request: JobEventRequest) -> Result<JobEventResponse, Status> {
     // The logic for handling the backup job request
 
-    if request.data.is_some() {
+    if let Some(data) = request.data {
         // Deserialize the decoded value into a Backup struct
-        let backup_val: Backup = serde_json::from_slice(&request.data.unwrap().value).unwrap();
+        let backup_val: Backup = serde_json::from_slice(&data.value).unwrap();
 
         println!("job received: {backup_val:?}");
     }
@@ -80,15 +77,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Client
 
-    let client_addr = "http://127.0.0.1".to_string();
-
-    let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
-    let address = format!("{client_addr}:{port}");
-
+    let address = dapr::client::default_sidecar_address();
     println!("attempting to create a dapr client: {address}");
 
     // Create the client
-    let mut client = DaprClient::connect(client_addr).await?;
+    let mut client = dapr::Client::new().await?;
 
     println!("client created");
 
