@@ -23,9 +23,11 @@ app then shuts down gracefully.
 
 <!-- STEP
 name: Run app-api-token example
+output_match_mode: substring
+match_order: sequential
 expected_stdout_lines:
-  - '== APP == sidecar callback received: on_binding_event(probe) (auth ok)'
-  - '== APP == app-api-token example: ok'
+  - 'sidecar callback received: on_binding_event(probe) (auth ok)'
+  - 'app-api-token example: ok'
 background: false
 sleep: 5
 timeout_seconds: 120
