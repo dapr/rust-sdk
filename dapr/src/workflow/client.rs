@@ -1,4 +1,3 @@
-use std::env;
 use std::time::Duration;
 
 use dapr_durabletask::api::{DurableTaskError, OrchestrationState, Result};
@@ -299,14 +298,9 @@ impl Drop for WorkerHandle {
 }
 
 fn default_sidecar_address() -> String {
-    if let Ok(endpoint) = env::var("DAPR_GRPC_ENDPOINT") {
-        return ensure_url_scheme(endpoint);
-    }
-
-    match env::var("DAPR_GRPC_PORT") {
-        Ok(port) => format!("http://127.0.0.1:{port}"),
-        Err(_) => "http://127.0.0.1:50001".to_string(),
-    }
+    // Route through the shared client::config helper so behaviour stays in
+    // sync with the main gRPC client.
+    ensure_url_scheme(crate::client::config::default_sidecar_address())
 }
 
 /// Prepend `http://` to `address` when no URL scheme is present so that the

@@ -1,7 +1,7 @@
 use tokio_stream::StreamExt;
 
 const CONFIGSTORE_NAME: &str = "configstore";
-type DaprClient = dapr::Client<dapr::client::TonicClient>;
+type DaprClient = dapr::Client<dapr::client::TonicClientWithAuth>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -9,11 +9,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Introduce delay so that dapr grpc port is assigned before app tries to connect
     tokio::time::sleep(std::time::Duration::new(2, 0)).await;
 
-    // Set the Dapr address
-    let addr = "http://127.0.0.1".to_string();
-
     // Create the client
-    let mut client = DaprClient::connect(addr).await?;
+    let mut client = dapr::Client::new().await?;
 
     let key = String::from("hello");
 

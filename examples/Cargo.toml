@@ -122,3 +122,11 @@ path = "src/query_state/query2.rs"
 [[example]]
 name = "secrets-bulk"
 path = "src/secrets-bulk/app.rs"
+
+[[example]]
+name = "client-config"
+path = "src/client-config/main.rs"
+
+[[example]]
+name = "app-api-token"
+path = "src/app-api-token/main.rs"

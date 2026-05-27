@@ -291,3 +291,92 @@ async fn get_available_port() -> Option<u16> {
     }
     None
 }
+
+#[tokio::test]
+async fn test_actor_server_enforces_app_api_token() {
+    use dapr::client::AppApiTokenLayer;
+
+    let dapr_port = get_available_port().await.unwrap();
+
+    let fake_sidecar = tokio::spawn(async move {
+        let sidecar = Router::new();
+        let address = format!("127.0.0.1:{dapr_port}");
+        let listener = TcpListener::bind(address).await.unwrap();
+        _ = axum::serve(listener, sidecar.into_make_service()).await;
+    });
+    tokio::task::yield_now().await;
+
+    let mut dapr_server = DaprHttpServer::with_dapr_port(dapr_port)
+        .await
+        .with_app_api_token_layer(AppApiTokenLayer::new(Some("expected".to_string())));
+
+    dapr_server
+        .register_actor(
+            ActorTypeRegistration::new::<MyActor>(
+                "MyActor",
+                Box::new(|_actor_type, actor_id, _context| {
+                    Arc::new(MyActor {
+                        id: actor_id.to_string(),
+                    })
+                }),
+            )
+            .register_method("do_stuff", MyActor::do_stuff),
+        )
+        .await;
+
+    let app = dapr_server.build_test_router().await;
+    let actor_id = Uuid::new_v4().to_string();
+    let path = format!("/actors/MyActor/{actor_id}/method/do_stuff");
+    let body = serde_json::to_string(&json!({ "name": "foo" })).unwrap();
+
+    // (1) Missing token → 401.
+    let req = AxumRequest::builder()
+        .method("PUT")
+        .uri(&path)
+        .header("content-type", "application/json")
+        .body(AxumBody::from(body.clone()))
+        .unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req)
+        .await
+        .unwrap();
+    assert_eq!(resp.status().as_u16(), 401);
+
+    // (2) Wrong token → 401.
+    let req = AxumRequest::builder()
+        .method("PUT")
+        .uri(&path)
+        .header("content-type", "application/json")
+        .header("dapr-api-token", "wrong")
+        .body(AxumBody::from(body.clone()))
+        .unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req)
+        .await
+        .unwrap();
+    assert_eq!(resp.status().as_u16(), 401);
+
+    // (3) Correct token → 200.
+    let req = AxumRequest::builder()
+        .method("PUT")
+        .uri(&path)
+        .header("content-type", "application/json")
+        .header("dapr-api-token", "expected")
+        .body(AxumBody::from(body))
+        .unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app.clone(), req)
+        .await
+        .unwrap();
+    assert!(resp.status().is_success());
+
+    // (4) /healthz is always open even with enforcement enabled.
+    let req = AxumRequest::builder()
+        .method("GET")
+        .uri("/healthz")
+        .body(AxumBody::empty())
+        .unwrap();
+    let resp = tower::util::ServiceExt::<AxumRequest<AxumBody>>::oneshot(app, req)
+        .await
+        .unwrap();
+    assert!(resp.status().is_success());
+
+    fake_sidecar.abort();
+}

@@ -5,18 +5,13 @@ use dapr::client::{
 use std::collections::HashMap;
 use std::time::Duration;
 
-type DaprClient = dapr::Client<dapr::client::TonicClient>;
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sleep to allow for the server to become available
     tokio::time::sleep(Duration::from_secs(5)).await;
 
-    // Set the Dapr address
-    let address = "http://127.0.0.1".to_string();
-    let port = "3500".to_string();
-
-    let mut client = DaprClient::connect_with_port(address, port).await?;
+    // Connect using env vars
+    let mut client = dapr::Client::new().await?;
 
     // Build a user message
     let user_msg = ConversationMessageOfUser {
@@ -45,8 +40,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match client.converse_alpha2(request).await {
         Ok(response) => {
             println!("conversation input: {:?}", user_msg.content[0].text);
-            if let Some(output) = response.outputs.get(0) {
-                if let Some(choice) = output.choices.get(0) {
+            if let Some(output) = response.outputs.first() {
+                if let Some(choice) = output.choices.first() {
                     if let Some(message) = &choice.message {
                         println!("conversation output: {:?}", message.content);
                     } else {

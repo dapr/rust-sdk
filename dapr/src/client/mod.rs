@@ -13,8 +13,19 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tokio::io::AsyncRead;
 use tonic::codegen::tokio_stream;
+use tonic::service::interceptor::InterceptedService;
 use tonic::{Request, transport::Channel as TonicChannel};
 use tonic::{Status, Streaming};
+
+pub mod config;
+pub mod interceptor;
+
+pub use config::{
+    API_TOKEN_METADATA_KEY, APP_API_TOKEN_ENV, ClientOptions, DAPR_API_TOKEN_ENV,
+    DAPR_CLIENT_TIMEOUT_SECONDS_ENV, DAPR_GRPC_ENDPOINT_ENV, DAPR_GRPC_PORT_ENV,
+    DEFAULT_CLIENT_TIMEOUT_SECONDS, DEFAULT_DAPR_GRPC_PORT, default_sidecar_address,
+};
+pub use interceptor::{ApiTokenInterceptor, AppApiTokenLayer, AppApiTokenService};
 
 #[derive(Clone)]
 pub struct Client<T>(T, String);
@@ -22,9 +33,20 @@ pub struct Client<T>(T, String);
 impl<T: DaprInterface> Client<T> {
     /// Connect to a Dapr enabled app.
     ///
+    /// # Deprecated
+    ///
+    /// Will be removed in `0.20.0`. Use [`Client::new`] for env-driven setup
+    /// or [`Client::from_options`] for explicit configuration. This method
+    /// requires `DAPR_GRPC_PORT` to be set and ignores `DAPR_GRPC_ENDPOINT`
+    /// and `DAPR_API_TOKEN`.
+    ///
     /// # Arguments
     ///
     /// * `addr` - Address of gRPC server to connect to.
+    #[deprecated(
+        since = "0.19.0",
+        note = "Will be removed in 0.20.0. Use Client::new() or Client::from_options()."
+    )]
     pub async fn connect(addr: String) -> Result<Self, Error> {
         // Get the Dapr port to create a connection
         let port: u16 = std::env::var("DAPR_GRPC_PORT")?.parse()?;
@@ -35,10 +57,19 @@ impl<T: DaprInterface> Client<T> {
 
     /// Connect to the Dapr sidecar with a specific port.
     ///
+    /// # Deprecated
+    ///
+    /// Will be removed in `0.20.0`. Use [`Client::new`] or
+    /// [`Client::from_options`] instead.
+    ///
     /// # Arguments
     ///
     /// * `addr` - Address of gRPC server to connect to.
     /// * `port` - Port of the gRPC server to connect to.
+    #[deprecated(
+        since = "0.19.0",
+        note = "Will be removed in 0.20.0. Use Client::new() or Client::from_options()."
+    )]
     pub async fn connect_with_port(addr: String, port: String) -> Result<Self, Error> {
         // assert that port is between 1 and 65535
         let port: u16 = match port.parse::<u16>() {
@@ -701,218 +732,259 @@ pub trait DaprInterface: Sized {
     ) -> Result<ConversationResponseAlpha2, Error>;
 }
 
-#[async_trait]
-impl DaprInterface for dapr_v1::dapr_client::DaprClient<TonicChannel> {
-    async fn connect(addr: String) -> Result<Self, Error> {
-        Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
-    }
-
-    async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
-        self.publish_event(Request::new(request))
-            .await?
-            .into_inner();
-        Ok(())
-    }
-
-    async fn invoke_service(
-        &mut self,
-        request: InvokeServiceRequest,
-    ) -> Result<InvokeServiceResponse, Error> {
-        Ok(self
-            .invoke_service(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn invoke_binding(
-        &mut self,
-        request: InvokeBindingRequest,
-    ) -> Result<InvokeBindingResponse, Error> {
-        Ok(self
-            .invoke_binding(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn get_secret(&mut self, request: GetSecretRequest) -> Result<GetSecretResponse, Error> {
-        Ok(self.get_secret(Request::new(request)).await?.into_inner())
-    }
-
-    async fn get_bulk_secret(
-        &mut self,
-        request: GetBulkSecretRequest,
-    ) -> Result<GetBulkSecretResponse, Error> {
-        Ok(self
-            .get_bulk_secret(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn get_state(&mut self, request: GetStateRequest) -> Result<GetStateResponse, Error> {
-        Ok(self.get_state(Request::new(request)).await?.into_inner())
-    }
-
-    async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
-        self.save_state(Request::new(request)).await?.into_inner();
-        Ok(())
-    }
-
-    async fn query_state_alpha1(
-        &mut self,
-        request: QueryStateRequest,
-    ) -> Result<QueryStateResponse, Error> {
-        Ok(self
-            .query_state_alpha1(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
-        self.delete_state(Request::new(request)).await?.into_inner();
-        Ok(())
-    }
-
-    async fn delete_bulk_state(&mut self, request: DeleteBulkStateRequest) -> Result<(), Error> {
-        self.delete_bulk_state(Request::new(request))
-            .await?
-            .into_inner();
-        Ok(())
-    }
-
-    async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error> {
-        self.set_metadata(Request::new(request)).await?.into_inner();
-        Ok(())
-    }
-
-    async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
-        Ok(self.get_metadata(GetMetadataRequest {}).await?.into_inner())
-    }
-
-    async fn invoke_actor(
-        &mut self,
-        request: InvokeActorRequest,
-    ) -> Result<InvokeActorResponse, Error> {
-        Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
-    }
-
-    async fn get_configuration(
-        &mut self,
-        request: GetConfigurationRequest,
-    ) -> Result<GetConfigurationResponse, Error> {
-        Ok(self
-            .get_configuration(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn subscribe_configuration(
-        &mut self,
-        request: SubscribeConfigurationRequest,
-    ) -> Result<Streaming<SubscribeConfigurationResponse>, Error> {
-        Ok(self
-            .subscribe_configuration(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn unsubscribe_configuration(
-        &mut self,
-        request: UnsubscribeConfigurationRequest,
-    ) -> Result<UnsubscribeConfigurationResponse, Error> {
-        Ok(self
-            .unsubscribe_configuration(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    /// Encrypt binary data using Dapr. returns `Vec<StreamPayload>` to be used in decrypt method
-    ///
-    /// # Arguments
-    ///
-    /// * `payload` - ReaderStream to the data to encrypt
-    /// * `request_option` - Encryption request options.
-    async fn encrypt(
-        &mut self,
-        request: Vec<EncryptRequest>,
-    ) -> Result<Vec<StreamPayload>, Status> {
-        let request = Request::new(tokio_stream::iter(request));
-        let stream = self.encrypt_alpha1(request).await?;
-        let mut stream = stream.into_inner();
-        let mut return_data = vec![];
-        while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp
-                && let Some(data) = resp.payload
-            {
-                return_data.push(data)
-            }
-        }
-        Ok(return_data)
-    }
-
-    /// Decrypt binary data using Dapr. returns `Vec<u8>`.
-    ///
-    /// # Arguments
-    ///
-    /// * `encrypted` - Encrypted data usually returned from encrypted, `Vec<StreamPayload>`
-    /// * `options` - Decryption request options.
-    async fn decrypt(&mut self, request: Vec<DecryptRequest>) -> Result<Vec<u8>, Status> {
-        let request = Request::new(tokio_stream::iter(request));
-        let stream = self.decrypt_alpha1(request).await?;
-        let mut stream = stream.into_inner();
-        let mut data = vec![];
-        while let Some(resp) = stream.next().await {
-            if let Ok(resp) = resp
-                && let Some(mut payload) = resp.payload
-            {
-                data.append(payload.data.as_mut())
-            }
-        }
-        Ok(data)
-    }
-
-    async fn schedule_job_alpha1(
-        &mut self,
-        request: ScheduleJobRequest,
-    ) -> Result<ScheduleJobResponse, Error> {
-        Ok(self.schedule_job_alpha1(request).await?.into_inner())
-    }
-
-    async fn get_job_alpha1(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error> {
-        Ok(self
-            .get_job_alpha1(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn delete_job_alpha1(
-        &mut self,
-        request: DeleteJobRequest,
-    ) -> Result<DeleteJobResponse, Error> {
-        Ok(self
-            .delete_job_alpha1(Request::new(request))
-            .await?
-            .into_inner())
-    }
-
-    async fn converse_alpha1(
-        &mut self,
-        request: ConversationRequest,
-    ) -> Result<ConversationResponse, Error> {
-        Ok(self
-            .converse_alpha1(Request::new(request))
-            .await?
-            .into_inner())
-    }
-    async fn converse_alpha2(
-        &mut self,
-        request: ConversationRequestAlpha2,
-    ) -> Result<ConversationResponseAlpha2, Error> {
-        Ok(self
-            .converse_alpha2(Request::new(request))
-            .await?
-            .into_inner())
-    }
+// Implement `DaprInterface` for both the plain and intercepted tonic clients.
+// The actual RPC method bodies are identical (the generated tonic client has
+// the same method names regardless of the inner transport), so they're
+// generated by a macro. `connect` is supplied via a free function rather
+// than a closure to avoid expression-position parser ambiguity in the macro.
+async fn connect_plain(
+    addr: String,
+) -> Result<dapr_v1::dapr_client::DaprClient<TonicChannel>, Error> {
+    Ok(dapr_v1::dapr_client::DaprClient::connect(addr).await?)
 }
+
+async fn connect_intercepted(
+    addr: String,
+) -> Result<
+    dapr_v1::dapr_client::DaprClient<InterceptedService<TonicChannel, ApiTokenInterceptor>>,
+    Error,
+> {
+    // The intercepted variant cannot be constructed from just an address
+    // because the interceptor needs to be supplied. Use [`Client::new`] /
+    // [`Client::from_options`] / [`Client::connect_with_address`] instead,
+    // which build the channel and interceptor together.
+    Err(Error::InvalidEndpoint(
+        crate::error::sanitize_endpoint_for_diagnostics(&addr),
+    ))
+}
+
+macro_rules! impl_dapr_interface_for {
+    ($type:ty, $connect_fn:path) => {
+        #[async_trait]
+        impl DaprInterface for $type {
+            async fn connect(addr: String) -> Result<Self, Error> {
+                $connect_fn(addr).await
+            }
+
+            async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error> {
+                self.publish_event(Request::new(request))
+                    .await?
+                    .into_inner();
+                Ok(())
+            }
+
+            async fn invoke_service(
+                &mut self,
+                request: InvokeServiceRequest,
+            ) -> Result<InvokeServiceResponse, Error> {
+                Ok(self
+                    .invoke_service(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn invoke_binding(
+                &mut self,
+                request: InvokeBindingRequest,
+            ) -> Result<InvokeBindingResponse, Error> {
+                Ok(self
+                    .invoke_binding(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn get_secret(
+                &mut self,
+                request: GetSecretRequest,
+            ) -> Result<GetSecretResponse, Error> {
+                Ok(self.get_secret(Request::new(request)).await?.into_inner())
+            }
+
+            async fn get_bulk_secret(
+                &mut self,
+                request: GetBulkSecretRequest,
+            ) -> Result<GetBulkSecretResponse, Error> {
+                Ok(self
+                    .get_bulk_secret(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn get_state(
+                &mut self,
+                request: GetStateRequest,
+            ) -> Result<GetStateResponse, Error> {
+                Ok(self.get_state(Request::new(request)).await?.into_inner())
+            }
+
+            async fn save_state(&mut self, request: SaveStateRequest) -> Result<(), Error> {
+                self.save_state(Request::new(request)).await?.into_inner();
+                Ok(())
+            }
+
+            async fn query_state_alpha1(
+                &mut self,
+                request: QueryStateRequest,
+            ) -> Result<QueryStateResponse, Error> {
+                Ok(self
+                    .query_state_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_state(&mut self, request: DeleteStateRequest) -> Result<(), Error> {
+                self.delete_state(Request::new(request)).await?.into_inner();
+                Ok(())
+            }
+
+            async fn delete_bulk_state(
+                &mut self,
+                request: DeleteBulkStateRequest,
+            ) -> Result<(), Error> {
+                self.delete_bulk_state(Request::new(request))
+                    .await?
+                    .into_inner();
+                Ok(())
+            }
+
+            async fn set_metadata(&mut self, request: SetMetadataRequest) -> Result<(), Error> {
+                self.set_metadata(Request::new(request)).await?.into_inner();
+                Ok(())
+            }
+
+            async fn get_metadata(&mut self) -> Result<GetMetadataResponse, Error> {
+                Ok(self.get_metadata(GetMetadataRequest {}).await?.into_inner())
+            }
+
+            async fn invoke_actor(
+                &mut self,
+                request: InvokeActorRequest,
+            ) -> Result<InvokeActorResponse, Error> {
+                Ok(self.invoke_actor(Request::new(request)).await?.into_inner())
+            }
+
+            async fn get_configuration(
+                &mut self,
+                request: GetConfigurationRequest,
+            ) -> Result<GetConfigurationResponse, Error> {
+                Ok(self
+                    .get_configuration(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn subscribe_configuration(
+                &mut self,
+                request: SubscribeConfigurationRequest,
+            ) -> Result<Streaming<SubscribeConfigurationResponse>, Error> {
+                Ok(self
+                    .subscribe_configuration(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn unsubscribe_configuration(
+                &mut self,
+                request: UnsubscribeConfigurationRequest,
+            ) -> Result<UnsubscribeConfigurationResponse, Error> {
+                Ok(self
+                    .unsubscribe_configuration(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn encrypt(
+                &mut self,
+                request: Vec<EncryptRequest>,
+            ) -> Result<Vec<StreamPayload>, Status> {
+                let request = Request::new(tokio_stream::iter(request));
+                let stream = self.encrypt_alpha1(request).await?;
+                let mut stream = stream.into_inner();
+                let mut return_data = vec![];
+                while let Some(resp) = stream.next().await {
+                    if let Ok(resp) = resp
+                        && let Some(data) = resp.payload
+                    {
+                        return_data.push(data)
+                    }
+                }
+                Ok(return_data)
+            }
+
+            async fn decrypt(&mut self, request: Vec<DecryptRequest>) -> Result<Vec<u8>, Status> {
+                let request = Request::new(tokio_stream::iter(request));
+                let stream = self.decrypt_alpha1(request).await?;
+                let mut stream = stream.into_inner();
+                let mut data = vec![];
+                while let Some(resp) = stream.next().await {
+                    if let Ok(resp) = resp
+                        && let Some(mut payload) = resp.payload
+                    {
+                        data.append(payload.data.as_mut())
+                    }
+                }
+                Ok(data)
+            }
+
+            async fn schedule_job_alpha1(
+                &mut self,
+                request: ScheduleJobRequest,
+            ) -> Result<ScheduleJobResponse, Error> {
+                Ok(self.schedule_job_alpha1(request).await?.into_inner())
+            }
+
+            async fn get_job_alpha1(
+                &mut self,
+                request: GetJobRequest,
+            ) -> Result<GetJobResponse, Error> {
+                Ok(self
+                    .get_job_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_job_alpha1(
+                &mut self,
+                request: DeleteJobRequest,
+            ) -> Result<DeleteJobResponse, Error> {
+                Ok(self
+                    .delete_job_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn converse_alpha1(
+                &mut self,
+                request: ConversationRequest,
+            ) -> Result<ConversationResponse, Error> {
+                Ok(self
+                    .converse_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn converse_alpha2(
+                &mut self,
+                request: ConversationRequestAlpha2,
+            ) -> Result<ConversationResponseAlpha2, Error> {
+                Ok(self
+                    .converse_alpha2(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+        }
+    };
+}
+
+impl_dapr_interface_for!(
+    dapr_v1::dapr_client::DaprClient<TonicChannel>,
+    connect_plain
+);
+
+impl_dapr_interface_for!(
+    dapr_v1::dapr_client::DaprClient<InterceptedService<TonicChannel, ApiTokenInterceptor>>,
+    connect_intercepted
+);
 
 /// A request from invoking a service
 pub type InvokeServiceRequest = dapr_v1::InvokeServiceRequest;
@@ -1000,11 +1072,123 @@ pub type SubscribeConfigurationResponse = dapr_v1::SubscribeConfigurationRespons
 /// A request for unsubscribing from configuration changes
 pub type UnsubscribeConfigurationRequest = dapr_v1::UnsubscribeConfigurationRequest;
 
+/// A tonic based gRPC client without any interceptor wiring.
+///
+/// This is the type used by the (deprecated) [`Client::connect`] /
+/// [`Client::connect_with_port`] constructors.
+pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
+
+/// A tonic based gRPC client wrapped with an [`ApiTokenInterceptor`] that
+/// injects the configured `dapr-api-token` metadata on every outgoing call.
+///
+/// This is the type returned by [`Client::new`], [`Client::from_options`],
+/// and [`Client::connect_with_address`]. When the configured token is empty,
+/// the interceptor is a no-op, so it is safe to use this type even when no
+/// token is required.
+pub type TonicClientWithAuth =
+    dapr_v1::dapr_client::DaprClient<InterceptedService<TonicChannel, ApiTokenInterceptor>>;
+
+impl Client<TonicClientWithAuth> {
+    /// Create a new Dapr client using configuration drawn entirely from the
+    /// environment.
+    ///
+    /// Recognised environment variables:
+    ///
+    /// | Variable                          | Purpose                                            |
+    /// |-----------------------------------|----------------------------------------------------|
+    /// | [`DAPR_GRPC_ENDPOINT_ENV`]        | Full endpoint (preferred).                         |
+    /// | [`DAPR_GRPC_PORT_ENV`]            | Port on `127.0.0.1`. Used when endpoint is unset.  |
+    /// | [`DAPR_API_TOKEN_ENV`]            | Outbound `dapr-api-token` metadata value.          |
+    /// | [`DAPR_CLIENT_TIMEOUT_SECONDS_ENV`] | gRPC connect timeout (default 5s).               |
+    ///
+    /// Default endpoint when nothing is configured: `http://127.0.0.1:50001`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InvalidEndpoint`] when the configured endpoint cannot
+    /// be parsed, [`Error::ParseIntError`] when
+    /// `DAPR_CLIENT_TIMEOUT_SECONDS` is malformed,
+    /// [`Error::ConnectTimeout`] if the connection cannot be established
+    /// within the configured timeout, or [`Error::TransportError`] for other
+    /// transport failures.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn run() -> Result<(), dapr::error::Error> {
+    /// let mut client = dapr::Client::new().await?;
+    /// # let _ = &mut client;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn new() -> Result<Self, Error> {
+        let opts = ClientOptions::from_env()?;
+        Self::from_options(opts).await
+    }
+
+    /// Create a new Dapr client from an explicit [`ClientOptions`].
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::new`].
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn run() -> Result<(), dapr::error::Error> {
+    /// use std::time::Duration;
+    /// use dapr::client::ClientOptions;
+    ///
+    /// let opts = ClientOptions::new()
+    ///     .with_address("https://my-sidecar:443?tls=true")
+    ///     .with_api_token("super-secret")
+    ///     .with_timeout(Duration::from_secs(10));
+    /// let mut client = dapr::Client::from_options(opts).await?;
+    /// # let _ = &mut client;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn from_options(opts: ClientOptions) -> Result<Self, Error> {
+        let address = opts.address().to_string();
+        let interceptor = ApiTokenInterceptor::try_new(opts.api_token().map(|s| s.to_string()))?;
+
+        let sanitized_address = crate::error::sanitize_endpoint_for_diagnostics(&address);
+        let endpoint = tonic::transport::Endpoint::from_shared(address.clone())
+            .map_err(|_| Error::InvalidEndpoint(sanitized_address.clone()))?
+            .connect_timeout(opts.timeout());
+
+        let channel = match tokio::time::timeout(opts.timeout(), endpoint.connect()).await {
+            Ok(Ok(c)) => c,
+            Ok(Err(e)) => return Err(Error::from(e)),
+            Err(_) => return Err(Error::ConnectTimeout),
+        };
+
+        let grpc = dapr_v1::dapr_client::DaprClient::with_interceptor(channel, interceptor);
+        Ok(Client(grpc, address))
+    }
+
+    /// Create a new Dapr client connected to an explicit address. All other
+    /// settings are read from the environment.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn run() -> Result<(), dapr::error::Error> {
+    /// let mut client = dapr::Client::connect_with_address(
+    ///     "https://my-sidecar:443?tls=true",
+    /// ).await?;
+    /// # let _ = &mut client;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn connect_with_address(address: impl Into<String>) -> Result<Self, Error> {
+        let opts = ClientOptions::from_env()?.with_address(address);
+        Self::from_options(opts).await
+    }
+}
+
 /// A response from unsubscribing from configuration changes
 pub type UnsubscribeConfigurationResponse = dapr_v1::UnsubscribeConfigurationResponse;
-
-/// A tonic based gRPC client
-pub type TonicClient = dapr_v1::dapr_client::DaprClient<TonicChannel>;
 
 /// Encryption gRPC request
 pub type EncryptRequest = crate::dapr::proto::runtime::v1::EncryptRequest;

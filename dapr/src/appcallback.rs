@@ -165,6 +165,32 @@ impl Default for AppCallbackService {
 }
 
 impl AppCallbackService {
+    /// Construct a new app-callback service.
+    ///
+    /// The service itself does not enforce inbound authentication. To
+    /// reject requests that don't carry a matching `dapr-api-token`
+    /// metadata header (the `APP_API_TOKEN` mechanism), wrap your
+    /// [`tonic::transport::Server`] with
+    /// [`crate::client::AppApiTokenLayer`]:
+    ///
+    /// ```ignore
+    /// use dapr::appcallback::AppCallbackService;
+    /// use dapr::client::AppApiTokenLayer;
+    /// use dapr::dapr::proto::runtime::v1::app_callback_server::AppCallbackServer;
+    /// use tonic::transport::Server;
+    ///
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// let addr = "127.0.0.1:50051".parse()?;
+    /// Server::builder()
+    ///     .layer(AppApiTokenLayer::from_env()) // honors APP_API_TOKEN; no-op when unset
+    ///     .add_service(AppCallbackServer::new(AppCallbackService::new()))
+    ///     .serve(addr)
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    ///
+    /// The actor HTTP server ([`crate::server::DaprHttpServer`]) installs
+    /// the layer automatically.
     pub fn new() -> AppCallbackService {
         AppCallbackService { handlers: vec![] }
     }

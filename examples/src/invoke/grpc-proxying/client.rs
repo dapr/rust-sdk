@@ -13,9 +13,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sleep to allow for the server to become available
     tokio::time::sleep(Duration::from_secs(5)).await;
 
-    // Get the Dapr port and create a connection
-    let port: u16 = std::env::var("DAPR_GRPC_PORT").unwrap().parse().unwrap();
-    let address = format!("http://127.0.0.1:{port}");
+    // Resolve the Dapr sidecar address from the standard env vars
+    // (`DAPR_GRPC_ENDPOINT`, `DAPR_GRPC_PORT`).
+    let address = dapr::client::default_sidecar_address();
 
     let mut client = GreeterClient::connect(address).await?;
 
