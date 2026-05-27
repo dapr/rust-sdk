@@ -61,10 +61,7 @@ pub(crate) fn sanitize_endpoint_for_diagnostics(input: &str) -> String {
         None => (None, trimmed),
     };
 
-    let authority = rest
-        .split(['/', '?', '#'])
-        .next()
-        .unwrap_or(rest);
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or(rest);
 
     let host_port = authority.rsplit('@').next().unwrap_or(authority).trim();
 
