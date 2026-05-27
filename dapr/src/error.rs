@@ -27,8 +27,9 @@ pub enum Error {
     /// A response payload could not be (de)serialized.
     SerializationError,
     /// A gRPC endpoint string could not be parsed (invalid scheme, malformed
-    /// host/port, unsupported TLS query, etc.). The wrapped string contains
-    /// the original input for diagnostics.
+    /// host/port, unsupported TLS query, etc.). The wrapped string is a
+    /// sanitized endpoint (`scheme://host[:port]` when a scheme is present;
+    /// otherwise `host[:port]`) for diagnostics.
     InvalidEndpoint(String),
     /// Establishing the gRPC connection exceeded the configured connect
     /// timeout (see `DAPR_CLIENT_TIMEOUT_SECONDS` or
@@ -42,6 +43,37 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{self:?}")
+    }
+}
+
+/// Return a diagnostics-safe endpoint string.
+///
+/// Keeps scheme when present and strips path/query/fragment and any userinfo
+/// so that credentials never appear in logs or error messages.
+pub(crate) fn sanitize_endpoint_for_diagnostics(input: &str) -> String {
+    let trimmed = input.trim();
+    if trimmed.is_empty() {
+        return "<empty>".to_string();
+    }
+
+    let (scheme, rest) = match trimmed.split_once("://") {
+        Some((s, r)) => (Some(s), r),
+        None => (None, trimmed),
+    };
+
+    let authority = rest
+        .split(['/', '?', '#'])
+        .next()
+        .unwrap_or(rest);
+
+    let host_port = authority.rsplit('@').next().unwrap_or(authority).trim();
+
+    if host_port.is_empty() {
+        "<invalid>".to_string()
+    } else if let Some(scheme) = scheme {
+        format!("{scheme}://{host_port}")
+    } else {
+        host_port.to_string()
     }
 }
 

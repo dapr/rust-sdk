@@ -744,7 +744,7 @@ async fn connect_plain(
 }
 
 async fn connect_intercepted(
-    _addr: String,
+    addr: String,
 ) -> Result<
     dapr_v1::dapr_client::DaprClient<InterceptedService<TonicChannel, ApiTokenInterceptor>>,
     Error,
@@ -754,7 +754,7 @@ async fn connect_intercepted(
     // [`Client::from_options`] / [`Client::connect_with_address`] instead,
     // which build the channel and interceptor together.
     Err(Error::InvalidEndpoint(
-        "Use Client::new(), Client::from_options(), or Client::connect_with_address() to build a Client<TonicClientWithAuth>".to_string(),
+        crate::error::sanitize_endpoint_for_diagnostics(&addr),
     ))
 }
 
@@ -1152,8 +1152,9 @@ impl Client<TonicClientWithAuth> {
         let address = opts.address().to_string();
         let interceptor = ApiTokenInterceptor::try_new(opts.api_token().map(|s| s.to_string()))?;
 
+        let sanitized_address = crate::error::sanitize_endpoint_for_diagnostics(&address);
         let endpoint = tonic::transport::Endpoint::from_shared(address.clone())
-            .map_err(|_| Error::InvalidEndpoint(address.clone()))?
+            .map_err(|_| Error::InvalidEndpoint(sanitized_address.clone()))?
             .connect_timeout(opts.timeout());
 
         let channel = match tokio::time::timeout(opts.timeout(), endpoint.connect()).await {
