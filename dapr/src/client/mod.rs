@@ -120,12 +120,14 @@ impl<T: DaprInterface> Client<T> {
             .await
     }
 
-    /// Invoke an Dapr output binding.
+    /// Invoke a Dapr output binding.
     ///
     /// # Arguments
     ///
     /// * `name` - The name of the output binding to invoke.
     /// * `data` - The data which will be sent to the output binding.
+    /// * `operation` - The operation name for the binding to invoke.
+    /// * `metadata` - The metadata key-value pairs to be sent to the binding.
     pub async fn invoke_binding<S>(
         &mut self,
         name: S,
@@ -136,19 +138,34 @@ impl<T: DaprInterface> Client<T> {
     where
         S: Into<String>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
-
         self.0
             .invoke_binding(InvokeBindingRequest {
                 name: name.into(),
                 data,
                 operation: operation.into(),
-                metadata: mdata,
+                metadata: metadata.unwrap_or_default(),
             })
             .await
+    }
+
+    /// Invoke a Dapr output binding without expecting a response payload.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - The name of the output binding to invoke.
+    /// * `operation` - The operation name for the binding to invoke.
+    pub async fn invoke_output_binding<S>(&mut self, name: S, operation: S) -> Result<(), Error>
+    where
+        S: Into<String>,
+    {
+        self.0
+            .invoke_binding(InvokeBindingRequest {
+                name: name.into(),
+                operation: operation.into(),
+                ..Default::default()
+            })
+            .await
+            .map(|_| ())
     }
 
     /// Publish a payload to multiple consumers who are listening on a topic.
