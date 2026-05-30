@@ -26,6 +26,7 @@ Dapr is a portable, event-driven, serverless runtime for building distributed ap
 
 This SDK is currently in Alpha. Work is underway to bring forward a stable
 release and will likely involve breaking changes.
+
 - Documentation is incomplete.
 - Not all building blocks are currently implemented.
 - There may be bugs.
@@ -35,7 +36,7 @@ The maintainers commit to resolving any issues that arise and bringing this SDK
 to a stable release. With this in mind, the SDK will follow the norms and
 conventions of a stable SDK so far as is possible.
 
-This SDK will be accounted for as a part of the release process. Support for 
+This SDK will be accounted for as a part of the release process. Support for
 the latest runtime release is targeted but not guaranteed.
 
 The main tenet of development will be stability and functionality that improves
@@ -53,7 +54,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-dapr = "0.18"
+dapr = "0.19"
 ```
 
 Here's a basic example to create a client:
@@ -77,13 +78,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 The client honors the following environment variables, matching the
 [other Dapr SDKs](https://docs.dapr.io/developing-applications/sdks/):
 
-| Variable                       | Default                     | Purpose                                                         |
-|--------------------------------|-----------------------------|-----------------------------------------------------------------|
-| `DAPR_GRPC_ENDPOINT`           | (unset)                     | Full sidecar endpoint (scheme + host + port). Takes precedence. |
-| `DAPR_GRPC_PORT`               | `50001`                     | Port on `127.0.0.1` when `DAPR_GRPC_ENDPOINT` is unset.         |
-| `DAPR_API_TOKEN`               | (unset)                     | Outbound `dapr-api-token` metadata sent on every gRPC call.     |
-| `DAPR_CLIENT_TIMEOUT_SECONDS`  | `5`                         | Connect timeout for the gRPC channel.                           |
-| `APP_API_TOKEN`                | (unset)                     | Inbound auth token enforced by `AppApiTokenLayer` (see below).  |
+| Variable                      | Default | Purpose                                                         |
+| ----------------------------- | ------- | --------------------------------------------------------------- |
+| `DAPR_GRPC_ENDPOINT`          | (unset) | Full sidecar endpoint (scheme + host + port). Takes precedence. |
+| `DAPR_GRPC_PORT`              | `50001` | Port on `127.0.0.1` when `DAPR_GRPC_ENDPOINT` is unset.         |
+| `DAPR_API_TOKEN`              | (unset) | Outbound `dapr-api-token` metadata sent on every gRPC call.     |
+| `DAPR_CLIENT_TIMEOUT_SECONDS` | `5`     | Connect timeout for the gRPC channel.                           |
+| `APP_API_TOKEN`               | (unset) | Inbound auth token enforced by `AppApiTokenLayer` (see below).  |
 
 You can configure the same settings programmatically via
 [`dapr::client::ClientOptions`](https://docs.rs/dapr/latest/dapr/client/struct.ClientOptions.html):
@@ -195,6 +196,7 @@ cargo run proto-gen
 ```
 
 ### Contact Us
+
 Reach out with any questions you may have and we'll be sure to answer them as
 soon as possible!
 

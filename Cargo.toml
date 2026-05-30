@@ -1,12 +1,7 @@
 [workspace]
-members = [
-    "dapr",
-    "dapr-macros",
-    "proto-gen",
-    "examples",
-]
+members = ["dapr", "dapr-macros", "proto-gen", "examples"]
 exclude = [
-    ".github/workflows/dapr-bot" # Bot used in GitHub workflow
+  ".github/workflows/dapr-bot", # Bot used in GitHub workflow
 ]
 resolver = "2"
 
@@ -28,11 +23,8 @@ tonic-prost = "0.14.6"
 tonic-prost-build = "0.14.6"
 
 [workspace.package]
-version = "0.18.0-rc.0"
-authors = [
-    "Mike Nguyen <hey@mike.ee>",
-    "The Dapr Authors <dapr@dapr.io>"
-]
+version = "0.19.0-rc.0"
+authors = ["Mike Nguyen <hey@mike.ee>", "The Dapr Authors <dapr@dapr.io>"]
 edition = "2024"
 license = "Apache-2.0"
 repository = "https://github.com/dapr/rust-sdk"
