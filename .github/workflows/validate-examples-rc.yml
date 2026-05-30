@@ -1,0 +1,145 @@
+name: validate-examples-rc
+
+on:
+  schedule:
+    # Run daily at 08:08 UTC
+    - cron: "8 8 * * *"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run the workflow against"
+        required: false
+        default: "main"
+      dapr_version:
+        description: "Dapr/Dapr RC version to use (leave empty to auto-detect latest RC)"
+        required: false
+        default: ""
+      daprcli_version:
+        description: "Dapr/CLI RC version to use (leave empty to auto-detect latest RC)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      RC_FOUND: ${{ steps.find-rc.outputs.RC_FOUND }}
+      DAPR_RUNTIME_VERSION: ${{ steps.find-rc.outputs.DAPR_RUNTIME_VERSION }}
+      DAPR_CLI_VERSION: ${{ steps.find-rc.outputs.DAPR_CLI_VERSION }}
+      EXAMPLES_MATRIX: ${{ steps.examples.outputs.matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+
+      - name: Find latest Dapr RC versions
+        id: find-rc
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine Dapr runtime RC version
+          if [ -n "${{ github.event.inputs.dapr_version }}" ]; then
+            RUNTIME_VERSION="${{ github.event.inputs.dapr_version }}"
+            echo "Using provided Dapr runtime version: $RUNTIME_VERSION"
+          else
+            RUNTIME_VERSION=$(gh api repos/dapr/dapr/releases --paginate --jq '[.[] | select(.prerelease == true and (.tag_name | test("rc"))) | .tag_name][0]' | head -1 | tr -d 'v')
+            echo "Latest Dapr runtime RC version: $RUNTIME_VERSION"
+          fi
+
+          # Determine Dapr CLI RC version
+          if [ -n "${{ github.event.inputs.daprcli_version }}" ]; then
+            CLI_VERSION="${{ github.event.inputs.daprcli_version }}"
+            echo "Using provided Dapr CLI version: $CLI_VERSION"
+          else
+            CLI_VERSION=$(gh api repos/dapr/cli/releases --paginate --jq '[.[] | select(.prerelease == true and (.tag_name | test("rc"))) | .tag_name][0]' | head -1 | tr -d 'v')
+            echo "Latest Dapr CLI RC version: $CLI_VERSION"
+          fi
+
+          if [ -z "$RUNTIME_VERSION" ]; then
+            echo "No Dapr runtime RC version found."
+            echo "RC_FOUND=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "$CLI_VERSION" ]; then
+            echo "No Dapr CLI RC version found, falling back to latest stable CLI."
+            CLI_VERSION=$(gh api repos/dapr/cli/releases/latest --jq '.tag_name' | tr -d 'v')
+            echo "Using latest stable Dapr CLI version: $CLI_VERSION"
+          fi
+
+          echo "RC_FOUND=true" >> "$GITHUB_OUTPUT"
+          echo "DAPR_RUNTIME_VERSION=$RUNTIME_VERSION" >> "$GITHUB_OUTPUT"
+          echo "DAPR_CLI_VERSION=$CLI_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Discover examples
+        id: examples
+        run: |
+          EXAMPLES=$(find examples/src -name 'README.md' -exec dirname {} \; \
+            | sed 's|^examples/src/||' | sort | jq -Rnc '[inputs]')
+          echo "matrix=$EXAMPLES" >> "$GITHUB_OUTPUT"
+
+  validate-example:
+    needs: setup
+    if: needs.setup.outputs.RC_FOUND == 'true'
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VER: 3.12
+      DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
+      DAPR_CLI_VERSION: ${{ needs.setup.outputs.DAPR_CLI_VERSION }}
+      DAPR_RUNTIME_VERSION: ${{ needs.setup.outputs.DAPR_RUNTIME_VERSION }}
+      RUST_BACKTRACE: full
+
+    strategy:
+      fail-fast: false
+      matrix:
+        examples: ${{ fromJson(needs.setup.outputs.EXAMPLES_MATRIX) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+
+      - name: Rust setup
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
+        with:
+          version: "24.4"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Dapr CLI ${{ env.DAPR_CLI_VERSION }}
+        run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VERSION }}
+
+      - name: Initialize Dapr runtime ${{ env.DAPR_RUNTIME_VERSION }}
+        run: |
+          dapr uninstall --all
+          dapr init --runtime-version ${{ env.DAPR_RUNTIME_VERSION }}
+
+      - name: List running containers
+        run: |
+          docker ps -a
+
+      - name: Set up Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+
+      - name: Install Mechanical Markdown
+        run: |
+          python -m pip install --upgrade pip
+          pip install mechanical-markdown
+
+      - name: Dapr version
+        run: |
+          dapr version
+          docker ps -a
+
+      - name: Check Example
+        run: |
+          cd examples
+          ./validate.sh ${{ matrix.examples }}
