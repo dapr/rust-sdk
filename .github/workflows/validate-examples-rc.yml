@@ -4,6 +4,9 @@ on:
   schedule:
     # Run daily at 08:08 UTC
     - cron: "8 8 * * *"
+  pull_request:
+    branches:
+      - release-*
   workflow_dispatch:
     inputs:
       branch:
