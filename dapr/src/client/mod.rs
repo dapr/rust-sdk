@@ -1050,7 +1050,8 @@ macro_rules! impl_dapr_interface_for {
                 let fallback = request.clone();
                 match self.schedule_job(request).await {
                     Ok(resp) => Ok(resp.into_inner()),
-                    Err(status) if is_method_not_found(&status) => {
+                    Err(status) if is_method_not_found(&status) =>
+                    {
                         #[allow(deprecated)]
                         Ok(self.schedule_job_alpha1(fallback).await?.into_inner())
                     }
@@ -1062,9 +1063,13 @@ macro_rules! impl_dapr_interface_for {
                 let fallback = request.clone();
                 match self.get_job(Request::new(request)).await {
                     Ok(resp) => Ok(resp.into_inner()),
-                    Err(status) if is_method_not_found(&status) => {
+                    Err(status) if is_method_not_found(&status) =>
+                    {
                         #[allow(deprecated)]
-                        Ok(self.get_job_alpha1(Request::new(fallback)).await?.into_inner())
+                        Ok(self
+                            .get_job_alpha1(Request::new(fallback))
+                            .await?
+                            .into_inner())
                     }
                     Err(status) => Err(status.into()),
                 }
@@ -1077,9 +1082,13 @@ macro_rules! impl_dapr_interface_for {
                 let fallback = request.clone();
                 match self.delete_job(Request::new(request)).await {
                     Ok(resp) => Ok(resp.into_inner()),
-                    Err(status) if is_method_not_found(&status) => {
+                    Err(status) if is_method_not_found(&status) =>
+                    {
                         #[allow(deprecated)]
-                        Ok(self.delete_job_alpha1(Request::new(fallback)).await?.into_inner())
+                        Ok(self
+                            .delete_job_alpha1(Request::new(fallback))
+                            .await?
+                            .into_inner())
                     }
                     Err(status) => Err(status.into()),
                 }
@@ -1098,7 +1107,10 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: GetJobRequest,
             ) -> Result<GetJobResponse, Error> {
-                Ok(self.get_job_alpha1(Request::new(request)).await?.into_inner())
+                Ok(self
+                    .get_job_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
             }
 
             #[allow(deprecated)]
@@ -1106,7 +1118,10 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: DeleteJobRequest,
             ) -> Result<DeleteJobResponse, Error> {
-                Ok(self.delete_job_alpha1(Request::new(request)).await?.into_inner())
+                Ok(self
+                    .delete_job_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
             }
 
             async fn delete_jobs_by_prefix(
