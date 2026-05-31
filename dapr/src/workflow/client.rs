@@ -163,8 +163,13 @@ impl WorkflowClient {
         &mut self,
         instance_id: &str,
     ) -> Result<OrchestrationState> {
-        wait_for_workflow_start_with_options_impl(&mut self.inner, instance_id, FetchOptions::new(), None)
-            .await
+        wait_for_workflow_start_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            FetchOptions::new(),
+            None,
+        )
+        .await
     }
 
     /// Wait for a workflow to start with fetch and timeout options.
@@ -528,9 +533,7 @@ async fn resume_workflow_impl(
     reason: impl Into<String>,
 ) -> Result<()> {
     let reason = reason.into();
-    client
-        .resume_orchestration(instance_id, Some(reason))
-        .await
+    client.resume_orchestration(instance_id, Some(reason)).await
 }
 
 async fn raise_event_impl(
@@ -590,9 +593,7 @@ async fn purge_workflow_state_recursive_impl(
     instance_id: &str,
     recursive: bool,
 ) -> Result<()> {
-    client
-        .purge_orchestration(instance_id, recursive)
-        .await?;
+    client.purge_orchestration(instance_id, recursive).await?;
     Ok(())
 }
 

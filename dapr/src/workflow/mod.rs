@@ -75,5 +75,7 @@ pub use dapr_durabletask::api::{
     OrchestrationState as WorkflowMetadata, OrchestrationStatus as RuntimeStatus,
     PropagatedHistory, PurgeInstanceFilter, Result, RetryPolicy,
 };
-pub use dapr_durabletask::task::{CompletableTask, OrchestrationContext, TaskResult, when_all, when_any};
+pub use dapr_durabletask::task::{
+    CompletableTask, OrchestrationContext, TaskResult, when_all, when_any,
+};
 pub use dapr_durabletask::worker::Registry;
