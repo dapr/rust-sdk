@@ -617,6 +617,26 @@ impl<T: DaprInterface> Client<T> {
     ///
     /// * job - The job to schedule
     /// * overwrite - Optional flag to overwrite an existing job with the same name
+    pub async fn schedule_job(
+        &mut self,
+        job: Job,
+        overwrite: Option<bool>,
+    ) -> Result<ScheduleJobResponse, Error> {
+        let request = ScheduleJobRequest {
+            job: Some(job.clone()),
+            overwrite: overwrite.unwrap_or(false),
+        };
+        self.0.schedule_job(request).await
+    }
+
+    /// Schedules a job with the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * job - The job to schedule
+    /// * overwrite - Optional flag to overwrite an existing job with the same name
+    #[allow(deprecated)]
+    #[deprecated(note = "Use schedule_job instead")]
     pub async fn schedule_job_alpha1(
         &mut self,
         job: Job,
@@ -634,6 +654,20 @@ impl<T: DaprInterface> Client<T> {
     /// # Arguments
     ///
     /// * name - The name of the job to retrieve
+    pub async fn get_job(&mut self, name: &str) -> Result<GetJobResponse, Error> {
+        let request = GetJobRequest {
+            name: name.to_string(),
+        };
+        self.0.get_job(request).await
+    }
+
+    /// Retrieves a scheduled job from the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * name - The name of the job to retrieve
+    #[allow(deprecated)]
+    #[deprecated(note = "Use get_job instead")]
     pub async fn get_job_alpha1(&mut self, name: &str) -> Result<GetJobResponse, Error> {
         let request = GetJobRequest {
             name: name.to_string(),
@@ -646,11 +680,46 @@ impl<T: DaprInterface> Client<T> {
     /// # Arguments
     ///
     /// * name - The name of the job to delete
+    pub async fn delete_job(&mut self, name: &str) -> Result<DeleteJobResponse, Error> {
+        let request = DeleteJobRequest {
+            name: name.to_string(),
+        };
+        self.0.delete_job(request).await
+    }
+
+    /// Deletes a scheduled job from the Dapr Distributed Scheduler
+    ///
+    /// # Arguments
+    ///
+    /// * name - The name of the job to delete
+    #[allow(deprecated)]
+    #[deprecated(note = "Use delete_job instead")]
     pub async fn delete_job_alpha1(&mut self, name: &str) -> Result<DeleteJobResponse, Error> {
         let request = DeleteJobRequest {
             name: name.to_string(),
         };
         self.0.delete_job_alpha1(request).await
+    }
+
+    /// Deletes all jobs whose name starts with the given prefix.
+    /// Pass `None` to delete all jobs for the app.
+    ///
+    /// # Arguments
+    ///
+    /// * prefix - The name prefix to match jobs against, or `None` to delete all
+    pub async fn delete_jobs_by_prefix(
+        &mut self,
+        prefix: Option<&str>,
+    ) -> Result<DeleteJobsByPrefixResponse, Error> {
+        let request = DeleteJobsByPrefixRequest {
+            name_prefix: prefix.map(|p| p.to_string()),
+        };
+        self.0.delete_jobs_by_prefix(request).await
+    }
+
+    /// Lists all scheduled jobs
+    pub async fn list_jobs(&mut self) -> Result<ListJobsResponse, Error> {
+        self.0.list_jobs(ListJobsRequest {}).await
     }
 
     /// Converse with an LLM
@@ -679,7 +748,7 @@ impl<T: DaprInterface> Client<T> {
 }
 
 #[async_trait]
-pub trait DaprInterface: Sized {
+pub trait DaprInterface: Sized + Send {
     async fn connect(addr: String) -> Result<Self, Error>;
     async fn publish_event(&mut self, request: PublishEventRequest) -> Result<(), Error>;
     async fn invoke_service(
@@ -727,17 +796,38 @@ pub trait DaprInterface: Sized {
 
     async fn decrypt(&mut self, payload: Vec<DecryptRequest>) -> Result<Vec<u8>, Status>;
 
+    #[allow(deprecated)]
+    async fn schedule_job(
+        &mut self,
+        request: ScheduleJobRequest,
+    ) -> Result<ScheduleJobResponse, Error>;
+    #[allow(deprecated)]
+    async fn get_job(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error>;
+
+    #[allow(deprecated)]
+    async fn delete_job(&mut self, request: DeleteJobRequest) -> Result<DeleteJobResponse, Error>;
+
+    #[deprecated(note = "Use schedule_job instead")]
     async fn schedule_job_alpha1(
         &mut self,
         request: ScheduleJobRequest,
     ) -> Result<ScheduleJobResponse, Error>;
 
+    #[deprecated(note = "Use get_job instead")]
     async fn get_job_alpha1(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error>;
 
+    #[deprecated(note = "Use delete_job instead")]
     async fn delete_job_alpha1(
         &mut self,
         request: DeleteJobRequest,
     ) -> Result<DeleteJobResponse, Error>;
+
+    async fn delete_jobs_by_prefix(
+        &mut self,
+        _request: DeleteJobsByPrefixRequest,
+    ) -> Result<DeleteJobsByPrefixResponse, Error>;
+
+    async fn list_jobs(&mut self, _request: ListJobsRequest) -> Result<ListJobsResponse, Error>;
 
     async fn converse_alpha1(
         &mut self,
@@ -943,31 +1033,66 @@ macro_rules! impl_dapr_interface_for {
                 Ok(data)
             }
 
+            async fn schedule_job(
+                &mut self,
+                request: ScheduleJobRequest,
+            ) -> Result<ScheduleJobResponse, Error> {
+                Ok(self.schedule_job(request).await?.into_inner())
+            }
+
+            async fn get_job(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error> {
+                Ok(self.get_job(Request::new(request)).await?.into_inner())
+            }
+
+            async fn delete_job(
+                &mut self,
+                request: DeleteJobRequest,
+            ) -> Result<DeleteJobResponse, Error> {
+                Ok(self.delete_job(Request::new(request)).await?.into_inner())
+            }
+
+            #[allow(deprecated)]
             async fn schedule_job_alpha1(
                 &mut self,
                 request: ScheduleJobRequest,
             ) -> Result<ScheduleJobResponse, Error> {
-                Ok(self.schedule_job_alpha1(request).await?.into_inner())
+                // Route alpha1 through the stable endpoint.
+                Ok(self.schedule_job(request).await?.into_inner())
             }
 
+            #[allow(deprecated)]
             async fn get_job_alpha1(
                 &mut self,
                 request: GetJobRequest,
             ) -> Result<GetJobResponse, Error> {
-                Ok(self
-                    .get_job_alpha1(Request::new(request))
-                    .await?
-                    .into_inner())
+                // Route alpha1 through the stable endpoint.
+                Ok(self.get_job(Request::new(request)).await?.into_inner())
             }
 
+            #[allow(deprecated)]
             async fn delete_job_alpha1(
                 &mut self,
                 request: DeleteJobRequest,
             ) -> Result<DeleteJobResponse, Error> {
+                // Route alpha1 through the stable endpoint.
+                Ok(self.delete_job(Request::new(request)).await?.into_inner())
+            }
+
+            async fn delete_jobs_by_prefix(
+                &mut self,
+                request: DeleteJobsByPrefixRequest,
+            ) -> Result<DeleteJobsByPrefixResponse, Error> {
                 Ok(self
-                    .delete_job_alpha1(Request::new(request))
+                    .delete_jobs_by_prefix(Request::new(request))
                     .await?
                     .into_inner())
+            }
+
+            async fn list_jobs(
+                &mut self,
+                request: ListJobsRequest,
+            ) -> Result<ListJobsResponse, Error> {
+                Ok(self.list_jobs(Request::new(request)).await?.into_inner())
             }
 
             async fn converse_alpha1(
@@ -1242,6 +1367,18 @@ pub type DeleteJobRequest = crate::dapr::proto::runtime::v1::DeleteJobRequest;
 
 /// A response from a delete job request
 pub type DeleteJobResponse = crate::dapr::proto::runtime::v1::DeleteJobResponse;
+
+/// A request to delete jobs by name prefix
+pub type DeleteJobsByPrefixRequest = crate::dapr::proto::runtime::v1::DeleteJobsByPrefixRequest;
+
+/// A response from a delete-jobs-by-prefix request
+pub type DeleteJobsByPrefixResponse = crate::dapr::proto::runtime::v1::DeleteJobsByPrefixResponse;
+
+/// A request to list all scheduled jobs
+pub type ListJobsRequest = crate::dapr::proto::runtime::v1::ListJobsRequest;
+
+/// A response containing the list of scheduled jobs
+pub type ListJobsResponse = crate::dapr::proto::runtime::v1::ListJobsResponse;
 
 /// A request to conversate with an LLM
 pub type ConversationRequest = crate::dapr::proto::runtime::v1::ConversationRequest;

@@ -3,6 +3,12 @@
 pub use serde;
 pub use serde_json;
 
+/// Hidden re-exports used by `#[macro_export]` macros. Not public API.
+#[doc(hidden)]
+pub mod reexport {
+    pub use async_trait::async_trait;
+}
+
 pub use client::Client;
 
 /// Module containing the Dapr Callback SDK.

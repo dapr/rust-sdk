@@ -8,4 +8,4 @@ apps:
     appPort: 50051
     logLevel: debug
     schedulerHostAddress: localhost
-    command: [ "cargo", "run", "--example", "jobs" ]
+    command: [ "cargo", "run", "--example", "jobs-failurepolicy" ]
