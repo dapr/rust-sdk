@@ -13,6 +13,19 @@ const DEFAULT_WORKFLOW_COUNT: usize = 100;
 const MAX_WORKFLOW_COUNT: usize = 10_000;
 const WORKFLOW_TIMEOUT: Duration = Duration::from_secs(120);
 
+type WorkflowRunResult = std::result::Result<Duration, String>;
+
+struct WorkflowRunSummary {
+    latencies: Vec<Duration>,
+    failed: usize,
+}
+
+impl WorkflowRunSummary {
+    fn succeeded(&self) -> usize {
+        self.latencies.len()
+    }
+}
+
 async fn sustained_workflow(ctx: WorkflowContext) -> Result<Option<String>> {
     let input: i32 = ctx.get_input_typed()?;
     let output: i32 = ctx.call_activity_typed(ACTIVITY_NAME, input).await?;
@@ -55,10 +68,10 @@ async fn main() -> Result<()> {
     let scheduling_client = worker_client.scheduling_client();
     let started_at = Instant::now();
 
-    let latencies = run_workflows(scheduling_client, workflow_count, concurrency).await;
+    let run_summary = run_workflows(scheduling_client, workflow_count, concurrency).await;
     let elapsed = started_at.elapsed();
 
-    print_summary(workflow_count, &latencies, elapsed);
+    print_summary(workflow_count, &run_summary, elapsed);
 
     worker.shutdown().await?;
 
@@ -85,7 +98,7 @@ async fn run_workflows(
     scheduling_client: WorkflowSchedulingClient,
     workflow_count: usize,
     concurrency: usize,
-) -> Vec<Duration> {
+) -> WorkflowRunSummary {
     let mut tasks = JoinSet::new();
     let mut next_input = 0;
     let mut completed = 0;
@@ -125,11 +138,11 @@ async fn run_workflows(
         }
     }
 
-    latencies
+    WorkflowRunSummary { latencies, failed }
 }
 
 fn spawn_workflow(
-    tasks: &mut JoinSet<std::result::Result<Duration, String>>,
+    tasks: &mut JoinSet<WorkflowRunResult>,
     mut client: WorkflowSchedulingClient,
     input: i32,
 ) {
@@ -161,9 +174,10 @@ fn spawn_workflow(
     });
 }
 
-fn print_summary(workflow_count: usize, latencies: &[Duration], elapsed: Duration) {
-    let succeeded = latencies.len();
-    let failed = workflow_count - succeeded;
+fn print_summary(workflow_count: usize, summary: &WorkflowRunSummary, elapsed: Duration) {
+    let latencies = &summary.latencies;
+    let succeeded = summary.succeeded();
+    let failed = summary.failed;
     let throughput = succeeded as f64 / elapsed.as_secs_f64();
 
     let mut sorted_latencies = latencies.to_vec();

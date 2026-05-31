@@ -499,9 +499,7 @@ fn ensure_url_scheme(address: String) -> String {
     }
 }
 
-// ─── Shared scheduling / management helpers ─────────────────────────────────
-// These free functions implement the actual logic, called by both
-// `WorkflowClient` and `WorkflowSchedulingClient`.
+// Shared scheduling and management helpers used by both workflow clients.
 
 async fn schedule_workflow_impl(
     client: &mut TaskHubGrpcClient,
