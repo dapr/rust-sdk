@@ -20,6 +20,16 @@ use tonic::{Status, Streaming};
 pub mod config;
 pub mod interceptor;
 
+/// Returns `true` when a [`tonic::Status`] indicates the called gRPC method
+/// does not exist on the server.  Dapr ≤ 1.17 routes unknown methods through
+/// its service‑invocation proxy, which fails with code `Unknown` and a
+/// characteristic message instead of the standard `Unimplemented` code.
+fn is_method_not_found(status: &tonic::Status) -> bool {
+    matches!(status.code(), tonic::Code::Unimplemented)
+        || (matches!(status.code(), tonic::Code::Unknown)
+            && status.message().contains("failed to proxy request"))
+}
+
 pub use config::{
     API_TOKEN_METADATA_KEY, APP_API_TOKEN_ENV, ClientOptions, DAPR_API_TOKEN_ENV,
     DAPR_CLIENT_TIMEOUT_SECONDS_ENV, DAPR_GRPC_ENDPOINT_ENV, DAPR_GRPC_PORT_ENV,
@@ -1037,18 +1047,42 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: ScheduleJobRequest,
             ) -> Result<ScheduleJobResponse, Error> {
-                Ok(self.schedule_job(request).await?.into_inner())
+                let fallback = request.clone();
+                match self.schedule_job(request).await {
+                    Ok(resp) => Ok(resp.into_inner()),
+                    Err(status) if is_method_not_found(&status) => {
+                        #[allow(deprecated)]
+                        Ok(self.schedule_job_alpha1(fallback).await?.into_inner())
+                    }
+                    Err(status) => Err(status.into()),
+                }
             }
 
             async fn get_job(&mut self, request: GetJobRequest) -> Result<GetJobResponse, Error> {
-                Ok(self.get_job(Request::new(request)).await?.into_inner())
+                let fallback = request.clone();
+                match self.get_job(Request::new(request)).await {
+                    Ok(resp) => Ok(resp.into_inner()),
+                    Err(status) if is_method_not_found(&status) => {
+                        #[allow(deprecated)]
+                        Ok(self.get_job_alpha1(Request::new(fallback)).await?.into_inner())
+                    }
+                    Err(status) => Err(status.into()),
+                }
             }
 
             async fn delete_job(
                 &mut self,
                 request: DeleteJobRequest,
             ) -> Result<DeleteJobResponse, Error> {
-                Ok(self.delete_job(Request::new(request)).await?.into_inner())
+                let fallback = request.clone();
+                match self.delete_job(Request::new(request)).await {
+                    Ok(resp) => Ok(resp.into_inner()),
+                    Err(status) if is_method_not_found(&status) => {
+                        #[allow(deprecated)]
+                        Ok(self.delete_job_alpha1(Request::new(fallback)).await?.into_inner())
+                    }
+                    Err(status) => Err(status.into()),
+                }
             }
 
             #[allow(deprecated)]
@@ -1056,8 +1090,7 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: ScheduleJobRequest,
             ) -> Result<ScheduleJobResponse, Error> {
-                // Route alpha1 through the stable endpoint.
-                Ok(self.schedule_job(request).await?.into_inner())
+                Ok(self.schedule_job_alpha1(request).await?.into_inner())
             }
 
             #[allow(deprecated)]
@@ -1065,8 +1098,7 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: GetJobRequest,
             ) -> Result<GetJobResponse, Error> {
-                // Route alpha1 through the stable endpoint.
-                Ok(self.get_job(Request::new(request)).await?.into_inner())
+                Ok(self.get_job_alpha1(Request::new(request)).await?.into_inner())
             }
 
             #[allow(deprecated)]
@@ -1074,8 +1106,7 @@ macro_rules! impl_dapr_interface_for {
                 &mut self,
                 request: DeleteJobRequest,
             ) -> Result<DeleteJobResponse, Error> {
-                // Route alpha1 through the stable endpoint.
-                Ok(self.delete_job(Request::new(request)).await?.into_inner())
+                Ok(self.delete_job_alpha1(Request::new(request)).await?.into_inner())
             }
 
             async fn delete_jobs_by_prefix(
