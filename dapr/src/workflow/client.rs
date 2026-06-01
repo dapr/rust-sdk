@@ -1,16 +1,18 @@
 use std::time::Duration;
 
-use dapr_durabletask::api::{DurableTaskError, OrchestrationState, Result};
+use dapr_durabletask::api::{DurableTaskError, OrchestrationState, PurgeInstanceFilter, Result};
 use dapr_durabletask::client::TaskHubGrpcClient;
 use dapr_durabletask::worker::{Registry, TaskHubGrpcWorker};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
+use tonic::transport::Channel;
 
 use super::options::{EventOptions, FetchOptions, ScheduleOptions};
 
 /// Client for scheduling and managing Dapr workflow instances.
 pub struct WorkflowClient {
     inner: TaskHubGrpcClient,
+    channel: Channel,
     worker: Option<TaskHubGrpcWorker>,
 }
 
@@ -30,9 +32,18 @@ impl WorkflowClient {
     /// * `address` - Address of the Dapr sidecar gRPC endpoint to connect to.
     pub async fn new_with_address(address: impl Into<String>) -> Result<Self> {
         let address = ensure_url_scheme(address.into());
-        let inner = TaskHubGrpcClient::new(&address).await?;
+        let channel = Channel::from_shared(address.clone())
+            .map_err(|e| DurableTaskError::InvalidAddress(e.to_string()))?
+            .connect()
+            .await
+            .map_err(|e| DurableTaskError::ConnectionFailed(e.to_string()))?;
+        let inner = TaskHubGrpcClient::from_channel(channel.clone());
         let worker = Some(TaskHubGrpcWorker::new(&address));
-        Ok(Self { inner, worker })
+        Ok(Self {
+            inner,
+            channel,
+            worker,
+        })
     }
 
     /// Get the worker registry for registering workflows and activities before starting the worker.
@@ -57,6 +68,20 @@ impl WorkflowClient {
         })
     }
 
+    /// Create a lightweight scheduling client that shares the underlying gRPC
+    /// connection. Useful for high-throughput scenarios where many tasks need
+    /// to schedule and manage workflows concurrently without opening new
+    /// connections.
+    ///
+    /// The returned client is [`Clone`] — each clone reuses the same HTTP/2
+    /// connection pool, so creating many clones is cheap.
+    pub fn scheduling_client(&self) -> WorkflowSchedulingClient {
+        WorkflowSchedulingClient {
+            inner: TaskHubGrpcClient::from_channel(self.channel.clone()),
+            channel: self.channel.clone(),
+        }
+    }
+
     /// Schedule a new workflow instance and return its instance ID.
     ///
     /// # Arguments
@@ -68,12 +93,7 @@ impl WorkflowClient {
         name: &str,
         options: ScheduleOptions,
     ) -> Result<String> {
-        let instance_id = options.instance_id.clone();
-        let start_time = options.start_time_utc();
-        let input = options.input_json()?;
-        self.inner
-            .schedule_new_orchestration(name, input, instance_id, start_time)
-            .await
+        schedule_workflow_impl(&mut self.inner, name, options).await
     }
 
     /// Suspend a running workflow instance.
@@ -87,10 +107,7 @@ impl WorkflowClient {
         instance_id: &str,
         reason: impl Into<String>,
     ) -> Result<()> {
-        let reason = reason.into();
-        self.inner
-            .suspend_orchestration(instance_id, Some(reason))
-            .await
+        suspend_workflow_impl(&mut self.inner, instance_id, reason).await
     }
 
     /// Resume a suspended workflow instance.
@@ -104,10 +121,7 @@ impl WorkflowClient {
         instance_id: &str,
         reason: impl Into<String>,
     ) -> Result<()> {
-        let reason = reason.into();
-        self.inner
-            .resume_orchestration(instance_id, Some(reason))
-            .await
+        resume_workflow_impl(&mut self.inner, instance_id, reason).await
     }
 
     /// Raise an event to a workflow instance.
@@ -123,9 +137,7 @@ impl WorkflowClient {
         event_name: &str,
         options: EventOptions,
     ) -> Result<()> {
-        self.inner
-            .raise_orchestration_event(instance_id, event_name, options.payload_json()?)
-            .await
+        raise_event_impl(&mut self.inner, instance_id, event_name, options).await
     }
 
     /// Fetch workflow metadata, optionally including inputs and outputs.
@@ -139,12 +151,7 @@ impl WorkflowClient {
         instance_id: &str,
         options: FetchOptions,
     ) -> Result<OrchestrationState> {
-        self.inner
-            .get_orchestration_state(instance_id, options.fetch_payloads)
-            .await?
-            .ok_or_else(|| DurableTaskError::InstanceNotFound {
-                instance_id: instance_id.to_string(),
-            })
+        fetch_workflow_metadata_impl(&mut self.inner, instance_id, options).await
     }
 
     /// Wait for a workflow to start.
@@ -156,8 +163,13 @@ impl WorkflowClient {
         &mut self,
         instance_id: &str,
     ) -> Result<OrchestrationState> {
-        self.wait_for_workflow_start_with_options(instance_id, FetchOptions::new(), None)
-            .await
+        wait_for_workflow_start_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            FetchOptions::new(),
+            None,
+        )
+        .await
     }
 
     /// Wait for a workflow to start with fetch and timeout options.
@@ -173,12 +185,8 @@ impl WorkflowClient {
         options: FetchOptions,
         timeout: Option<Duration>,
     ) -> Result<OrchestrationState> {
-        self.inner
-            .wait_for_orchestration_start(instance_id, options.fetch_payloads, timeout)
-            .await?
-            .ok_or_else(|| DurableTaskError::InstanceNotFound {
-                instance_id: instance_id.to_string(),
-            })
+        wait_for_workflow_start_with_options_impl(&mut self.inner, instance_id, options, timeout)
+            .await
     }
 
     /// Wait for a workflow to complete.
@@ -190,8 +198,13 @@ impl WorkflowClient {
         &mut self,
         instance_id: &str,
     ) -> Result<OrchestrationState> {
-        self.wait_for_workflow_completion_with_options(instance_id, FetchOptions::new(), None)
-            .await
+        wait_for_workflow_completion_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            FetchOptions::new(),
+            None,
+        )
+        .await
     }
 
     /// Wait for a workflow to complete with fetch and timeout options.
@@ -207,12 +220,13 @@ impl WorkflowClient {
         options: FetchOptions,
         timeout: Option<Duration>,
     ) -> Result<OrchestrationState> {
-        self.inner
-            .wait_for_orchestration_completion(instance_id, options.fetch_payloads, timeout)
-            .await?
-            .ok_or_else(|| DurableTaskError::InstanceNotFound {
-                instance_id: instance_id.to_string(),
-            })
+        wait_for_workflow_completion_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            options,
+            timeout,
+        )
+        .await
     }
 
     /// Purge workflow state and history for an instance.
@@ -221,8 +235,7 @@ impl WorkflowClient {
     ///
     /// * `instance_id` - ID of the workflow instance to purge.
     pub async fn purge_workflow_state(&mut self, instance_id: &str) -> Result<()> {
-        self.purge_workflow_state_recursive(instance_id, false)
-            .await
+        purge_workflow_state_recursive_impl(&mut self.inner, instance_id, false).await
     }
 
     /// Purge workflow state and history for an instance and optionally child workflows.
@@ -236,10 +249,23 @@ impl WorkflowClient {
         instance_id: &str,
         recursive: bool,
     ) -> Result<()> {
-        self.inner
-            .purge_orchestration(instance_id, recursive)
-            .await?;
-        Ok(())
+        purge_workflow_state_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Purge workflow instances matching the given filter criteria.
+    ///
+    /// Returns the number of deleted instances.
+    ///
+    /// # Arguments
+    ///
+    /// * `filter` - Filter criteria for selecting instances to purge.
+    /// * `recursive` - When `true`, also purge child workflow instances.
+    pub async fn purge_workflow_state_by_filter(
+        &mut self,
+        filter: PurgeInstanceFilter,
+        recursive: bool,
+    ) -> Result<i32> {
+        purge_workflow_state_by_filter_impl(&mut self.inner, filter, recursive).await
     }
 
     /// Terminate a workflow instance.
@@ -248,7 +274,7 @@ impl WorkflowClient {
     ///
     /// * `instance_id` - ID of the workflow instance to terminate.
     pub async fn terminate_workflow(&mut self, instance_id: &str) -> Result<()> {
-        self.terminate_workflow_recursive(instance_id, false).await
+        terminate_workflow_recursive_impl(&mut self.inner, instance_id, false).await
     }
 
     /// Terminate a workflow instance and optionally child workflows.
@@ -262,9 +288,169 @@ impl WorkflowClient {
         instance_id: &str,
         recursive: bool,
     ) -> Result<()> {
-        self.inner
-            .terminate_orchestration(instance_id, None, recursive)
+        terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+}
+
+/// Lightweight, cloneable client for scheduling and managing workflow instances.
+///
+/// Created via [`WorkflowClient::scheduling_client`]. Every clone shares the
+/// same underlying HTTP/2 connection pool, so creating many clones is cheap.
+/// Use this when you need to schedule or wait on workflows from multiple
+/// concurrent tasks without opening a new gRPC connection each time.
+pub struct WorkflowSchedulingClient {
+    inner: TaskHubGrpcClient,
+    channel: Channel,
+}
+
+impl Clone for WorkflowSchedulingClient {
+    fn clone(&self) -> Self {
+        Self {
+            inner: TaskHubGrpcClient::from_channel(self.channel.clone()),
+            channel: self.channel.clone(),
+        }
+    }
+}
+
+impl WorkflowSchedulingClient {
+    /// Schedule a new workflow instance and return its instance ID.
+    pub async fn schedule_workflow(
+        &mut self,
+        name: &str,
+        options: ScheduleOptions,
+    ) -> Result<String> {
+        schedule_workflow_impl(&mut self.inner, name, options).await
+    }
+
+    /// Suspend a running workflow instance.
+    pub async fn suspend_workflow(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        suspend_workflow_impl(&mut self.inner, instance_id, reason).await
+    }
+
+    /// Resume a suspended workflow instance.
+    pub async fn resume_workflow(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        resume_workflow_impl(&mut self.inner, instance_id, reason).await
+    }
+
+    /// Raise an event to a workflow instance.
+    pub async fn raise_event(
+        &mut self,
+        instance_id: &str,
+        event_name: &str,
+        options: EventOptions,
+    ) -> Result<()> {
+        raise_event_impl(&mut self.inner, instance_id, event_name, options).await
+    }
+
+    /// Fetch workflow metadata, optionally including inputs and outputs.
+    pub async fn fetch_workflow_metadata(
+        &mut self,
+        instance_id: &str,
+        options: FetchOptions,
+    ) -> Result<OrchestrationState> {
+        fetch_workflow_metadata_impl(&mut self.inner, instance_id, options).await
+    }
+
+    /// Wait for a workflow to start.
+    pub async fn wait_for_workflow_start(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<OrchestrationState> {
+        wait_for_workflow_start_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            FetchOptions::new(),
+            None,
+        )
+        .await
+    }
+
+    /// Wait for a workflow to start with fetch and timeout options.
+    pub async fn wait_for_workflow_start_with_options(
+        &mut self,
+        instance_id: &str,
+        options: FetchOptions,
+        timeout: Option<Duration>,
+    ) -> Result<OrchestrationState> {
+        wait_for_workflow_start_with_options_impl(&mut self.inner, instance_id, options, timeout)
             .await
+    }
+
+    /// Wait for a workflow to complete.
+    pub async fn wait_for_workflow_completion(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<OrchestrationState> {
+        wait_for_workflow_completion_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            FetchOptions::new(),
+            None,
+        )
+        .await
+    }
+
+    /// Wait for a workflow to complete with fetch and timeout options.
+    pub async fn wait_for_workflow_completion_with_options(
+        &mut self,
+        instance_id: &str,
+        options: FetchOptions,
+        timeout: Option<Duration>,
+    ) -> Result<OrchestrationState> {
+        wait_for_workflow_completion_with_options_impl(
+            &mut self.inner,
+            instance_id,
+            options,
+            timeout,
+        )
+        .await
+    }
+
+    /// Purge workflow state and history for an instance.
+    pub async fn purge_workflow_state(&mut self, instance_id: &str) -> Result<()> {
+        purge_workflow_state_recursive_impl(&mut self.inner, instance_id, false).await
+    }
+
+    /// Purge workflow state and history for an instance and optionally child workflows.
+    pub async fn purge_workflow_state_recursive(
+        &mut self,
+        instance_id: &str,
+        recursive: bool,
+    ) -> Result<()> {
+        purge_workflow_state_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Purge workflow instances matching the given filter criteria.
+    ///
+    /// Returns the number of deleted instances.
+    pub async fn purge_workflow_state_by_filter(
+        &mut self,
+        filter: PurgeInstanceFilter,
+        recursive: bool,
+    ) -> Result<i32> {
+        purge_workflow_state_by_filter_impl(&mut self.inner, filter, recursive).await
+    }
+
+    /// Terminate a workflow instance.
+    pub async fn terminate_workflow(&mut self, instance_id: &str) -> Result<()> {
+        terminate_workflow_recursive_impl(&mut self.inner, instance_id, false).await
+    }
+
+    /// Terminate a workflow instance and optionally child workflows.
+    pub async fn terminate_workflow_recursive(
+        &mut self,
+        instance_id: &str,
+        recursive: bool,
+    ) -> Result<()> {
+        terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
     }
 }
 
@@ -305,16 +491,128 @@ fn default_sidecar_address() -> String {
 
 /// Prepend `http://` to `address` when no URL scheme is present so that the
 /// underlying tonic channel can parse it.
-///
-/// `dapr-durabletask 0.0.1` exposes no token interceptor or per-request metadata
-/// hook, so `DAPR_API_TOKEN` cannot be forwarded from this layer yet. Once the
-/// upstream client gains an interceptor surface, wire token injection here.
 fn ensure_url_scheme(address: String) -> String {
     if address.contains("://") {
         address
     } else {
         format!("http://{address}")
     }
+}
+
+// Shared scheduling and management helpers used by both workflow clients.
+
+async fn schedule_workflow_impl(
+    client: &mut TaskHubGrpcClient,
+    name: &str,
+    options: ScheduleOptions,
+) -> Result<String> {
+    let instance_id = options.instance_id.clone();
+    let start_time = options.start_time_utc();
+    let input = options.input_json()?;
+    client
+        .schedule_new_orchestration(name, input, instance_id, start_time)
+        .await
+}
+
+async fn suspend_workflow_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    reason: impl Into<String>,
+) -> Result<()> {
+    let reason = reason.into();
+    client
+        .suspend_orchestration(instance_id, Some(reason))
+        .await
+}
+
+async fn resume_workflow_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    reason: impl Into<String>,
+) -> Result<()> {
+    let reason = reason.into();
+    client.resume_orchestration(instance_id, Some(reason)).await
+}
+
+async fn raise_event_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    event_name: &str,
+    options: EventOptions,
+) -> Result<()> {
+    client
+        .raise_orchestration_event(instance_id, event_name, options.payload_json()?)
+        .await
+}
+
+async fn fetch_workflow_metadata_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    options: FetchOptions,
+) -> Result<OrchestrationState> {
+    client
+        .get_orchestration_state(instance_id, options.fetch_payloads)
+        .await?
+        .ok_or_else(|| DurableTaskError::InstanceNotFound {
+            instance_id: instance_id.to_string(),
+        })
+}
+
+async fn wait_for_workflow_start_with_options_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    options: FetchOptions,
+    timeout: Option<Duration>,
+) -> Result<OrchestrationState> {
+    client
+        .wait_for_orchestration_start(instance_id, options.fetch_payloads, timeout)
+        .await?
+        .ok_or_else(|| DurableTaskError::InstanceNotFound {
+            instance_id: instance_id.to_string(),
+        })
+}
+
+async fn wait_for_workflow_completion_with_options_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    options: FetchOptions,
+    timeout: Option<Duration>,
+) -> Result<OrchestrationState> {
+    client
+        .wait_for_orchestration_completion(instance_id, options.fetch_payloads, timeout)
+        .await?
+        .ok_or_else(|| DurableTaskError::InstanceNotFound {
+            instance_id: instance_id.to_string(),
+        })
+}
+
+async fn purge_workflow_state_recursive_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    recursive: bool,
+) -> Result<()> {
+    client.purge_orchestration(instance_id, recursive).await?;
+    Ok(())
+}
+
+async fn purge_workflow_state_by_filter_impl(
+    client: &mut TaskHubGrpcClient,
+    filter: PurgeInstanceFilter,
+    recursive: bool,
+) -> Result<i32> {
+    client
+        .purge_orchestrations_by_filter(filter, recursive)
+        .await
+}
+
+async fn terminate_workflow_recursive_impl(
+    client: &mut TaskHubGrpcClient,
+    instance_id: &str,
+    recursive: bool,
+) -> Result<()> {
+    client
+        .terminate_orchestration(instance_id, None, recursive)
+        .await
 }
 
 #[cfg(test)]

@@ -75,7 +75,9 @@ pub trait WorkflowContextExt {
         T: DeserializeOwned + Send + 'static;
 
     /// Return the propagated history attached to the current workflow invocation, if any.
-    fn propagated_history(&self) -> Option<dapr_durabletask::api::PropagatedHistory>;
+    fn propagated_history(
+        &self,
+    ) -> Option<std::sync::Arc<dapr_durabletask::api::PropagatedHistory>>;
 
     /// Wait for an external event with an optional timeout and deserialize the payload.
     ///
@@ -100,7 +102,7 @@ pub trait WorkflowContextExt {
 
 impl WorkflowContextExt for WorkflowContext {
     fn get_input_typed<T: DeserializeOwned>(&self) -> dapr_durabletask::api::Result<T> {
-        self.get_input()
+        self.input()
     }
 
     fn call_activity_typed<T, I>(
@@ -159,7 +161,9 @@ impl WorkflowContextExt for WorkflowContext {
         async move { deserialize_task_output(task.await?) }
     }
 
-    fn propagated_history(&self) -> Option<dapr_durabletask::api::PropagatedHistory> {
+    fn propagated_history(
+        &self,
+    ) -> Option<std::sync::Arc<dapr_durabletask::api::PropagatedHistory>> {
         dapr_durabletask::task::OrchestrationContext::propagated_history(self)
     }
 

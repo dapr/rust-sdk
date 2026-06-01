@@ -3,7 +3,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use dapr::workflow::{
     ActivityContext, ActivityContextExt, FetchOptions, RegistryExt, Result, ScheduleOptions,
-    WorkflowClient, WorkflowContext, WorkflowContextExt,
+    WorkflowClient, WorkflowContext, WorkflowContextExt, WorkflowSchedulingClient,
 };
 use tokio::task::JoinSet;
 
@@ -12,6 +12,19 @@ const ACTIVITY_NAME: &str = "DoWork";
 const DEFAULT_WORKFLOW_COUNT: usize = 100;
 const MAX_WORKFLOW_COUNT: usize = 10_000;
 const WORKFLOW_TIMEOUT: Duration = Duration::from_secs(120);
+
+type WorkflowRunResult = std::result::Result<Duration, String>;
+
+struct WorkflowRunSummary {
+    latencies: Vec<Duration>,
+    failed: usize,
+}
+
+impl WorkflowRunSummary {
+    fn succeeded(&self) -> usize {
+        self.latencies.len()
+    }
+}
 
 async fn sustained_workflow(ctx: WorkflowContext) -> Result<Option<String>> {
     let input: i32 = ctx.get_input_typed()?;
@@ -52,12 +65,13 @@ async fn main() -> Result<()> {
     println!("Worker initialized");
 
     let worker = worker_client.start_worker().await?;
+    let scheduling_client = worker_client.scheduling_client();
     let started_at = Instant::now();
 
-    let latencies = run_workflows(workflow_count, concurrency).await;
+    let run_summary = run_workflows(scheduling_client, workflow_count, concurrency).await;
     let elapsed = started_at.elapsed();
 
-    print_summary(workflow_count, &latencies, elapsed);
+    print_summary(workflow_count, &run_summary, elapsed);
 
     worker.shutdown().await?;
 
@@ -80,7 +94,11 @@ fn read_concurrency(workflow_count: usize) -> usize {
         .clamp(1, workflow_count)
 }
 
-async fn run_workflows(workflow_count: usize, concurrency: usize) -> Vec<Duration> {
+async fn run_workflows(
+    scheduling_client: WorkflowSchedulingClient,
+    workflow_count: usize,
+    concurrency: usize,
+) -> WorkflowRunSummary {
     let mut tasks = JoinSet::new();
     let mut next_input = 0;
     let mut completed = 0;
@@ -89,7 +107,7 @@ async fn run_workflows(workflow_count: usize, concurrency: usize) -> Vec<Duratio
     let progress_interval = (workflow_count / 10).max(1);
 
     while next_input < workflow_count && tasks.len() < concurrency {
-        spawn_workflow(&mut tasks, next_input as i32);
+        spawn_workflow(&mut tasks, scheduling_client.clone(), next_input as i32);
         next_input += 1;
     }
 
@@ -115,20 +133,21 @@ async fn run_workflows(workflow_count: usize, concurrency: usize) -> Vec<Duratio
         }
 
         if next_input < workflow_count {
-            spawn_workflow(&mut tasks, next_input as i32);
+            spawn_workflow(&mut tasks, scheduling_client.clone(), next_input as i32);
             next_input += 1;
         }
     }
 
-    latencies
+    WorkflowRunSummary { latencies, failed }
 }
 
-fn spawn_workflow(tasks: &mut JoinSet<std::result::Result<Duration, String>>, input: i32) {
+fn spawn_workflow(
+    tasks: &mut JoinSet<WorkflowRunResult>,
+    mut client: WorkflowSchedulingClient,
+    input: i32,
+) {
     tasks.spawn(async move {
         let started_at = Instant::now();
-        let mut client = WorkflowClient::new()
-            .await
-            .map_err(|error| format!("client initialization failed: {error}"))?;
         let instance_id = client
             .schedule_workflow(WORKFLOW_NAME, ScheduleOptions::new().with_input(input))
             .await
@@ -155,9 +174,10 @@ fn spawn_workflow(tasks: &mut JoinSet<std::result::Result<Duration, String>>, in
     });
 }
 
-fn print_summary(workflow_count: usize, latencies: &[Duration], elapsed: Duration) {
-    let succeeded = latencies.len();
-    let failed = workflow_count - succeeded;
+fn print_summary(workflow_count: usize, summary: &WorkflowRunSummary, elapsed: Duration) {
+    let latencies = &summary.latencies;
+    let succeeded = summary.succeeded();
+    let failed = summary.failed;
     let throughput = succeeded as f64 / elapsed.as_secs_f64();
 
     let mut sorted_latencies = latencies.to_vec();
