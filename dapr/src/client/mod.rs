@@ -71,13 +71,7 @@ impl<T: DaprInterface> Client<T> {
         note = "Will be removed in 0.20.0. Use Client::new() or Client::from_options()."
     )]
     pub async fn connect_with_port(addr: String, port: String) -> Result<Self, Error> {
-        // assert that port is between 1 and 65535
-        let port: u16 = match port.parse::<u16>() {
-            Ok(p) => p,
-            Err(_) => {
-                panic!("Port must be a number between 1 and 65535");
-            }
-        };
+        let port: u16 = port.parse()?;
 
         let address = format!("{addr}:{port}");
 
@@ -1599,6 +1593,23 @@ impl From<ConversationMessageOfTool> for ConversationMessage {
     fn from(msg: ConversationMessageOfTool) -> Self {
         ConversationMessage {
             message_types: Some(conversation_message::MessageTypes::OfTool(msg)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    #[allow(deprecated)]
+    async fn connect_with_port_returns_parse_error_for_invalid_port() {
+        match Client::<TonicClient>::connect_with_port("http://127.0.0.1".into(), "abc".into())
+            .await
+        {
+            Err(Error::ParseIntError) => {}
+            Err(err) => panic!("expected ParseIntError, got {err:?}"),
+            Ok(_) => panic!("invalid port should return an error"),
         }
     }
 }
