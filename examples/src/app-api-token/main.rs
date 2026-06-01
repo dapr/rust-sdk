@@ -86,6 +86,13 @@ impl AppCallback for LoggingCallback {
     ) -> Result<Response<TopicEventBulkResponse>, Status> {
         Err(Status::unimplemented("on_bulk_topic_event"))
     }
+
+    async fn on_job_event(
+        &self,
+        _request: Request<JobEventRequest>,
+    ) -> Result<Response<JobEventResponse>, Status> {
+        Err(Status::unimplemented("on_job_event"))
+    }
 }
 
 #[tokio::main]

@@ -2,9 +2,9 @@ use tonic::{Request, Response, Status, transport::Server};
 
 use dapr::dapr::proto::common::v1::{InvokeRequest, InvokeResponse};
 use dapr::dapr::proto::runtime::v1::{
-    BindingEventRequest, BindingEventResponse, ListInputBindingsResponse,
-    ListTopicSubscriptionsResponse, TopicEventBulkRequest, TopicEventBulkResponse,
-    TopicEventRequest, TopicEventResponse,
+    BindingEventRequest, BindingEventResponse, JobEventRequest, JobEventResponse,
+    ListInputBindingsResponse, ListTopicSubscriptionsResponse, TopicEventBulkRequest,
+    TopicEventBulkResponse, TopicEventRequest, TopicEventResponse,
     app_callback_server::{AppCallback, AppCallbackServer},
 };
 
@@ -74,6 +74,13 @@ impl AppCallback for AppCallbackService {
         _request: Request<TopicEventBulkRequest>,
     ) -> Result<Response<TopicEventBulkResponse>, Status> {
         todo!("on_bulk_topic_event is not implemented yet")
+    }
+
+    async fn on_job_event(
+        &self,
+        _request: Request<JobEventRequest>,
+    ) -> Result<Response<JobEventResponse>, Status> {
+        Err(Status::unimplemented("on_job_event"))
     }
 }
 

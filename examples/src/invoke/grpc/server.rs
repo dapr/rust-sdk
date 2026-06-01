@@ -98,6 +98,13 @@ impl AppCallback for AppCallbackService {
         // TODO: implement bulk topic event handling logic here.
         Ok(Response::new(TopicEventBulkResponse::default()))
     }
+
+    async fn on_job_event(
+        &self,
+        _request: Request<JobEventRequest>,
+    ) -> Result<Response<JobEventResponse>, Status> {
+        Err(Status::unimplemented("on_job_event"))
+    }
 }
 
 #[tokio::main]

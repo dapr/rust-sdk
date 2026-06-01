@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use tonic::{Code, Request, Response, Status};
+use tonic::{Request, Response, Status};
 
 use crate::dapr::proto::runtime;
 use crate::dapr::proto::runtime::v1::app_callback_alpha_server::AppCallbackAlpha;
@@ -41,17 +41,25 @@ impl AppCallbackAlpha for AppCallbackServiceAlpha {
         request: Request<runtime::v1::JobEventRequest>,
     ) -> Result<Response<runtime::v1::JobEventResponse>, Status> {
         let request_inner = request.into_inner();
-        let job_name = request_inner
-            .method
-            .strip_prefix("job/")
-            .unwrap()
-            .to_string();
+        let job_name = if !request_inner.name.is_empty() {
+            request_inner.name.clone()
+        } else if let Some(stripped) = request_inner.method.strip_prefix("job/") {
+            stripped.to_string()
+        } else {
+            return Err(Status::invalid_argument(format!(
+                "cannot determine job name from request (method={:?})",
+                request_inner.method,
+            )));
+        };
 
         if let Some(handler) = self.job_handlers.get(&job_name) {
             let handle_response = handler.handler(request_inner).await;
             handle_response.map(Response::new)
         } else {
-            Err(Status::new(Code::Internal, "Job Handler Not Found"))
+            Err(Status::not_found(format!(
+                "no handler registered for job {:?}",
+                job_name,
+            )))
         }
     }
 }
@@ -61,9 +69,13 @@ macro_rules! add_job_handler_alpha {
     ($app_callback_service:expr, $handler_name:ident, $handler_fn:expr) => {
         pub struct $handler_name {}
 
-        #[async_trait::async_trait]
-        impl JobHandlerMethod for $handler_name {
-            async fn handler(&self, request: JobEventRequest) -> Result<JobEventResponse, Status> {
+        #[$crate::reexport::async_trait]
+        impl $crate::appcallback::JobHandlerMethod for $handler_name {
+            async fn handler(
+                &self,
+                request: $crate::appcallback::JobEventRequest,
+            ) -> ::std::result::Result<$crate::appcallback::JobEventResponse, ::tonic::Status>
+            {
                 $handler_fn(request).await
             }
         }
@@ -80,10 +92,5 @@ macro_rules! add_job_handler_alpha {
     };
 }
 
-#[tonic::async_trait]
-pub trait JobHandlerMethod: Send + Sync + 'static {
-    async fn handler(
-        &self,
-        request: runtime::v1::JobEventRequest,
-    ) -> Result<runtime::v1::JobEventResponse, Status>;
-}
+// Re-export for backward compatibility
+pub use crate::appcallback::JobHandlerMethod;

@@ -1307,6 +1307,33 @@ pub mod app_callback_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        /// Sends job back to the app's endpoint at trigger time.
+        pub async fn on_job_event(
+            &mut self,
+            request: impl tonic::IntoRequest<super::JobEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::JobEventResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.AppCallback/OnJobEvent",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.AppCallback", "OnJobEvent"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -1371,6 +1398,14 @@ pub mod app_callback_server {
             request: tonic::Request<super::TopicEventBulkRequest>,
         ) -> std::result::Result<
             tonic::Response<super::TopicEventBulkResponse>,
+            tonic::Status,
+        >;
+        /// Sends job back to the app's endpoint at trigger time.
+        async fn on_job_event(
+            &self,
+            request: tonic::Request<super::JobEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::JobEventResponse>,
             tonic::Status,
         >;
     }
@@ -1707,6 +1742,51 @@ pub mod app_callback_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = OnBulkTopicEventSvc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.AppCallback/OnJobEvent" => {
+                    #[allow(non_camel_case_types)]
+                    struct OnJobEventSvc<T: AppCallback>(pub Arc<T>);
+                    impl<
+                        T: AppCallback,
+                    > tonic::server::UnaryService<super::JobEventRequest>
+                    for OnJobEventSvc<T> {
+                        type Response = super::JobEventResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::JobEventRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as AppCallback>::on_job_event(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = OnJobEventSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -2195,7 +2275,8 @@ pub mod app_callback_alpha_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        /// Sends job back to the app's endpoint at trigger time.
+        /// Deprecated: Sends job back to the app's endpoint at trigger time.
+        #[deprecated]
         pub async fn on_job_event_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::JobEventRequest>,
@@ -2248,7 +2329,7 @@ pub mod app_callback_alpha_server {
             tonic::Response<super::TopicEventBulkResponse>,
             tonic::Status,
         >;
-        /// Sends job back to the app's endpoint at trigger time.
+        /// Deprecated: Sends job back to the app's endpoint at trigger time.
         async fn on_job_event_alpha1(
             &self,
             request: tonic::Request<super::JobEventRequest>,
@@ -3911,12 +3992,33 @@ pub struct DeleteJobsByPrefixRequestAlpha1 {
 /// Empty
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteJobsByPrefixResponseAlpha1 {}
+/// DeleteJobsByPrefixRequest is the stable message to delete jobs by name prefix.
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct DeleteJobsByPrefixRequest {
+    /// name_prefix is the prefix of the job names to delete. If not provided, all
+    /// jobs associated with this app ID will be deleted.
+    #[prost(string, optional, tag = "1")]
+    pub name_prefix: ::core::option::Option<::prost::alloc::string::String>,
+}
+/// Empty
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct DeleteJobsByPrefixResponse {}
 /// Empty
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListJobsRequestAlpha1 {}
 /// ListJobsResponse is the message response containing the list of jobs.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListJobsResponseAlpha1 {
+    /// The list of jobs.
+    #[prost(message, repeated, tag = "1")]
+    pub jobs: ::prost::alloc::vec::Vec<Job>,
+}
+/// Empty
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct ListJobsRequest {}
+/// ListJobsResponse is the stable message response containing the list of jobs.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListJobsResponse {
     /// The list of jobs.
     #[prost(message, repeated, tag = "1")]
     pub jobs: ::prost::alloc::vec::Vec<Job>,
@@ -5575,7 +5677,8 @@ pub mod dapr_client {
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "Shutdown"));
             self.inner.unary(req, path, codec).await
         }
-        /// Create and schedule a job
+        /// Deprecated: Create and schedule a job
+        #[deprecated]
         pub async fn schedule_job_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ScheduleJobRequest>,
@@ -5602,7 +5705,33 @@ pub mod dapr_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        /// Gets a scheduled job
+        /// Create and schedule a job
+        pub async fn schedule_job(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ScheduleJobRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ScheduleJobResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/ScheduleJob",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ScheduleJob"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Deprecated: Gets a scheduled job
+        #[deprecated]
         pub async fn get_job_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::GetJobRequest>,
@@ -5624,7 +5753,30 @@ pub mod dapr_client {
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetJobAlpha1"));
             self.inner.unary(req, path, codec).await
         }
-        /// Delete a job
+        /// Gets a scheduled job
+        pub async fn get_job(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetJobRequest>,
+        ) -> std::result::Result<tonic::Response<super::GetJobResponse>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/GetJob",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetJob"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Deprecated: Delete a job
+        #[deprecated]
         pub async fn delete_job_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteJobRequest>,
@@ -5651,6 +5803,33 @@ pub mod dapr_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        /// Delete a job
+        pub async fn delete_job(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteJobRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteJobResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteJob",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteJob"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Deprecated: Delete jobs by name prefix
+        #[deprecated]
         pub async fn delete_jobs_by_prefix_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::DeleteJobsByPrefixRequestAlpha1>,
@@ -5680,6 +5859,35 @@ pub mod dapr_client {
                 );
             self.inner.unary(req, path, codec).await
         }
+        /// Delete jobs by name prefix
+        pub async fn delete_jobs_by_prefix(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteJobsByPrefixRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteJobsByPrefixResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteJobsByPrefix",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteJobsByPrefix"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Deprecated: List all jobs
+        #[deprecated]
         pub async fn list_jobs_alpha1(
             &mut self,
             request: impl tonic::IntoRequest<super::ListJobsRequestAlpha1>,
@@ -5702,6 +5910,31 @@ pub mod dapr_client {
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ListJobsAlpha1"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// List all jobs
+        pub async fn list_jobs(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListJobsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListJobsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/ListJobs",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ListJobs"));
             self.inner.unary(req, path, codec).await
         }
         /// Converse with a LLM service
@@ -6210,7 +6443,7 @@ pub mod dapr_server {
             &self,
             request: tonic::Request<super::ShutdownRequest>,
         ) -> std::result::Result<tonic::Response<()>, tonic::Status>;
-        /// Create and schedule a job
+        /// Deprecated: Create and schedule a job
         async fn schedule_job_alpha1(
             &self,
             request: tonic::Request<super::ScheduleJobRequest>,
@@ -6218,12 +6451,25 @@ pub mod dapr_server {
             tonic::Response<super::ScheduleJobResponse>,
             tonic::Status,
         >;
-        /// Gets a scheduled job
+        /// Create and schedule a job
+        async fn schedule_job(
+            &self,
+            request: tonic::Request<super::ScheduleJobRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ScheduleJobResponse>,
+            tonic::Status,
+        >;
+        /// Deprecated: Gets a scheduled job
         async fn get_job_alpha1(
             &self,
             request: tonic::Request<super::GetJobRequest>,
         ) -> std::result::Result<tonic::Response<super::GetJobResponse>, tonic::Status>;
-        /// Delete a job
+        /// Gets a scheduled job
+        async fn get_job(
+            &self,
+            request: tonic::Request<super::GetJobRequest>,
+        ) -> std::result::Result<tonic::Response<super::GetJobResponse>, tonic::Status>;
+        /// Deprecated: Delete a job
         async fn delete_job_alpha1(
             &self,
             request: tonic::Request<super::DeleteJobRequest>,
@@ -6231,6 +6477,15 @@ pub mod dapr_server {
             tonic::Response<super::DeleteJobResponse>,
             tonic::Status,
         >;
+        /// Delete a job
+        async fn delete_job(
+            &self,
+            request: tonic::Request<super::DeleteJobRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteJobResponse>,
+            tonic::Status,
+        >;
+        /// Deprecated: Delete jobs by name prefix
         async fn delete_jobs_by_prefix_alpha1(
             &self,
             request: tonic::Request<super::DeleteJobsByPrefixRequestAlpha1>,
@@ -6238,11 +6493,28 @@ pub mod dapr_server {
             tonic::Response<super::DeleteJobsByPrefixResponseAlpha1>,
             tonic::Status,
         >;
+        /// Delete jobs by name prefix
+        async fn delete_jobs_by_prefix(
+            &self,
+            request: tonic::Request<super::DeleteJobsByPrefixRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteJobsByPrefixResponse>,
+            tonic::Status,
+        >;
+        /// Deprecated: List all jobs
         async fn list_jobs_alpha1(
             &self,
             request: tonic::Request<super::ListJobsRequestAlpha1>,
         ) -> std::result::Result<
             tonic::Response<super::ListJobsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// List all jobs
+        async fn list_jobs(
+            &self,
+            request: tonic::Request<super::ListJobsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListJobsResponse>,
             tonic::Status,
         >;
         /// Converse with a LLM service
@@ -9042,6 +9314,49 @@ pub mod dapr_server {
                     };
                     Box::pin(fut)
                 }
+                "/dapr.proto.runtime.v1.Dapr/ScheduleJob" => {
+                    #[allow(non_camel_case_types)]
+                    struct ScheduleJobSvc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::ScheduleJobRequest>
+                    for ScheduleJobSvc<T> {
+                        type Response = super::ScheduleJobResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ScheduleJobRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::schedule_job(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ScheduleJobSvc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/dapr.proto.runtime.v1.Dapr/GetJobAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct GetJobAlpha1Svc<T: Dapr>(pub Arc<T>);
@@ -9085,6 +9400,49 @@ pub mod dapr_server {
                     };
                     Box::pin(fut)
                 }
+                "/dapr.proto.runtime.v1.Dapr/GetJob" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetJobSvc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::GetJobRequest>
+                    for GetJobSvc<T> {
+                        type Response = super::GetJobResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetJobRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::get_job(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetJobSvc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/dapr.proto.runtime.v1.Dapr/DeleteJobAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteJobAlpha1Svc<T: Dapr>(pub Arc<T>);
@@ -9113,6 +9471,49 @@ pub mod dapr_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = DeleteJobAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/DeleteJob" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteJobSvc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::DeleteJobRequest>
+                    for DeleteJobSvc<T> {
+                        type Response = super::DeleteJobResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteJobRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_job(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteJobSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -9176,6 +9577,51 @@ pub mod dapr_server {
                     };
                     Box::pin(fut)
                 }
+                "/dapr.proto.runtime.v1.Dapr/DeleteJobsByPrefix" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteJobsByPrefixSvc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::DeleteJobsByPrefixRequest>
+                    for DeleteJobsByPrefixSvc<T> {
+                        type Response = super::DeleteJobsByPrefixResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteJobsByPrefixRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_jobs_by_prefix(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteJobsByPrefixSvc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/dapr.proto.runtime.v1.Dapr/ListJobsAlpha1" => {
                     #[allow(non_camel_case_types)]
                     struct ListJobsAlpha1Svc<T: Dapr>(pub Arc<T>);
@@ -9206,6 +9652,49 @@ pub mod dapr_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = ListJobsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/ListJobs" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListJobsSvc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::ListJobsRequest>
+                    for ListJobsSvc<T> {
+                        type Response = super::ListJobsResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListJobsRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::list_jobs(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ListJobsSvc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
