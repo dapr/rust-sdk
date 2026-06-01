@@ -44,7 +44,7 @@ resiliency.
 
 ## Prerequisites
 
-Ensure you have Rust version 1.85 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
+Ensure you have Rust version 1.88 or higher installed. If not, install Rust [here](https://www.rust-lang.org/tools/install).
 
 These crates no longer require protoc unless to recompile the protobuf files.
 
