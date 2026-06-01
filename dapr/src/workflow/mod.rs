@@ -62,7 +62,7 @@ pub mod client;
 pub mod context;
 pub mod options;
 
-pub use client::{WorkerHandle, WorkflowClient};
+pub use client::{WorkerHandle, WorkflowClient, WorkflowSchedulingClient};
 pub use context::{
     ActivityContext, ActivityContextExt, RegistryExt, WorkflowContext, WorkflowContextExt,
 };
@@ -73,7 +73,9 @@ pub use options::{
 pub use dapr_durabletask::api::{
     DurableTaskError as WorkflowError, FailureDetails, HistoryPropagationScope,
     OrchestrationState as WorkflowMetadata, OrchestrationStatus as RuntimeStatus,
-    PropagatedHistory, Result, RetryPolicy,
+    PropagatedHistory, PurgeInstanceFilter, Result, RetryPolicy,
 };
-pub use dapr_durabletask::task::{CompletableTask, OrchestrationContext, when_all};
+pub use dapr_durabletask::task::{
+    CompletableTask, OrchestrationContext, TaskResult, when_all, when_any,
+};
 pub use dapr_durabletask::worker::Registry;

@@ -101,7 +101,7 @@ async fn process_payment(ctx: WorkflowContext) -> dapr::workflow::Result<Option<
             "  [ProcessPayment] Starting payment: ****{}, {:.2} {}",
             req.card_last4, req.amount, req.currency
         );
-        print_workflow_history("ProcessPayment", ctx.propagated_history().as_ref());
+        print_workflow_history("ProcessPayment", ctx.propagated_history().as_deref());
         println!("  [ProcessPayment] Step 1: CallActivity(ValidateCard) — no propagation");
     }
 

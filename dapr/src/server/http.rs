@@ -6,7 +6,7 @@ use axum::{
     routing::{delete, get, put},
 };
 use futures::{Future, FutureExt};
-use std::{pin::Pin, sync::Arc};
+use std::{pin::Pin, sync::Arc, time::Duration};
 use tokio::net::TcpListener;
 
 use super::super::client::{AppApiTokenLayer, TonicClient};
@@ -119,12 +119,15 @@ impl DaprHttpServer {
     ///
     /// In contrast to the other functions that create a DaprHttpServer, this function does
     /// not panic, but instead returns a Result.
+    ///
+    /// The connection uses exponential-backoff retries in case the sidecar
+    /// is not yet ready.
     pub async fn try_new_with_dapr_port(
         dapr_port: u16,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let dapr_addr = format!("http://127.0.0.1:{dapr_port}");
 
-        let cc = TonicClient::connect(dapr_addr).await?;
+        let cc = Self::connect_with_retry(&dapr_addr).await?;
         let rt = ActorRuntime::new(cc);
 
         Ok(DaprHttpServer {
@@ -133,6 +136,35 @@ impl DaprHttpServer {
             // Reads `APP_API_TOKEN` from the environment. Permissive if unset.
             app_api_token_layer: AppApiTokenLayer::from_env(),
         })
+    }
+
+    /// Connect to the Dapr sidecar with exponential-backoff retries.
+    async fn connect_with_retry(
+        dapr_addr: &str,
+    ) -> Result<TonicClient, Box<dyn std::error::Error>> {
+        const MAX_RETRIES: u32 = 10;
+        let mut retry_delay = Duration::from_millis(500);
+        let max_delay = Duration::from_secs(2);
+
+        let mut last_err = None;
+        for attempt in 1..=MAX_RETRIES {
+            match TonicClient::connect(dapr_addr.to_string()).await {
+                Ok(client) => return Ok(client),
+                Err(e) => {
+                    if attempt < MAX_RETRIES {
+                        log::warn!(
+                            "Dapr sidecar not ready (attempt {attempt}/{MAX_RETRIES}), \
+                             retrying in {retry_delay:?}…"
+                        );
+                        tokio::time::sleep(retry_delay).await;
+                        retry_delay = std::cmp::min(retry_delay * 2, max_delay);
+                    }
+                    last_err = Some(e);
+                }
+            }
+        }
+
+        Err(last_err.unwrap().into())
     }
 
     /// Override the [`AppApiTokenLayer`] used to authenticate inbound
