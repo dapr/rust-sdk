@@ -12,7 +12,7 @@ rust-version.workspace = true
 
 [features]
 default = ["workflow"]
-workflow = ["dep:dapr-durabletask", "dep:tokio-util"]
+workflow = ["dep:dapr-durabletask"]
 
 [dependencies]
 async-trait = { workspace = true }
@@ -29,7 +29,7 @@ serde_json = { workspace = true }
 tonic = { workspace = true }
 tonic-prost = { workspace = true }
 tokio = { workspace = true, features = ["rt", "sync", "time"] }
-tokio-util = { workspace = true, features = ["io"], optional = true }
+tokio-util = { workspace = true, features = ["io"] }
 tower = { version = "0.5", features = ["util"] }
 
 
