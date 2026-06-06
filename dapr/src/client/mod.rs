@@ -192,10 +192,7 @@ impl<T: DaprInterface> Client<T> {
     where
         S: Into<String>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
+        let mdata = metadata.unwrap_or_default();
         self.0
             .publish_event(PublishEventRequest {
                 pubsub_name: pubsub_name.into(),
@@ -263,10 +260,7 @@ impl<T: DaprInterface> Client<T> {
     where
         S: Into<String>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
+        let mdata = metadata.unwrap_or_default();
 
         self.0
             .get_state(GetStateRequest {
@@ -347,10 +341,7 @@ impl<T: DaprInterface> Client<T> {
     where
         S: Into<String>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
+        let mdata = metadata.unwrap_or_default();
 
         self.0
             .query_state_alpha1(QueryStateRequest {
@@ -395,10 +386,7 @@ impl<T: DaprInterface> Client<T> {
     where
         S: Into<String>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
+        let mdata = metadata.unwrap_or_default();
 
         self.0
             .delete_state(DeleteStateRequest {
@@ -456,10 +444,7 @@ impl<T: DaprInterface> Client<T> {
         TInput: Serialize,
         TOutput: for<'a> Deserialize<'a>,
     {
-        let mut mdata = HashMap::<String, String>::new();
-        if let Some(m) = metadata {
-            mdata = m;
-        }
+        let mut mdata = metadata.unwrap_or_default();
 
         mdata.insert("Content-Type".to_string(), "application/json".to_string());
 
