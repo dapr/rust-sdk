@@ -1,8 +1,8 @@
 use std::future::Future;
 use std::time::Duration;
 
+use dapr_durabletask::api::ExternalEventResult;
 use dapr_durabletask::worker::{ActivityResult, OrchestratorResult, Registry};
-use futures::future::Either;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
@@ -81,11 +81,9 @@ pub trait WorkflowContextExt {
 
     /// Wait for an external event with an optional timeout and deserialize the payload.
     ///
-    /// When `timeout` is `Some`, a durable timer is scheduled alongside the
-    /// external event wait. The underlying timer cannot be cancelled in
-    /// `dapr-durabletask 0.0.1`, so the timer event is persisted into history
-    /// even when the external event arrives first; this is the same behaviour
-    /// as other Durable Task SDKs.
+    /// When `timeout` is `Some`, `dapr-durabletask` schedules a durable timer
+    /// tagged with the event name and removes the pending event waiter if the
+    /// timer fires first.
     ///
     /// # Arguments
     ///
@@ -175,21 +173,20 @@ impl WorkflowContextExt for WorkflowContext {
     where
         T: DeserializeOwned + Send + 'static,
     {
-        let event = self.wait_for_external_event(name);
-        let timer = timeout.map(|duration| self.create_timer(duration));
+        let ctx = self.clone();
+        let name = name.to_string();
         async move {
-            let output = match timer {
-                Some(timer) => {
-                    futures::pin_mut!(event);
-                    futures::pin_mut!(timer);
-                    match futures::future::select(event, timer).await {
-                        Either::Left((event_result, _)) => event_result?,
-                        Either::Right(_) => {
-                            return Err(dapr_durabletask::api::DurableTaskError::Timeout);
-                        }
+            let output = match timeout {
+                Some(duration) => match ctx
+                    .wait_for_external_event_with_timeout(&name, duration)
+                    .await?
+                {
+                    ExternalEventResult::Received(output) => output,
+                    ExternalEventResult::TimedOut => {
+                        return Err(dapr_durabletask::api::DurableTaskError::Timeout);
                     }
-                }
-                None => event.await?,
+                },
+                None => ctx.wait_for_external_event(&name).await?,
             };
             deserialize_task_output(output)
         }
