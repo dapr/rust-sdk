@@ -135,10 +135,10 @@ dapr run -f .
 
 1. Run the subscriber with dapr
 ```bash
-dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 cargo run -- --example pubsub-subscriber
+dapr run --app-id rust-subscriber --app-protocol grpc --app-port 50051 -- cargo run --example pubsub-subscriber
 ```
 
 2. Run the publisher with dapr
 ```bash
-dapr run --app-id rust-publisher --app-protocol grpc cargo run -- --example pubsub-publisher
+dapr run --app-id rust-publisher --app-protocol grpc -- cargo run --example pubsub-publisher
 ```
