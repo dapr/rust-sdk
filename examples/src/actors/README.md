@@ -135,11 +135,11 @@ dapr run -f .
 
 1. Start actor host (expose Http server receiver on port 50051):
 ```bash
-dapr run --app-id actor-host --app-protocol http --app-port 50051 cargo run -- --example actors-server
+dapr run --app-id actor-host --app-protocol http --app-port 50051 -- cargo run --example actors-server
 ```
 
 2. Start actor client:
 ```bash
-dapr run --app-id actor-client --dapr-grpc-port 3502 cargo run -- --example actors-client
+dapr run --app-id actor-client --dapr-grpc-port 3502 -- cargo run --example actors-client
 
 ```
