@@ -34,7 +34,7 @@ timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3500 --resources-path ./resources/ cargo run -- --example secrets-bulk
+dapr run --app-id=rustapp --dapr-grpc-port 3500 --resources-path ./resources/ -- cargo run --example secrets-bulk
 ```
 
 <!-- END_STEP -->
