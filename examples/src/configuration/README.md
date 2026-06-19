@@ -53,7 +53,7 @@ timeout_seconds: 30
 -->
 
 ```bash
-dapr run --app-id=rustapp --resources-path ../components --dapr-grpc-port 3500 -- cargo run --example configuration
+dapr run --app-id=rustapp --resources-path ../components --dapr-grpc-port 50001 -- cargo run --example configuration
 ```
 
 <!-- END_STEP -->
