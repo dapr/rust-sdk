@@ -9,7 +9,10 @@ use futures::{Future, FutureExt};
 use std::{pin::Pin, sync::Arc, time::Duration};
 use tokio::net::TcpListener;
 
-use super::super::client::{AppApiTokenLayer, TonicClient};
+use super::super::client::{
+    AppApiTokenLayer, TonicClient,
+    config::{DAPR_GRPC_PORT_ENV, DEFAULT_DAPR_GRPC_PORT},
+};
 use super::actor::runtime::{ActorRuntime, ActorTypeRegistration};
 
 /// The Dapr HTTP server.
@@ -92,11 +95,7 @@ impl DaprHttpServer {
     /// For a non-panicking version that allows you to handle any errors yourself, see:
     /// [DaprHttpServer::try_new_with_dapr_port]
     pub async fn new() -> Self {
-        let dapr_port: u16 = std::env::var("DAPR_GRPC_PORT")
-            .unwrap_or("3501".into())
-            .parse()
-            .unwrap();
-        Self::with_dapr_port(dapr_port).await
+        Self::with_dapr_port(dapr_grpc_port_from_env()).await
     }
 
     /// Creates a new instance of the Dapr HTTP server that connects to the Dapr sidecar on the
@@ -384,4 +383,53 @@ struct ReminderPayload {
 #[derive(serde::Deserialize, Debug)]
 struct TimerPayload {
     data: Option<String>,
+}
+
+fn dapr_grpc_port_from_env() -> u16 {
+    std::env::var(DAPR_GRPC_PORT_ENV)
+        .unwrap_or_else(|_| DEFAULT_DAPR_GRPC_PORT.to_string())
+        .parse()
+        .unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Mutex;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    fn with_env<F: FnOnce()>(key: &str, value: Option<&str>, f: F) {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let prev = std::env::var(key).ok();
+        match value {
+            Some(value) => unsafe { std::env::set_var(key, value) },
+            None => unsafe { std::env::remove_var(key) },
+        }
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+
+        match prev {
+            Some(value) => unsafe { std::env::set_var(key, value) },
+            None => unsafe { std::env::remove_var(key) },
+        }
+
+        if let Err(err) = result {
+            std::panic::resume_unwind(err);
+        }
+    }
+
+    #[test]
+    fn http_server_defaults_to_standard_dapr_grpc_port() {
+        with_env(DAPR_GRPC_PORT_ENV, None, || {
+            assert_eq!(dapr_grpc_port_from_env(), DEFAULT_DAPR_GRPC_PORT);
+        });
+    }
+
+    #[test]
+    fn http_server_honors_dapr_grpc_port_override() {
+        with_env(DAPR_GRPC_PORT_ENV, Some("12345"), || {
+            assert_eq!(dapr_grpc_port_from_env(), 12345);
+        });
+    }
 }
