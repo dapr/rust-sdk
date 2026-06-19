@@ -45,7 +45,21 @@ timeout_seconds: 5
 -->
 ```bash
 curl -X POST -H "Content-Type: application/json" http://localhost:3500/v1.0/state/statestore -d @./statestore/dataset.json
-``````
+```
+<!-- END_STEP -->
+
+Stop the temporary sidecar after loading the test data so the query examples
+below can use Dapr's standard gRPC port.
+
+<!-- STEP
+name: Stop populate sidecar
+background: false
+sleep: 2
+timeout_seconds: 10
+-->
+```bash
+dapr stop --app-id demo
+```
 <!-- END_STEP -->
 
 1. To run the example we need to first build the examples using the following command:
@@ -92,7 +106,7 @@ sleep: 15
 timeout_seconds: 30
 -->
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ -- cargo run --example query-state-1
+dapr run --app-id=rustapp --dapr-grpc-port 50001 --resources-path statestore/ -- cargo run --example query-state-1
 ```
 <!-- END_STEP -->
 
@@ -126,7 +140,7 @@ sleep: 15
 timeout_seconds: 30
 -->
 ```bash
-dapr run --app-id=rustapp --dapr-grpc-port 3501 --resources-path statestore/ -- cargo run --example query-state-2
+dapr run --app-id=rustapp --dapr-grpc-port 50001 --resources-path statestore/ -- cargo run --example query-state-2
 ```
 <!-- END_STEP -->
 
