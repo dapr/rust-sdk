@@ -1,0 +1,93 @@
+name: Backport merged pull request
+
+on:
+  pull_request_target:
+    types: [closed, labeled]
+    branches:
+      - main
+
+jobs:
+  determine-target-branches:
+    name: Determine target branches
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: >-
+      github.event.pull_request.merged == true
+      && (
+        (
+          github.event.action == 'closed'
+          && contains(toJson(github.event.pull_request.labels.*.name), '"backport-')
+        )
+        || (
+          github.event.action == 'labeled'
+          && startsWith(github.event.label.name, 'backport-')
+        )
+      )
+    outputs:
+      branches: ${{ steps.backport-labels.outputs.branches }}
+    steps:
+      - name: Map backport labels to release branches
+        id: backport-labels
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          LABEL_NAME: ${{ github.event.label.name }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          import sys
+
+          if os.environ["EVENT_ACTION"] == "labeled":
+              labels = [os.environ["LABEL_NAME"]]
+          else:
+              labels = json.loads(os.environ["LABELS_JSON"])
+
+          branches = []
+          seen = set()
+          for label in labels:
+              if not label.startswith("backport-"):
+                  continue
+              if not re.fullmatch(r"backport-[0-9A-Za-z][0-9A-Za-z._-]*", label):
+                  print(f"::error::Invalid backport label {label!r}. Expected a label like 'backport-0.19'.")
+                  sys.exit(1)
+
+              branch = "release-" + label.removeprefix("backport-")
+              if branch not in seen:
+                  seen.add(branch)
+                  branches.append(branch)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"branches={' '.join(sorted(branches))}", file=output)
+          PY
+
+  backport:
+    name: Backport pull request
+    runs-on: ubuntu-latest
+    needs: determine-target-branches
+    if: needs.determine-target-branches.outputs.branches != ''
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check out trusted base branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          ref: refs/heads/${{ github.event.pull_request.base.ref }}
+      - name: Create backport PRs
+        uses: korthout/backport-action@66065406958f46e82238fd59546f5a99e69e22aa # v4.5.2
+        with:
+          cherry_picking: auto
+          experimental: '{"conflict_resolution":"draft_commit_conflicts"}'
+          label_pattern: ''
+          merge_commits: skip
+          pull_title: "[Backport ${target_branch}] ${pull_title}"
+          pull_description: |-
+            # Description
+            Backport of #${pull_number} to `${target_branch}`.
+          target_branches: ${{ needs.determine-target-branches.outputs.branches }}
