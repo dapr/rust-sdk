@@ -83,6 +83,7 @@ jobs:
         uses: korthout/backport-action@66065406958f46e82238fd59546f5a99e69e22aa # v4.5.2
         with:
           cherry_picking: auto
+          experimental: '{"conflict_resolution":"draft_commit_conflicts"}'
           label_pattern: ''
           merge_commits: skip
           pull_title: "[Backport ${target_branch}] ${pull_title}"
