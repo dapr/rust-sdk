@@ -1,9 +1,8 @@
 use std::iter;
 
-use proc_macro2::TokenTree;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Ident, LitStr, parse_macro_input};
+use syn::{FnArg, Ident, ItemFn, LitStr, Pat, Type, parse_macro_input};
 
 use proc_macro::TokenStream;
 
@@ -135,20 +134,11 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
     let new_input = proc_macro2::TokenStream::from(input);
-    let mut iter = new_input.clone().into_iter().filter(|i| match i {
-        TokenTree::Group(_) => true,
-        TokenTree::Ident(_) => true,
-        TokenTree::Punct(_) => false,
-        TokenTree::Literal(_) => false,
-    });
-
-    let mut current = iter.next().unwrap();
-
-    while current.to_string() != "fn" {
-        current = iter.next().unwrap()
-    }
-
-    let name = iter.next().unwrap();
+    let topic_fn = match syn::parse2::<ItemFn>(new_input.clone()) {
+        Ok(item) => item,
+        Err(err) => return err.to_compile_error().into(),
+    };
+    let name = topic_fn.sig.ident.clone();
 
     let struct_name = name
         .to_string()
@@ -162,34 +152,20 @@ pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
         .collect::<Vec<String>>()
         .join("");
 
-    let name_ident = Ident::new(name.to_string().as_str(), name.span());
-
     let struct_name_ident = Ident::new(struct_name.as_str(), name.span());
 
-    let vars: Vec<String> = iter
-        .next()
-        .unwrap()
-        .to_string()
-        .replace(['(', ')'], "")
-        .split(':')
-        .enumerate()
-        .filter(|&(i, _)| i % 2 != 0)
-        .map(|(_, i)| i.trim().to_string())
-        .collect();
+    let input_ty = match topic_input_type(&topic_fn) {
+        Ok(ty) => ty,
+        Err(err) => return err.to_compile_error().into(),
+    };
 
-    assert_eq!(vars.len(), 1, "Expected to only have one input variable");
-
-    let parse_statement = match vars[0] == *"String" {
-        true => {
-            quote! {
-                let message = message.to_string();
-            }
+    let parse_statement = if is_string_type(&input_ty) {
+        quote! {
+            let message = message.to_string();
         }
-        false => {
-            let type_ident = format_ident!("{}", vars[0]);
-            quote! {
-               let message: #type_ident = dapr::serde_json::from_str(message.to_string().as_str()).unwrap();
-            }
+    } else {
+        quote! {
+           let message: #input_ty = dapr::serde_json::from_str(message.to_string().as_str()).unwrap();
         }
     };
 
@@ -218,7 +194,7 @@ pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
 
                 #parse_statement
 
-                #name_ident(message).await;
+                #name(message).await;
 
                 Ok(tonic::Response::new(TopicEventResponse::default()))
             }
@@ -235,4 +211,71 @@ pub fn topic(args: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     tokens.into()
+}
+
+fn topic_input_type(item: &ItemFn) -> syn::Result<Type> {
+    if item.sig.inputs.len() != 1 {
+        return Err(syn::Error::new_spanned(
+            &item.sig.inputs,
+            "Expected to only have one input variable",
+        ));
+    }
+
+    match item.sig.inputs.first() {
+        Some(FnArg::Typed(pat_ty)) => {
+            if !matches!(&*pat_ty.pat, Pat::Ident(_)) {
+                return Err(syn::Error::new_spanned(
+                    &pat_ty.pat,
+                    "Expected a named input variable",
+                ));
+            }
+            Ok((*pat_ty.ty).clone())
+        }
+        Some(FnArg::Receiver(receiver)) => Err(syn::Error::new_spanned(
+            receiver,
+            "Expected a named input variable",
+        )),
+        None => unreachable!("topic_input_type validates the number of inputs"),
+    }
+}
+
+fn is_string_type(ty: &Type) -> bool {
+    match ty {
+        Type::Path(type_path) if type_path.qself.is_none() => type_path
+            .path
+            .segments
+            .last()
+            .is_some_and(|segment| segment.ident == "String"),
+        _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_string_type, topic_input_type};
+    use syn::parse_quote;
+
+    #[test]
+    fn topic_input_type_supports_fully_qualified_paths() {
+        let item: syn::ItemFn = parse_quote! {
+            async fn handle_a_event(order: serde_json::Value) {}
+        };
+
+        let ty = topic_input_type(&item).expect("type should parse");
+        let rendered = quote::quote!(#ty).to_string();
+
+        assert_eq!(rendered, "serde_json :: Value");
+        assert!(!is_string_type(&ty));
+    }
+
+    #[test]
+    fn topic_input_type_detects_string_by_last_path_segment() {
+        let item: syn::ItemFn = parse_quote! {
+            async fn handle_a_event(order: std::string::String) {}
+        };
+
+        let ty = topic_input_type(&item).expect("type should parse");
+
+        assert!(is_string_type(&ty));
+    }
 }
