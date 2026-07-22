@@ -235,7 +235,7 @@ impl ActorRuntime {
         let mut router = router;
         let mut types = self.registered_actors_types.write().await;
 
-        for (_, registration) in types.iter_mut() {
+        for registration in types.values_mut() {
             for (_, reg_func) in registration.method_registrations.drain() {
                 router = reg_func(router, runtime.clone());
             }
