@@ -19,6 +19,11 @@ use tonic::{Status, Streaming};
 
 pub mod config;
 pub mod interceptor;
+mod search;
+mod vector;
+
+pub use search::*;
+pub use vector::*;
 
 /// Returns `true` when a [`tonic::Status`] indicates the called gRPC method
 /// does not exist on the server.  Dapr ≤ 1.17 routes unknown methods through
@@ -826,6 +831,72 @@ pub trait DaprInterface: Sized + Send {
         &mut self,
         request: ConversationRequestAlpha2,
     ) -> Result<ConversationResponseAlpha2, Error>;
+
+    async fn create_index_alpha1(&mut self, request: CreateIndexRequestAlpha1)
+    -> Result<(), Error>;
+    async fn get_index_alpha1(
+        &mut self,
+        request: GetIndexRequestAlpha1,
+    ) -> Result<GetIndexResponseAlpha1, Error>;
+    async fn list_indexes_alpha1(
+        &mut self,
+        request: ListIndexesRequestAlpha1,
+    ) -> Result<ListIndexesResponseAlpha1, Error>;
+    async fn delete_index_alpha1(&mut self, request: DeleteIndexRequestAlpha1)
+    -> Result<(), Error>;
+    async fn index_documents_alpha1(
+        &mut self,
+        request: IndexDocumentsRequestAlpha1,
+    ) -> Result<IndexDocumentsResponseAlpha1, Error>;
+    async fn get_documents_alpha1(
+        &mut self,
+        request: GetDocumentsRequestAlpha1,
+    ) -> Result<GetDocumentsResponseAlpha1, Error>;
+    async fn delete_documents_alpha1(
+        &mut self,
+        request: DeleteDocumentsRequestAlpha1,
+    ) -> Result<DeleteDocumentsResponseAlpha1, Error>;
+    async fn search_alpha1(
+        &mut self,
+        request: SearchRequestAlpha1,
+    ) -> Result<SearchResponseAlpha1, Error>;
+
+    async fn create_collection_alpha1(
+        &mut self,
+        request: CreateCollectionRequestAlpha1,
+    ) -> Result<(), Error>;
+    async fn get_collection_alpha1(
+        &mut self,
+        request: GetCollectionRequestAlpha1,
+    ) -> Result<GetCollectionResponseAlpha1, Error>;
+    async fn list_collections_alpha1(
+        &mut self,
+        request: ListCollectionsRequestAlpha1,
+    ) -> Result<ListCollectionsResponseAlpha1, Error>;
+    async fn delete_collection_alpha1(
+        &mut self,
+        request: DeleteCollectionRequestAlpha1,
+    ) -> Result<(), Error>;
+    async fn upsert_vectors_alpha1(
+        &mut self,
+        request: UpsertVectorsRequestAlpha1,
+    ) -> Result<UpsertVectorsResponseAlpha1, Error>;
+    async fn delete_vectors_alpha1(
+        &mut self,
+        request: DeleteVectorsRequestAlpha1,
+    ) -> Result<DeleteVectorsResponseAlpha1, Error>;
+    async fn get_vectors_alpha1(
+        &mut self,
+        request: GetVectorsRequestAlpha1,
+    ) -> Result<GetVectorsResponseAlpha1, Error>;
+    async fn query_vectors_alpha1(
+        &mut self,
+        request: QueryVectorsRequestAlpha1,
+    ) -> Result<QueryVectorsResponseAlpha1, Error>;
+    async fn batch_query_vectors_alpha1(
+        &mut self,
+        request: BatchQueryVectorsRequestAlpha1,
+    ) -> Result<BatchQueryVectorsResponseAlpha1, Error>;
 }
 
 // Implement `DaprInterface` for both the plain and intercepted tonic clients.
@@ -1136,6 +1207,168 @@ macro_rules! impl_dapr_interface_for {
             ) -> Result<ConversationResponseAlpha2, Error> {
                 Ok(self
                     .converse_alpha2(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn create_index_alpha1(
+                &mut self,
+                request: CreateIndexRequestAlpha1,
+            ) -> Result<(), Error> {
+                self.create_index_alpha1(Request::new(request)).await?;
+                Ok(())
+            }
+
+            async fn get_index_alpha1(
+                &mut self,
+                request: GetIndexRequestAlpha1,
+            ) -> Result<GetIndexResponseAlpha1, Error> {
+                Ok(self
+                    .get_index_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn list_indexes_alpha1(
+                &mut self,
+                request: ListIndexesRequestAlpha1,
+            ) -> Result<ListIndexesResponseAlpha1, Error> {
+                Ok(self
+                    .list_indexes_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_index_alpha1(
+                &mut self,
+                request: DeleteIndexRequestAlpha1,
+            ) -> Result<(), Error> {
+                self.delete_index_alpha1(Request::new(request)).await?;
+                Ok(())
+            }
+
+            async fn index_documents_alpha1(
+                &mut self,
+                request: IndexDocumentsRequestAlpha1,
+            ) -> Result<IndexDocumentsResponseAlpha1, Error> {
+                Ok(self
+                    .index_documents_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn get_documents_alpha1(
+                &mut self,
+                request: GetDocumentsRequestAlpha1,
+            ) -> Result<GetDocumentsResponseAlpha1, Error> {
+                Ok(self
+                    .get_documents_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_documents_alpha1(
+                &mut self,
+                request: DeleteDocumentsRequestAlpha1,
+            ) -> Result<DeleteDocumentsResponseAlpha1, Error> {
+                Ok(self
+                    .delete_documents_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn search_alpha1(
+                &mut self,
+                request: SearchRequestAlpha1,
+            ) -> Result<SearchResponseAlpha1, Error> {
+                Ok(self
+                    .search_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn create_collection_alpha1(
+                &mut self,
+                request: CreateCollectionRequestAlpha1,
+            ) -> Result<(), Error> {
+                self.create_collection_alpha1(Request::new(request)).await?;
+                Ok(())
+            }
+
+            async fn get_collection_alpha1(
+                &mut self,
+                request: GetCollectionRequestAlpha1,
+            ) -> Result<GetCollectionResponseAlpha1, Error> {
+                Ok(self
+                    .get_collection_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn list_collections_alpha1(
+                &mut self,
+                request: ListCollectionsRequestAlpha1,
+            ) -> Result<ListCollectionsResponseAlpha1, Error> {
+                Ok(self
+                    .list_collections_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_collection_alpha1(
+                &mut self,
+                request: DeleteCollectionRequestAlpha1,
+            ) -> Result<(), Error> {
+                self.delete_collection_alpha1(Request::new(request)).await?;
+                Ok(())
+            }
+
+            async fn upsert_vectors_alpha1(
+                &mut self,
+                request: UpsertVectorsRequestAlpha1,
+            ) -> Result<UpsertVectorsResponseAlpha1, Error> {
+                Ok(self
+                    .upsert_vectors_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn delete_vectors_alpha1(
+                &mut self,
+                request: DeleteVectorsRequestAlpha1,
+            ) -> Result<DeleteVectorsResponseAlpha1, Error> {
+                Ok(self
+                    .delete_vectors_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn get_vectors_alpha1(
+                &mut self,
+                request: GetVectorsRequestAlpha1,
+            ) -> Result<GetVectorsResponseAlpha1, Error> {
+                Ok(self
+                    .get_vectors_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn query_vectors_alpha1(
+                &mut self,
+                request: QueryVectorsRequestAlpha1,
+            ) -> Result<QueryVectorsResponseAlpha1, Error> {
+                Ok(self
+                    .query_vectors_alpha1(Request::new(request))
+                    .await?
+                    .into_inner())
+            }
+
+            async fn batch_query_vectors_alpha1(
+                &mut self,
+                request: BatchQueryVectorsRequestAlpha1,
+            ) -> Result<BatchQueryVectorsResponseAlpha1, Error> {
+                Ok(self
+                    .batch_query_vectors_alpha1(Request::new(request))
                     .await?
                     .into_inner())
             }
