@@ -32,6 +32,12 @@ pub mod dapr {
         }
     }
 }
+/// Module importing the `google.rpc` types referenced by the Dapr runtime protos.
+pub mod google {
+    pub mod rpc {
+        include!("dapr/google.rpc.rs");
+    }
+}
 /// Module defining the error implementations.
 pub mod error;
 /// Module containing the 'Server' implementation.

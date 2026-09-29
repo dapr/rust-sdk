@@ -4023,6 +4023,732 @@ pub struct ListJobsResponse {
     #[prost(message, repeated, tag = "1")]
     pub jobs: ::prost::alloc::vec::Vec<Job>,
 }
+/// SearchDocument is a single index-ready document.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SearchDocument {
+    /// Caller-supplied document identifier. Required for writes and unique
+    /// within an index.
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    /// UTF-8 encoded JSON object. Field-level operations (search_fields,
+    /// return_fields, highlight_fields, sort, filter) address top-level and
+    /// dotted nested keys of this object. A document whose content is not a
+    /// JSON object is reported in failed_items with INVALID_ARGUMENT and never
+    /// sent to the provider.
+    #[prost(bytes = "vec", tag = "2")]
+    pub content: ::prost::alloc::vec::Vec<u8>,
+    /// Opaque caller metadata stored with the document and returned unchanged.
+    /// It is not indexed, not filterable and not addressable by field-level
+    /// operations.
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SearchHit {
+    #[prost(message, optional, tag = "1")]
+    pub document: ::core::option::Option<SearchDocument>,
+    /// Unnormalized provider-specific relevance score. Higher values indicate a
+    /// more relevant match.
+    #[prost(double, tag = "2")]
+    pub score: f64,
+    /// Highlighted fragments keyed by field name.
+    #[prost(map = "string, string", tag = "3")]
+    pub highlights: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SortClause {
+    #[prost(string, tag = "1")]
+    pub field: ::prost::alloc::string::String,
+    #[prost(enumeration = "SortOrder", tag = "2")]
+    pub order: i32,
+}
+/// IndexingOptionsAlpha1 is shared by every write: document indexing and
+/// deletion, vector upsert and deletion.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct IndexingOptionsAlpha1 {
+    #[prost(enumeration = "IndexingMode", tag = "1")]
+    pub mode: i32,
+    /// Required positive limit for waiting on provider completion. Valid only with
+    /// INDEXING_MODE_WAIT_FOR_COMPLETION and must be shorter than the remaining
+    /// RPC context deadline when one is set.
+    #[prost(message, optional, tag = "2")]
+    pub wait_timeout: ::core::option::Option<::prost_types::Duration>,
+    /// Required with INDEXING_MODE_WAIT_FOR_COMPLETION.
+    #[prost(enumeration = "IndexingWaitTimeoutAction", tag = "3")]
+    pub on_wait_timeout: i32,
+}
+/// FailedItem is shared by document indexing and vector upserts.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct FailedItem {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    /// error.code uses a canonical google.rpc.Code and must not be OK.
+    /// Provider-specific codes may be included in google.rpc.ErrorInfo details.
+    #[prost(message, optional, tag = "2")]
+    pub error: ::core::option::Option<super::super::super::super::google::rpc::Status>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateIndexRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    /// Component-specific index settings.
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetIndexRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetIndexResponseAlpha1 {
+    #[prost(string, tag = "1")]
+    pub index: ::prost::alloc::string::String,
+    /// Approximate document count. Providers that cannot supply this value
+    /// efficiently may return 0.
+    #[prost(uint64, tag = "2")]
+    pub document_count: u64,
+    /// Component-specific index properties.
+    #[prost(map = "string, string", tag = "3")]
+    pub properties: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListIndexesRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "2")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct ListIndexesResponseAlpha1 {
+    #[prost(string, repeated, tag = "1")]
+    pub indexes: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeleteIndexRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct IndexDocumentsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub documents: ::prost::alloc::vec::Vec<SearchDocument>,
+    #[prost(map = "string, string", tag = "4")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(message, optional, tag = "5")]
+    pub options: ::core::option::Option<IndexingOptionsAlpha1>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct IndexDocumentsResponseAlpha1 {
+    /// Item-specific failures known at the acknowledgement boundary.
+    #[prost(message, repeated, tag = "1")]
+    pub failed_items: ::prost::alloc::vec::Vec<FailedItem>,
+    /// Always set to QUEUED or COMPLETED on a successful RPC.
+    #[prost(enumeration = "IndexAck", tag = "2")]
+    pub ack: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetDocumentsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(bool, tag = "4")]
+    pub include_content: bool,
+    #[prost(map = "string, string", tag = "5")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetDocumentsResponseAlpha1 {
+    /// Found documents in request order. IDs that do not exist are omitted.
+    #[prost(message, repeated, tag = "1")]
+    pub documents: ::prost::alloc::vec::Vec<SearchDocument>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeleteDocumentsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(map = "string, string", tag = "4")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(message, optional, tag = "5")]
+    pub options: ::core::option::Option<IndexingOptionsAlpha1>,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct DeleteDocumentsResponseAlpha1 {
+    /// Always set to QUEUED or COMPLETED on a successful RPC.
+    #[prost(enumeration = "IndexAck", tag = "1")]
+    pub ack: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SearchRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub index: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "5")]
+    pub filter: ::core::option::Option<::prost_types::Struct>,
+    /// Maximum number of hits to return in this page.
+    #[prost(uint32, tag = "6")]
+    pub top_k: u32,
+    /// Opaque token returned by the previous SearchResponseAlpha1. Empty for the
+    /// first page.
+    #[prost(string, tag = "7")]
+    pub continuation_token: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "8")]
+    pub return_fields: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(bool, tag = "9")]
+    pub include_content: bool,
+    #[prost(string, repeated, tag = "10")]
+    pub search_fields: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "11")]
+    pub sort: ::prost::alloc::vec::Vec<SortClause>,
+    #[prost(string, repeated, tag = "12")]
+    pub highlight_fields: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(map = "string, string", tag = "13")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(oneof = "search_request_alpha1::Query", tags = "3, 4")]
+    pub query: ::core::option::Option<search_request_alpha1::Query>,
+}
+/// Nested message and enum types in `SearchRequestAlpha1`.
+pub mod search_request_alpha1 {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Query {
+        #[prost(string, tag = "3")]
+        Text(::prost::alloc::string::String),
+        #[prost(message, tag = "4")]
+        Native(::prost_types::Struct),
+    }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SearchResponseAlpha1 {
+    #[prost(message, repeated, tag = "1")]
+    pub hits: ::prost::alloc::vec::Vec<SearchHit>,
+    /// Best-effort total. Omitted when the provider cannot supply one.
+    #[prost(uint64, optional, tag = "2")]
+    pub total_hits: ::core::option::Option<u64>,
+    /// Opaque token for the next page. Empty when there are no more results.
+    #[prost(string, tag = "3")]
+    pub continuation_token: ::prost::alloc::string::String,
+    /// Describes the accuracy of total_hits. UNSPECIFIED when total_hits is
+    /// omitted.
+    #[prost(enumeration = "TotalHitsRelation", tag = "4")]
+    pub total_hits_relation: i32,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum SortOrder {
+    Unspecified = 0,
+    Asc = 1,
+    Desc = 2,
+}
+impl SortOrder {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "SORT_ORDER_UNSPECIFIED",
+            Self::Asc => "SORT_ORDER_ASC",
+            Self::Desc => "SORT_ORDER_DESC",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "SORT_ORDER_UNSPECIFIED" => Some(Self::Unspecified),
+            "SORT_ORDER_ASC" => Some(Self::Asc),
+            "SORT_ORDER_DESC" => Some(Self::Desc),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum IndexAck {
+    /// Never returned by a successful indexing write call.
+    Unspecified = 0,
+    /// The provider accepted the request for asynchronous processing. This does
+    /// not indicate that any document has been indexed successfully.
+    Queued = 1,
+    /// The provider completed the write. failed_items contains every
+    /// item-specific failure for this request.
+    Completed = 2,
+}
+impl IndexAck {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "INDEX_ACK_UNSPECIFIED",
+            Self::Queued => "INDEX_ACK_QUEUED",
+            Self::Completed => "INDEX_ACK_COMPLETED",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "INDEX_ACK_UNSPECIFIED" => Some(Self::Unspecified),
+            "INDEX_ACK_QUEUED" => Some(Self::Queued),
+            "INDEX_ACK_COMPLETED" => Some(Self::Completed),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum IndexingMode {
+    /// Behaves exactly as INDEXING_MODE_RETURN_ON_ACCEPTANCE. Callers that need
+    /// a final result must select INDEXING_MODE_WAIT_FOR_COMPLETION explicitly,
+    /// because waiting requires an explicit timeout policy.
+    Unspecified = 0,
+    /// Wait for a final provider result.
+    WaitForCompletion = 1,
+    /// Return after the provider durably accepts the write for background
+    /// processing. No eventual result is exposed by this API.
+    ReturnOnAcceptance = 2,
+}
+impl IndexingMode {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "INDEXING_MODE_UNSPECIFIED",
+            Self::WaitForCompletion => "INDEXING_MODE_WAIT_FOR_COMPLETION",
+            Self::ReturnOnAcceptance => "INDEXING_MODE_RETURN_ON_ACCEPTANCE",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "INDEXING_MODE_UNSPECIFIED" => Some(Self::Unspecified),
+            "INDEXING_MODE_WAIT_FOR_COMPLETION" => Some(Self::WaitForCompletion),
+            "INDEXING_MODE_RETURN_ON_ACCEPTANCE" => Some(Self::ReturnOnAcceptance),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum IndexingWaitTimeoutAction {
+    Unspecified = 0,
+    /// Return INDEX_ACK_QUEUED and allow a durably queued provider task to
+    /// continue. Invalid when the provider has no queued acknowledgement.
+    ContinueAsync = 1,
+    /// Return DEADLINE_EXCEEDED. This does not guarantee cancellation of
+    /// provider-side work.
+    FailRequest = 2,
+}
+impl IndexingWaitTimeoutAction {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "INDEXING_WAIT_TIMEOUT_ACTION_UNSPECIFIED",
+            Self::ContinueAsync => "INDEXING_WAIT_TIMEOUT_ACTION_CONTINUE_ASYNC",
+            Self::FailRequest => "INDEXING_WAIT_TIMEOUT_ACTION_FAIL_REQUEST",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "INDEXING_WAIT_TIMEOUT_ACTION_UNSPECIFIED" => Some(Self::Unspecified),
+            "INDEXING_WAIT_TIMEOUT_ACTION_CONTINUE_ASYNC" => Some(Self::ContinueAsync),
+            "INDEXING_WAIT_TIMEOUT_ACTION_FAIL_REQUEST" => Some(Self::FailRequest),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum TotalHitsRelation {
+    Unspecified = 0,
+    Exact = 1,
+    LowerBound = 2,
+    Estimate = 3,
+}
+impl TotalHitsRelation {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "TOTAL_HITS_RELATION_UNSPECIFIED",
+            Self::Exact => "TOTAL_HITS_RELATION_EXACT",
+            Self::LowerBound => "TOTAL_HITS_RELATION_LOWER_BOUND",
+            Self::Estimate => "TOTAL_HITS_RELATION_ESTIMATE",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "TOTAL_HITS_RELATION_UNSPECIFIED" => Some(Self::Unspecified),
+            "TOTAL_HITS_RELATION_EXACT" => Some(Self::Exact),
+            "TOTAL_HITS_RELATION_LOWER_BOUND" => Some(Self::LowerBound),
+            "TOTAL_HITS_RELATION_ESTIMATE" => Some(Self::Estimate),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateCollectionRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    /// Component-specific collection settings, such as index parameters.
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    /// Required. Length of every dense vector stored in the collection.
+    #[prost(uint32, tag = "4")]
+    pub dimensions: u32,
+    /// Distance metric for the collection. UNSPECIFIED selects the component's
+    /// documented default. A metric the component cannot provide returns
+    /// INVALID_ARGUMENT.
+    #[prost(enumeration = "DistanceMetric", tag = "5")]
+    pub metric: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetCollectionRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetCollectionResponseAlpha1 {
+    #[prost(string, tag = "1")]
+    pub collection: ::prost::alloc::string::String,
+    /// Approximate number of records. Providers that cannot supply this value
+    /// efficiently may return 0.
+    #[prost(uint64, tag = "2")]
+    pub record_count: u64,
+    /// Component-specific collection properties.
+    #[prost(map = "string, string", tag = "3")]
+    pub properties: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(uint32, tag = "4")]
+    pub dimensions: u32,
+    /// Effective metric. Always a concrete value.
+    #[prost(enumeration = "DistanceMetric", tag = "5")]
+    pub metric: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListCollectionsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "2")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct ListCollectionsResponseAlpha1 {
+    #[prost(string, repeated, tag = "1")]
+    pub collections: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeleteCollectionRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(map = "string, string", tag = "3")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VectorRecord {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    /// Dense vector. Length must equal the collection's dimensions.
+    #[prost(float, repeated, tag = "2")]
+    pub values: ::prost::alloc::vec::Vec<f32>,
+    /// Opaque caller payload stored with the record and returned unchanged. Not
+    /// filterable.
+    #[prost(bytes = "vec", tag = "3")]
+    pub payload: ::prost::alloc::vec::Vec<u8>,
+    /// Structured, filterable attributes addressed by the filter DSL.
+    #[prost(message, optional, tag = "6")]
+    pub metadata: ::core::option::Option<::prost_types::Struct>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VectorMatch {
+    #[prost(message, optional, tag = "1")]
+    pub record: ::core::option::Option<VectorRecord>,
+    /// Unnormalized value of the effective metric. Higher is better for COSINE
+    /// and DOT_PRODUCT; lower is better for EUCLIDEAN.
+    #[prost(double, tag = "2")]
+    pub score: f64,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct UpsertVectorsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub records: ::prost::alloc::vec::Vec<VectorRecord>,
+    #[prost(map = "string, string", tag = "4")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(message, optional, tag = "5")]
+    pub options: ::core::option::Option<IndexingOptionsAlpha1>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct UpsertVectorsResponseAlpha1 {
+    /// Item-specific failures known at the acknowledgement boundary.
+    #[prost(message, repeated, tag = "1")]
+    pub failed_items: ::prost::alloc::vec::Vec<FailedItem>,
+    /// Always set to QUEUED or COMPLETED on a successful RPC.
+    #[prost(enumeration = "IndexAck", tag = "2")]
+    pub ack: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeleteVectorsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(map = "string, string", tag = "4")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(message, optional, tag = "5")]
+    pub options: ::core::option::Option<IndexingOptionsAlpha1>,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct DeleteVectorsResponseAlpha1 {
+    /// Always set to QUEUED or COMPLETED on a successful RPC.
+    #[prost(enumeration = "IndexAck", tag = "1")]
+    pub ack: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetVectorsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(bool, tag = "4")]
+    pub include_values: bool,
+    #[prost(map = "string, string", tag = "5")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GetVectorsResponseAlpha1 {
+    /// Found records in request order. IDs that do not exist are omitted.
+    #[prost(message, repeated, tag = "1")]
+    pub records: ::prost::alloc::vec::Vec<VectorRecord>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QueryVectorsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(uint32, tag = "5")]
+    pub top_k: u32,
+    #[prost(message, optional, tag = "6")]
+    pub filter: ::core::option::Option<::prost_types::Struct>,
+    #[prost(bool, tag = "7")]
+    pub include_values: bool,
+    #[prost(bool, tag = "8")]
+    pub include_payload: bool,
+    /// Determines how score and score_threshold are interpreted. UNSPECIFIED
+    /// uses the metric configured for the collection. A metric the component
+    /// cannot evaluate for this collection returns INVALID_ARGUMENT.
+    #[prost(enumeration = "DistanceMetric", tag = "9")]
+    pub metric: i32,
+    /// Inclusive cutoff. A match is retained when its score is greater than or
+    /// equal to this value for COSINE and DOT_PRODUCT, or less than or equal to
+    /// this value for EUCLIDEAN. The value is not normalized.
+    #[prost(double, optional, tag = "13")]
+    pub score_threshold: ::core::option::Option<f64>,
+    #[prost(map = "string, string", tag = "14")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(oneof = "query_vectors_request_alpha1::Query", tags = "3, 4")]
+    pub query: ::core::option::Option<query_vectors_request_alpha1::Query>,
+}
+/// Nested message and enum types in `QueryVectorsRequestAlpha1`.
+pub mod query_vectors_request_alpha1 {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Query {
+        /// Only values is read; the remaining VectorRecord fields are ignored.
+        #[prost(message, tag = "3")]
+        Vector(super::VectorRecord),
+        #[prost(string, tag = "4")]
+        ById(::prost::alloc::string::String),
+    }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QueryVectorsResponseAlpha1 {
+    #[prost(message, repeated, tag = "1")]
+    pub matches: ::prost::alloc::vec::Vec<VectorMatch>,
+    /// Effective metric used for scores. This is set to a concrete value even
+    /// when the request uses DISTANCE_METRIC_UNSPECIFIED.
+    #[prost(enumeration = "DistanceMetric", tag = "2")]
+    pub metric: i32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchQueryVectorsRequestAlpha1 {
+    #[prost(string, tag = "1")]
+    pub store_name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub collection: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub queries: ::prost::alloc::vec::Vec<QueryVectorsRequestAlpha1>,
+    #[prost(map = "string, string", tag = "4")]
+    pub metadata: ::std::collections::HashMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+}
+/// BatchQueryResultAlpha1 is the outcome of one query in a batch.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchQueryResultAlpha1 {
+    #[prost(oneof = "batch_query_result_alpha1::Result", tags = "1, 2")]
+    pub result: ::core::option::Option<batch_query_result_alpha1::Result>,
+}
+/// Nested message and enum types in `BatchQueryResultAlpha1`.
+pub mod batch_query_result_alpha1 {
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Result {
+        #[prost(message, tag = "1")]
+        Response(super::QueryVectorsResponseAlpha1),
+        /// error.code uses a canonical google.rpc.Code and must not be OK.
+        #[prost(message, tag = "2")]
+        Error(super::super::super::super::super::google::rpc::Status),
+    }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct BatchQueryVectorsResponseAlpha1 {
+    /// One result per request query, in request order.
+    #[prost(message, repeated, tag = "1")]
+    pub results: ::prost::alloc::vec::Vec<BatchQueryResultAlpha1>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum DistanceMetric {
+    /// On CreateCollection: the component's documented default metric. On
+    /// QueryVectors: the metric configured for the collection.
+    Unspecified = 0,
+    /// Cosine similarity. Higher scores indicate closer matches.
+    Cosine = 1,
+    /// Dot-product similarity. Higher scores indicate closer matches.
+    DotProduct = 2,
+    /// Euclidean distance. Lower scores indicate closer matches.
+    Euclidean = 3,
+}
+impl DistanceMetric {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "DISTANCE_METRIC_UNSPECIFIED",
+            Self::Cosine => "DISTANCE_METRIC_COSINE",
+            Self::DotProduct => "DISTANCE_METRIC_DOT_PRODUCT",
+            Self::Euclidean => "DISTANCE_METRIC_EUCLIDEAN",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "DISTANCE_METRIC_UNSPECIFIED" => Some(Self::Unspecified),
+            "DISTANCE_METRIC_COSINE" => Some(Self::Cosine),
+            "DISTANCE_METRIC_DOT_PRODUCT" => Some(Self::DotProduct),
+            "DISTANCE_METRIC_EUCLIDEAN" => Some(Self::Euclidean),
+            _ => None,
+        }
+    }
+}
 /// ShutdownRequest is the request for Shutdown.
 ///
 /// Empty
@@ -5987,6 +6713,465 @@ pub mod dapr_client {
                 .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ConverseAlpha2"));
             self.inner.unary(req, path, codec).await
         }
+        /// Create an index.
+        pub async fn create_index_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CreateIndexRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/CreateIndexAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "CreateIndexAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Get an index.
+        pub async fn get_index_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetIndexRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetIndexResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/GetIndexAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetIndexAlpha1"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// List indexes.
+        pub async fn list_indexes_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListIndexesRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListIndexesResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/ListIndexesAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "ListIndexesAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Delete an index.
+        pub async fn delete_index_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteIndexRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteIndexAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteIndexAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Index (keyed upsert) documents.
+        pub async fn index_documents_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::IndexDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::IndexDocumentsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/IndexDocumentsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "IndexDocumentsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Get documents by ID.
+        pub async fn get_documents_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetDocumentsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/GetDocumentsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetDocumentsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Delete documents by ID.
+        pub async fn delete_documents_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteDocumentsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteDocumentsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "dapr.proto.runtime.v1.Dapr",
+                        "DeleteDocumentsAlpha1",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Search an index.
+        pub async fn search_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SearchRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::SearchResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/SearchAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "SearchAlpha1"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Create a collection.
+        pub async fn create_collection_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CreateCollectionRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/CreateCollectionAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "dapr.proto.runtime.v1.Dapr",
+                        "CreateCollectionAlpha1",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Get a collection.
+        pub async fn get_collection_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetCollectionRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCollectionResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/GetCollectionAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetCollectionAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// List collections.
+        pub async fn list_collections_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListCollectionsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListCollectionsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/ListCollectionsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "dapr.proto.runtime.v1.Dapr",
+                        "ListCollectionsAlpha1",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Delete a collection.
+        pub async fn delete_collection_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteCollectionRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteCollectionAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "dapr.proto.runtime.v1.Dapr",
+                        "DeleteCollectionAlpha1",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Upsert (keyed) vectors.
+        pub async fn upsert_vectors_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UpsertVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpsertVectorsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/UpsertVectorsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "UpsertVectorsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Delete vectors by ID.
+        pub async fn delete_vectors_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteVectorsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/DeleteVectorsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "DeleteVectorsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Get vectors by ID.
+        pub async fn get_vectors_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetVectorsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/GetVectorsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "GetVectorsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Query vectors.
+        pub async fn query_vectors_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::QueryVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::QueryVectorsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/QueryVectorsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dapr.proto.runtime.v1.Dapr", "QueryVectorsAlpha1"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        /// Issue multiple queries against the same collection, each succeeding or
+        /// failing on its own.
+        pub async fn batch_query_vectors_alpha1(
+            &mut self,
+            request: impl tonic::IntoRequest<super::BatchQueryVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchQueryVectorsResponseAlpha1>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic_prost::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dapr.proto.runtime.v1.Dapr/BatchQueryVectorsAlpha1",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "dapr.proto.runtime.v1.Dapr",
+                        "BatchQueryVectorsAlpha1",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -6531,6 +7716,131 @@ pub mod dapr_server {
             request: tonic::Request<super::ConversationRequestAlpha2>,
         ) -> std::result::Result<
             tonic::Response<super::ConversationResponseAlpha2>,
+            tonic::Status,
+        >;
+        /// Create an index.
+        async fn create_index_alpha1(
+            &self,
+            request: tonic::Request<super::CreateIndexRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status>;
+        /// Get an index.
+        async fn get_index_alpha1(
+            &self,
+            request: tonic::Request<super::GetIndexRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetIndexResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// List indexes.
+        async fn list_indexes_alpha1(
+            &self,
+            request: tonic::Request<super::ListIndexesRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListIndexesResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Delete an index.
+        async fn delete_index_alpha1(
+            &self,
+            request: tonic::Request<super::DeleteIndexRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status>;
+        /// Index (keyed upsert) documents.
+        async fn index_documents_alpha1(
+            &self,
+            request: tonic::Request<super::IndexDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::IndexDocumentsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Get documents by ID.
+        async fn get_documents_alpha1(
+            &self,
+            request: tonic::Request<super::GetDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetDocumentsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Delete documents by ID.
+        async fn delete_documents_alpha1(
+            &self,
+            request: tonic::Request<super::DeleteDocumentsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteDocumentsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Search an index.
+        async fn search_alpha1(
+            &self,
+            request: tonic::Request<super::SearchRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::SearchResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Create a collection.
+        async fn create_collection_alpha1(
+            &self,
+            request: tonic::Request<super::CreateCollectionRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status>;
+        /// Get a collection.
+        async fn get_collection_alpha1(
+            &self,
+            request: tonic::Request<super::GetCollectionRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCollectionResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// List collections.
+        async fn list_collections_alpha1(
+            &self,
+            request: tonic::Request<super::ListCollectionsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListCollectionsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Delete a collection.
+        async fn delete_collection_alpha1(
+            &self,
+            request: tonic::Request<super::DeleteCollectionRequestAlpha1>,
+        ) -> std::result::Result<tonic::Response<()>, tonic::Status>;
+        /// Upsert (keyed) vectors.
+        async fn upsert_vectors_alpha1(
+            &self,
+            request: tonic::Request<super::UpsertVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpsertVectorsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Delete vectors by ID.
+        async fn delete_vectors_alpha1(
+            &self,
+            request: tonic::Request<super::DeleteVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteVectorsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Get vectors by ID.
+        async fn get_vectors_alpha1(
+            &self,
+            request: tonic::Request<super::GetVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetVectorsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Query vectors.
+        async fn query_vectors_alpha1(
+            &self,
+            request: tonic::Request<super::QueryVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::QueryVectorsResponseAlpha1>,
+            tonic::Status,
+        >;
+        /// Issue multiple queries against the same collection, each succeeding or
+        /// failing on its own.
+        async fn batch_query_vectors_alpha1(
+            &self,
+            request: tonic::Request<super::BatchQueryVectorsRequestAlpha1>,
+        ) -> std::result::Result<
+            tonic::Response<super::BatchQueryVectorsResponseAlpha1>,
             tonic::Status,
         >;
     }
@@ -9783,6 +11093,772 @@ pub mod dapr_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = ConverseAlpha2Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/CreateIndexAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct CreateIndexAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::CreateIndexRequestAlpha1>
+                    for CreateIndexAlpha1Svc<T> {
+                        type Response = ();
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CreateIndexRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::create_index_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = CreateIndexAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/GetIndexAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetIndexAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::GetIndexRequestAlpha1>
+                    for GetIndexAlpha1Svc<T> {
+                        type Response = super::GetIndexResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetIndexRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::get_index_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetIndexAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/ListIndexesAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListIndexesAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::ListIndexesRequestAlpha1>
+                    for ListIndexesAlpha1Svc<T> {
+                        type Response = super::ListIndexesResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListIndexesRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::list_indexes_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ListIndexesAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/DeleteIndexAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteIndexAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::DeleteIndexRequestAlpha1>
+                    for DeleteIndexAlpha1Svc<T> {
+                        type Response = ();
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteIndexRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_index_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteIndexAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/IndexDocumentsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct IndexDocumentsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::IndexDocumentsRequestAlpha1>
+                    for IndexDocumentsAlpha1Svc<T> {
+                        type Response = super::IndexDocumentsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::IndexDocumentsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::index_documents_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = IndexDocumentsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/GetDocumentsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetDocumentsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::GetDocumentsRequestAlpha1>
+                    for GetDocumentsAlpha1Svc<T> {
+                        type Response = super::GetDocumentsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetDocumentsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::get_documents_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetDocumentsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/DeleteDocumentsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteDocumentsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::DeleteDocumentsRequestAlpha1>
+                    for DeleteDocumentsAlpha1Svc<T> {
+                        type Response = super::DeleteDocumentsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteDocumentsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_documents_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteDocumentsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/SearchAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct SearchAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<T: Dapr> tonic::server::UnaryService<super::SearchRequestAlpha1>
+                    for SearchAlpha1Svc<T> {
+                        type Response = super::SearchResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SearchRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::search_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = SearchAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/CreateCollectionAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct CreateCollectionAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::CreateCollectionRequestAlpha1>
+                    for CreateCollectionAlpha1Svc<T> {
+                        type Response = ();
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CreateCollectionRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::create_collection_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = CreateCollectionAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/GetCollectionAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetCollectionAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::GetCollectionRequestAlpha1>
+                    for GetCollectionAlpha1Svc<T> {
+                        type Response = super::GetCollectionResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetCollectionRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::get_collection_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetCollectionAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/ListCollectionsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListCollectionsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::ListCollectionsRequestAlpha1>
+                    for ListCollectionsAlpha1Svc<T> {
+                        type Response = super::ListCollectionsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListCollectionsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::list_collections_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = ListCollectionsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/DeleteCollectionAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteCollectionAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::DeleteCollectionRequestAlpha1>
+                    for DeleteCollectionAlpha1Svc<T> {
+                        type Response = ();
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteCollectionRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_collection_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteCollectionAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/UpsertVectorsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct UpsertVectorsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::UpsertVectorsRequestAlpha1>
+                    for UpsertVectorsAlpha1Svc<T> {
+                        type Response = super::UpsertVectorsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::UpsertVectorsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::upsert_vectors_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = UpsertVectorsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/DeleteVectorsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteVectorsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::DeleteVectorsRequestAlpha1>
+                    for DeleteVectorsAlpha1Svc<T> {
+                        type Response = super::DeleteVectorsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteVectorsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::delete_vectors_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = DeleteVectorsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/GetVectorsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetVectorsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::GetVectorsRequestAlpha1>
+                    for GetVectorsAlpha1Svc<T> {
+                        type Response = super::GetVectorsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetVectorsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::get_vectors_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = GetVectorsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/QueryVectorsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct QueryVectorsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::QueryVectorsRequestAlpha1>
+                    for QueryVectorsAlpha1Svc<T> {
+                        type Response = super::QueryVectorsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::QueryVectorsRequestAlpha1>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::query_vectors_alpha1(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = QueryVectorsAlpha1Svc(inner);
+                        let codec = tonic_prost::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dapr.proto.runtime.v1.Dapr/BatchQueryVectorsAlpha1" => {
+                    #[allow(non_camel_case_types)]
+                    struct BatchQueryVectorsAlpha1Svc<T: Dapr>(pub Arc<T>);
+                    impl<
+                        T: Dapr,
+                    > tonic::server::UnaryService<super::BatchQueryVectorsRequestAlpha1>
+                    for BatchQueryVectorsAlpha1Svc<T> {
+                        type Response = super::BatchQueryVectorsResponseAlpha1;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::BatchQueryVectorsRequestAlpha1,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Dapr>::batch_query_vectors_alpha1(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = BatchQueryVectorsAlpha1Svc(inner);
                         let codec = tonic_prost::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
