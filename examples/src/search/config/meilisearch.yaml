@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: search
+spec:
+  type: search.meilisearch
+  version: v1
+  metadata:
+  - name: host
+    value: "http://localhost:7700"
+  - name: apiKey
+    value: "masterKey"
