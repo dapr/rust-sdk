@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use axum::{
     body::Body,
     extract::FromRequest,
@@ -16,7 +15,6 @@ pub enum JsonRejection {
     JsonError(String),
 }
 
-#[async_trait]
 impl<T, S> FromRequest<S> for DaprJson<T>
 where
     T: DeserializeOwned,

@@ -168,13 +168,13 @@ impl ActorTypeRegistration {
     pub fn register_method<T>(
         mut self,
         method_name: &str,
-        handler: impl Handler<T, ActorState> + Sync,
+        handler: impl Handler<T, ActorState>,
     ) -> Self
     where
         T: 'static,
     {
         let actor_type = self.name.clone();
-        let method_path = format!("/actors/{actor_type}/:actor_id/method/{method_name}");
+        let method_path = format!("/actors/{actor_type}/{{actor_id}}/method/{method_name}");
 
         let reg_func = move |router: Router, runtime: Arc<ActorRuntime>| {
             router.route(
