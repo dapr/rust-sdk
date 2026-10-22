@@ -250,15 +250,15 @@ impl DaprHttpServer {
                 get(registered_actors).with_state(rt.clone()),
             )
             .route(
-                "/actors/:actor_type/:actor_id",
+                "/actors/{actor_type}/{actor_id}",
                 delete(deactivate_actor).with_state(rt.clone()),
             )
             .route(
-                "/actors/:actor_type/:actor_id/method/remind/:reminder_name",
+                "/actors/{actor_type}/{actor_id}/method/remind/{reminder_name}",
                 put(invoke_reminder).with_state(rt.clone()),
             )
             .route(
-                "/actors/:actor_type/:actor_id/method/timer/:timer_name",
+                "/actors/{actor_type}/{actor_id}/method/timer/{timer_name}",
                 put(invoke_timer).with_state(rt.clone()),
             );
 
