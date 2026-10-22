@@ -86,7 +86,6 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let mut result = TokenStream::from(quote!(
-        #[async_trait::async_trait]
         impl dapr::server::actor::axum::extract::FromRequestParts<dapr::server::actor::runtime::ActorState> for &#actor_struct_name {
             type Rejection = dapr::server::actor::ActorRejection;
 
