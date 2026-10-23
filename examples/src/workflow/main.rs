@@ -100,6 +100,14 @@ async fn main() -> dapr::workflow::Result<()> {
         .await?;
     println!("workflow started with id: {instance_id}");
 
+    client
+        .wait_for_workflow_start_with_options(
+            &instance_id,
+            FetchOptions::new().with_fetch_payloads(true),
+            Some(Duration::from_secs(30)),
+        )
+        .await?;
+
     client.suspend_workflow(&instance_id, "").await?;
     let metadata = client
         .fetch_workflow_metadata(&instance_id, FetchOptions::new().with_fetch_payloads(true))
@@ -131,7 +139,7 @@ async fn main() -> dapr::workflow::Result<()> {
         .wait_for_workflow_completion_with_options(
             &instance_id,
             FetchOptions::new().with_fetch_payloads(true),
-            Some(Duration::from_secs(5)),
+            Some(Duration::from_secs(30)),
         )
         .await?;
     println!(

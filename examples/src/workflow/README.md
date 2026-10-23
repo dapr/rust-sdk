@@ -41,8 +41,8 @@ expected_stdout_lines:
   - 'workflow worker successfully shutdown'
 
 background: true
-sleep: 60
-timeout_seconds: 60
+sleep: 90
+timeout_seconds: 120
 -->
 
 ```bash
