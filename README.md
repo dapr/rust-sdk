@@ -1,6 +1,6 @@
 # Dapr SDK for Rust (Alpha)
 
-[![Crates.io][crates-badge]][crates-url] [![Build Status][actions-badge]][actions-url] [![License: Apache 2.0][apache-badge]][apache-url] [![FOSSA Status][fossa-badge]][fossa-url] [![Good First Issues][gfi-badge]][gfi-url] [![discord][discord-badge]][discord-url] [![YouTube][youtube-badge]][youtube-link] [![X/Twitter][x-badge]][x-link]
+[![Crates.io][crates-badge]][crates-url] [![Build Status][actions-badge]][actions-url] [![License: Apache 2.0][apache-badge]][apache-url] [![FOSSA Status][fossa-badge]][fossa-url] [![Good First Issues][gfi-badge]][gfi-url] [![discord][discord-badge]][discord-url] [![YouTube][youtube-badge]][youtube-link] [![Bluesky][bluesky-badge]][bluesky-link] [![X/Twitter][x-badge]][x-link]
 
 [crates-badge]: https://img.shields.io/crates/v/dapr.svg?style=flat
 [crates-url]: https://crates.io/crates/dapr
@@ -16,6 +16,8 @@
 [discord-url]: http://bit.ly/dapr-discord
 [youtube-badge]:https://img.shields.io/youtube/channel/views/UCtpSQ9BLB_3EXdWAUQYwnRA?style=flat&label=YouTube%20views&logo=youtube
 [youtube-link]:https://youtube.com/@daprdev
+[bluesky-badge]:https://img.shields.io/badge/Follow-%40daprdev.bsky.social-0056A1?logo=bluesky
+[bluesky-link]:https://bsky.app/profile/daprdev.bsky.social
 [x-badge]:https://img.shields.io/twitter/follow/daprdev?logo=x&style=flat
 [x-link]:https://twitter.com/daprdev
 
