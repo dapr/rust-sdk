@@ -67,13 +67,18 @@ pub use context::{
     ActivityContext, ActivityContextExt, RegistryExt, WorkflowContext, WorkflowContextExt,
 };
 pub use options::{
-    ActivityOptions, EventOptions, FetchOptions, ScheduleOptions, SubWorkflowOptions,
+    ActivityOptions, CreateWorkflowScheduleOptions, EventOptions, FetchOptions, ScheduleOptions,
+    SubWorkflowOptions,
 };
 
 pub use dapr_durabletask::api::{
     DurableTaskError as WorkflowError, FailureDetails, HistoryPropagationScope,
     OrchestrationState as WorkflowMetadata, OrchestrationStatus as RuntimeStatus,
-    PropagatedHistory, PurgeInstanceFilter, Result, RetryPolicy,
+    PropagatedHistory, PurgeInstanceFilter, Result, RetryPolicy, WorkflowSchedule,
+    WorkflowScheduleRun, WorkflowScheduleState, WorkflowScheduleStatus,
+};
+pub use dapr_durabletask::client::{
+    InstanceIdPage, ListInstanceIdsOptions, ListWorkflowSchedulesOptions, WorkflowSchedulePage,
 };
 pub use dapr_durabletask::task::{
     CompletableTask, OrchestrationContext, TaskResult, when_all, when_any,

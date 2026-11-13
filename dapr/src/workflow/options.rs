@@ -78,6 +78,167 @@ impl ScheduleOptions {
     }
 }
 
+/// Options for creating a workflow schedule.
+///
+/// # Examples
+///
+/// ```rust
+/// use std::time::{Duration, SystemTime};
+///
+/// use dapr::workflow::CreateWorkflowScheduleOptions;
+///
+/// let opts = CreateWorkflowScheduleOptions::new()
+///     .with_input(serde_json::json!({ "region": "eu" }))
+///     .with_expiration_time(SystemTime::now() + Duration::from_secs(86_400))
+///     .with_repeats(10)
+///     .with_overwrite();
+/// assert!(opts.overwrite);
+/// ```
+#[derive(Debug, Clone, Default)]
+pub struct CreateWorkflowScheduleOptions {
+    /// Optional JSON-serialized input given to every run.
+    pub input: Option<serde_json::Value>,
+    /// Optional time of the first run. When `None`, the first run is at the first time the
+    /// schedule matches after it is created.
+    pub due_time: Option<SystemTime>,
+    /// Optional time after which no run starts. The schedule completes once its next run would
+    /// be after it.
+    pub expiration_time: Option<SystemTime>,
+    /// Optional number of runs after which the schedule completes. Must be at least 1.
+    pub repeats: Option<u32>,
+    /// Optional app ID hosting the workflow each run starts. When `None`, the app that owns the
+    /// schedule.
+    pub target_app_id: Option<String>,
+    /// Optional namespace of the target app ID. Requires `target_app_id`.
+    pub target_app_namespace: Option<String>,
+    /// When `true`, replace an existing schedule of the same name. Runs it already started are
+    /// not affected. Otherwise creating a schedule whose name is taken fails with gRPC status
+    /// `ALREADY_EXISTS`.
+    pub overwrite: bool,
+    /// When `true`, start one run for the times the schedule missed while the app was down, then
+    /// carry on from the next time after now. When `false` (the default), the schedule catches
+    /// up: every missed time starts its own run, one after another, as with Dapr jobs and actor
+    /// reminders.
+    pub skip_missed: bool,
+}
+
+impl CreateWorkflowScheduleOptions {
+    /// Create an empty set of workflow schedule options.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set the JSON-serializable input given to every run.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `input` cannot be serialized to JSON. Prefer
+    /// [`CreateWorkflowScheduleOptions::try_with_input`] for fallible serialization.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - Value serialized to JSON and delivered as the input of every run.
+    pub fn with_input<T: Serialize>(self, input: T) -> Self {
+        self.try_with_input(input)
+            .expect("workflow schedule input must be JSON serializable")
+    }
+
+    /// Set the JSON-serializable input given to every run, returning an error if serialization
+    /// fails.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - Value serialized to JSON and delivered as the input of every run.
+    pub fn try_with_input<T: Serialize>(mut self, input: T) -> Result<Self, serde_json::Error> {
+        self.input = Some(serde_json::to_value(input)?);
+        Ok(self)
+    }
+
+    /// Set the time of the first run.
+    ///
+    /// # Arguments
+    ///
+    /// * `due_time` - Time at which the first run starts.
+    pub fn with_due_time(mut self, due_time: SystemTime) -> Self {
+        self.due_time = Some(due_time);
+        self
+    }
+
+    /// Set the time after which no run starts.
+    ///
+    /// # Arguments
+    ///
+    /// * `expiration_time` - Time after which the schedule starts no more runs.
+    pub fn with_expiration_time(mut self, expiration_time: SystemTime) -> Self {
+        self.expiration_time = Some(expiration_time);
+        self
+    }
+
+    /// Set the number of runs after which the schedule completes.
+    ///
+    /// # Arguments
+    ///
+    /// * `repeats` - Number of runs, at least 1.
+    pub fn with_repeats(mut self, repeats: u32) -> Self {
+        self.repeats = Some(repeats);
+        self
+    }
+
+    /// Set the app ID hosting the workflow each run starts.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_id` - Dapr app ID that should execute each run.
+    pub fn with_target_app_id(mut self, app_id: impl Into<String>) -> Self {
+        self.target_app_id = Some(app_id.into());
+        self
+    }
+
+    /// Set the namespace of the target app ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `namespace` - Namespace of the target app ID.
+    pub fn with_target_app_namespace(mut self, namespace: impl Into<String>) -> Self {
+        self.target_app_namespace = Some(namespace.into());
+        self
+    }
+
+    /// Replace an existing schedule of the same name.
+    pub fn with_overwrite(mut self) -> Self {
+        self.overwrite = true;
+        self
+    }
+
+    /// Start one run for the times the schedule missed while the app was down instead of one run
+    /// for each of them. See [`CreateWorkflowScheduleOptions::skip_missed`].
+    pub fn with_skip_missed(mut self) -> Self {
+        self.skip_missed = true;
+        self
+    }
+
+    pub(crate) fn into_durabletask(
+        self,
+    ) -> dapr_durabletask::api::Result<dapr_durabletask::client::CreateWorkflowScheduleOptions>
+    {
+        Ok(dapr_durabletask::client::CreateWorkflowScheduleOptions {
+            input: self
+                .input
+                .map(|value| serde_json::to_string(&value))
+                .transpose()?,
+            due_time: self.due_time.map(chrono::DateTime::<chrono::Utc>::from),
+            expiration_time: self
+                .expiration_time
+                .map(chrono::DateTime::<chrono::Utc>::from),
+            repeats: self.repeats,
+            target_app_id: self.target_app_id,
+            target_app_namespace: self.target_app_namespace,
+            overwrite: self.overwrite,
+            skip_missed: self.skip_missed,
+        })
+    }
+}
+
 /// Options for calling an activity from a workflow.
 #[derive(Debug, Clone, Default)]
 pub struct ActivityOptions {
@@ -472,6 +633,50 @@ mod tests {
             .with_retry_policy(policy)
             .with_history_propagation(HistoryPropagationScope::Lineage)
             .into_parts();
+    }
+
+    #[test]
+    fn create_workflow_schedule_options_into_durabletask_carries_every_option() {
+        let opts = CreateWorkflowScheduleOptions::new()
+            .with_input(Payload {
+                name: "nightly".into(),
+                count: 2,
+            })
+            .with_due_time(UNIX_EPOCH + Duration::from_secs(1))
+            .with_expiration_time(UNIX_EPOCH + Duration::from_secs(2))
+            .with_repeats(3)
+            .with_target_app_id("worker-app")
+            .with_target_app_namespace("ns")
+            .with_overwrite()
+            .with_skip_missed()
+            .into_durabletask()
+            .unwrap();
+        let v: serde_json::Value = serde_json::from_str(opts.input.as_deref().unwrap()).unwrap();
+        assert_eq!(v["name"], "nightly");
+        assert_eq!(v["count"], 2);
+        assert_eq!(opts.due_time.unwrap().timestamp(), 1);
+        assert_eq!(opts.expiration_time.unwrap().timestamp(), 2);
+        assert_eq!(opts.repeats, Some(3));
+        assert_eq!(opts.target_app_id.as_deref(), Some("worker-app"));
+        assert_eq!(opts.target_app_namespace.as_deref(), Some("ns"));
+        assert!(opts.overwrite);
+        assert!(opts.skip_missed);
+    }
+
+    #[test]
+    fn create_workflow_schedule_options_default_into_durabletask_is_empty() {
+        let opts = CreateWorkflowScheduleOptions::new()
+            .into_durabletask()
+            .unwrap();
+        assert!(opts.input.is_none() && opts.due_time.is_none() && opts.expiration_time.is_none());
+        assert!(opts.repeats.is_none() && opts.target_app_id.is_none());
+        assert!(opts.target_app_namespace.is_none() && !opts.overwrite && !opts.skip_missed);
+    }
+
+    #[test]
+    fn create_workflow_schedule_options_try_with_input_propagates_error() {
+        let result = CreateWorkflowScheduleOptions::new().try_with_input(AlwaysFails);
+        assert!(result.is_err());
     }
 
     #[test]

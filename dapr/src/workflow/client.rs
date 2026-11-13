@@ -1,13 +1,18 @@
 use std::time::Duration;
 
-use dapr_durabletask::api::{DurableTaskError, OrchestrationState, PurgeInstanceFilter, Result};
-use dapr_durabletask::client::TaskHubGrpcClient;
+use dapr_durabletask::api::{
+    DurableTaskError, OrchestrationState, PurgeInstanceFilter, Result, WorkflowSchedule,
+};
+use dapr_durabletask::client::{
+    InstanceIdPage, ListInstanceIdsOptions, ListWorkflowSchedulesOptions, TaskHubGrpcClient,
+    WorkflowSchedulePage,
+};
 use dapr_durabletask::worker::{Registry, TaskHubGrpcWorker};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tonic::transport::Channel;
 
-use super::options::{EventOptions, FetchOptions, ScheduleOptions};
+use super::options::{CreateWorkflowScheduleOptions, EventOptions, FetchOptions, ScheduleOptions};
 
 /// Client for scheduling and managing Dapr workflow instances.
 pub struct WorkflowClient {
@@ -268,6 +273,21 @@ impl WorkflowClient {
         purge_workflow_state_by_filter_impl(&mut self.inner, filter, recursive).await
     }
 
+    /// List workflow instance IDs, one page at a time.
+    ///
+    /// Use [`ListInstanceIdsOptions::with_instance_id_prefix`] to list the runs of a schedule:
+    /// their IDs start with `<schedule name>_`.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Instance ID prefix, page size and continuation token.
+    pub async fn list_instance_ids(
+        &mut self,
+        options: ListInstanceIdsOptions,
+    ) -> Result<InstanceIdPage> {
+        self.inner.list_instance_ids(options).await
+    }
+
     /// Terminate a workflow instance.
     ///
     /// # Arguments
@@ -289,6 +309,115 @@ impl WorkflowClient {
         recursive: bool,
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Create a schedule that starts a workflow repeatedly.
+    ///
+    /// Each run is a new, detached workflow instance with the ID `<name>_<owner>_<fire time>`,
+    /// where the owner is a 6-character tag of the app that owns the schedule and the fire time
+    /// is UTC formatted as `20060102T150405Z`; a triggered run gets
+    /// `<name>_<owner>_<trigger time>_manual`, with the trigger time in milliseconds. So the runs
+    /// of a schedule are the instances whose ID starts with `<name>_<owner>_`.
+    ///
+    /// By default a schedule catches up after the app was down: every time it missed starts its
+    /// own run, one after another, as with Dapr jobs and actor reminders. With
+    /// [`CreateWorkflowScheduleOptions::with_skip_missed`] it starts one run for the missed times
+    /// and carries on from the next time after now.
+    ///
+    /// Errors are gRPC statuses in [`DurableTaskError::GrpcError`]: `InvalidArgument` for an
+    /// invalid schedule, `AlreadyExists` if the name is taken without
+    /// [`CreateWorkflowScheduleOptions::with_overwrite`], `Unimplemented` if the Dapr runtime
+    /// does not support workflow schedules.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Name of the schedule: 1 to 30 letters, digits or `-`.
+    /// * `workflow_name` - Name of the workflow each run starts.
+    /// * `schedule` - When runs start, in the syntax of the Dapr Jobs API: a 6-field cron
+    ///   expression with seconds (`"0 30 9 * * MON"`), `"@every <duration>"` (at least `1s`), or
+    ///   one of `"@yearly"`, `"@monthly"`, `"@weekly"`, `"@daily"` and `"@hourly"`. A
+    ///   `"CRON_TZ=<zone> "` prefix sets the time zone of a cron expression, which is UTC
+    ///   otherwise.
+    /// * `options` - Input, first run, expiry, repeats, target app, overwrite and skip missed.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use dapr::workflow::{CreateWorkflowScheduleOptions, WorkflowClient};
+    ///
+    /// # async fn run() -> dapr::workflow::Result<()> {
+    /// let mut client = WorkflowClient::new().await?;
+    /// client
+    ///     .create_workflow_schedule(
+    ///         "nightly-report",
+    ///         "report",
+    ///         "CRON_TZ=Europe/Paris 0 0 2 * * *",
+    ///         CreateWorkflowScheduleOptions::new().with_input("full"),
+    ///     )
+    ///     .await?;
+    /// let run_id = client.trigger_workflow_schedule("nightly-report").await?;
+    /// client.wait_for_workflow_completion(&run_id).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn create_workflow_schedule(
+        &mut self,
+        name: &str,
+        workflow_name: &str,
+        schedule: &str,
+        options: CreateWorkflowScheduleOptions,
+    ) -> Result<()> {
+        create_workflow_schedule_impl(&mut self.inner, name, workflow_name, schedule, options).await
+    }
+
+    /// Get a workflow schedule with its status, including how its last run went.
+    ///
+    /// A schedule that does not exist is a gRPC `NotFound` error.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Name of the schedule.
+    pub async fn get_workflow_schedule(&mut self, name: &str) -> Result<WorkflowSchedule> {
+        self.inner.get_workflow_schedule(name).await
+    }
+
+    /// List the app's workflow schedules with their status, one page at a time.
+    ///
+    /// A page can hold fewer schedules than the page size, so keep requesting pages until the
+    /// continuation token is `None`.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Page size and continuation token.
+    pub async fn list_workflow_schedules(
+        &mut self,
+        options: ListWorkflowSchedulesOptions,
+    ) -> Result<WorkflowSchedulePage> {
+        self.inner.list_workflow_schedules(options).await
+    }
+
+    /// Delete a workflow schedule. Runs it already started are not affected.
+    ///
+    /// A schedule that does not exist is a gRPC `NotFound` error.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Name of the schedule.
+    pub async fn delete_workflow_schedule(&mut self, name: &str) -> Result<()> {
+        self.inner.delete_workflow_schedule(name).await
+    }
+
+    /// Start a run of a workflow schedule now, without changing when its next scheduled run is,
+    /// and return the run's instance ID.
+    ///
+    /// A schedule that does not exist is a gRPC `NotFound` error; one that has completed, or
+    /// whose app has no workflow worker connected, is `FailedPrecondition`.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Name of the schedule.
+    pub async fn trigger_workflow_schedule(&mut self, name: &str) -> Result<String> {
+        self.inner.trigger_workflow_schedule(name).await
     }
 }
 
@@ -439,6 +568,15 @@ impl WorkflowSchedulingClient {
         purge_workflow_state_by_filter_impl(&mut self.inner, filter, recursive).await
     }
 
+    /// List workflow instance IDs, one page at a time. See
+    /// [`WorkflowClient::list_instance_ids`].
+    pub async fn list_instance_ids(
+        &mut self,
+        options: ListInstanceIdsOptions,
+    ) -> Result<InstanceIdPage> {
+        self.inner.list_instance_ids(options).await
+    }
+
     /// Terminate a workflow instance.
     pub async fn terminate_workflow(&mut self, instance_id: &str) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, false).await
@@ -451,6 +589,41 @@ impl WorkflowSchedulingClient {
         recursive: bool,
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Create a schedule that starts a workflow repeatedly. See
+    /// [`WorkflowClient::create_workflow_schedule`].
+    pub async fn create_workflow_schedule(
+        &mut self,
+        name: &str,
+        workflow_name: &str,
+        schedule: &str,
+        options: CreateWorkflowScheduleOptions,
+    ) -> Result<()> {
+        create_workflow_schedule_impl(&mut self.inner, name, workflow_name, schedule, options).await
+    }
+
+    /// Get a workflow schedule with its status.
+    pub async fn get_workflow_schedule(&mut self, name: &str) -> Result<WorkflowSchedule> {
+        self.inner.get_workflow_schedule(name).await
+    }
+
+    /// List the app's workflow schedules with their status, one page at a time.
+    pub async fn list_workflow_schedules(
+        &mut self,
+        options: ListWorkflowSchedulesOptions,
+    ) -> Result<WorkflowSchedulePage> {
+        self.inner.list_workflow_schedules(options).await
+    }
+
+    /// Delete a workflow schedule. Runs it already started are not affected.
+    pub async fn delete_workflow_schedule(&mut self, name: &str) -> Result<()> {
+        self.inner.delete_workflow_schedule(name).await
+    }
+
+    /// Start a run of a workflow schedule now and return the run's instance ID.
+    pub async fn trigger_workflow_schedule(&mut self, name: &str) -> Result<String> {
+        self.inner.trigger_workflow_schedule(name).await
     }
 }
 
@@ -602,6 +775,18 @@ async fn purge_workflow_state_by_filter_impl(
 ) -> Result<i32> {
     client
         .purge_orchestrations_by_filter(filter, recursive)
+        .await
+}
+
+async fn create_workflow_schedule_impl(
+    client: &mut TaskHubGrpcClient,
+    name: &str,
+    workflow_name: &str,
+    schedule: &str,
+    options: CreateWorkflowScheduleOptions,
+) -> Result<()> {
+    client
+        .create_workflow_schedule(name, workflow_name, schedule, options.into_durabletask()?)
         .await
 }
 
