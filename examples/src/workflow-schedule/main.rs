@@ -68,18 +68,33 @@ async fn main() -> dapr::workflow::Result<()> {
     };
     println!("schedule completed after {} runs", status.run_count);
 
-    let page = client
-        .list_workflow_schedules(ListWorkflowSchedulesOptions::new())
-        .await?;
-    println!(
-        "schedule listed: {}",
-        page.schedules.iter().any(|s| s.name == SCHEDULE)
-    );
+    // A page can come back short, even empty, while more remain, so follow the
+    // continuation token to the end.
+    let mut listed = false;
+    let mut options = ListWorkflowSchedulesOptions::new();
+    loop {
+        let page = client.list_workflow_schedules(options).await?;
+        listed |= page.schedules.iter().any(|s| s.name == SCHEDULE);
+        let Some(token) = page.continuation_token else {
+            break;
+        };
+        options = ListWorkflowSchedulesOptions::new().with_continuation_token(token);
+    }
+    println!("schedule listed: {listed}");
 
-    let run_ids = client
-        .list_instance_ids(ListInstanceIdsOptions::new().with_instance_id_prefix("greetings_"))
-        .await?
-        .instance_ids;
+    let prefix = format!("{SCHEDULE}_");
+    let mut run_ids = Vec::new();
+    let mut options = ListInstanceIdsOptions::new().with_instance_id_prefix(&prefix);
+    loop {
+        let page = client.list_instance_ids(options).await?;
+        run_ids.extend(page.instance_ids);
+        let Some(token) = page.continuation_token else {
+            break;
+        };
+        options = ListInstanceIdsOptions::new()
+            .with_instance_id_prefix(&prefix)
+            .with_continuation_token(token);
+    }
     for id in &run_ids {
         let metadata = client
             .wait_for_workflow_completion_with_options(

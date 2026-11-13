@@ -57,6 +57,7 @@ jobs:
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       GITHUB_SHA: ${{ steps.outputs.outputs.GITHUB_SHA }}
+      DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
     steps:
       - name: Parse repository_dispatch payload
         if: github.event_name == 'repository_dispatch'
@@ -200,6 +201,7 @@ jobs:
           echo "CHECKOUT_REPO=$CHECKOUT_REPO" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
           echo "GITHUB_SHA=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          echo "DAPR_REF=$DAPR_REF" >> "$GITHUB_OUTPUT"
 
   validate-example:
     permissions:
@@ -214,6 +216,7 @@ jobs:
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
       GITHUB_SHA: ${{ needs.setup.outputs.GITHUB_SHA }}
+      DAPR_REF: ${{ needs.setup.outputs.DAPR_REF }}
       RUST_BACKTRACE: full
 
     strategy:
@@ -305,8 +308,9 @@ jobs:
           docker ps -a
 
       - name: Check Example
-        # workflow-schedule needs Dapr 1.20, which only the DAPR_REF=master (edge) runtime has.
-        if: matrix.examples != 'workflow-schedule' || env.DAPR_RUNTIME_VERSION == 'edge'
+        # workflow-schedule needs Dapr 1.20, which no release has yet: only a runtime built from
+        # master does. Any other DAPR_REF is labelled edge too, so gate on the ref itself.
+        if: matrix.examples != 'workflow-schedule' || env.DAPR_REF == 'master'
         run: |
           cd examples
           ./validate.sh ${{ matrix.examples }}
