@@ -92,6 +92,10 @@ name = "workflow"
 path = "src/workflow/main.rs"
 
 [[example]]
+name = "workflow-schedule"
+path = "src/workflow-schedule/main.rs"
+
+[[example]]
 name = "workflow-history-propagation"
 path = "src/workflow-history-propagation/main.rs"
 

@@ -81,8 +81,9 @@ jobs:
       - name: Discover examples
         id: examples
         run: |
+          # TODO: include workflow-schedule once 1.20.0-rc.1 is released
           EXAMPLES=$(find examples/src -name 'README.md' -exec dirname {} \; \
-            | sed 's|^examples/src/||' | sort | jq -Rnc '[inputs]')
+            | sed 's|^examples/src/||' | grep -v '^workflow-schedule$' | sort | jq -Rnc '[inputs]')
           echo "matrix=$EXAMPLES" >> "$GITHUB_OUTPUT"
 
   validate-example:
