@@ -290,6 +290,58 @@ impl WorkflowClient {
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
     }
+
+    /// Terminate a workflow instance and persist a human-readable reason.
+    ///
+    /// The reason is stored on the first `ExecutionTerminated` history event
+    /// and can be read with [`WorkflowClient::get_workflow_termination_reason`].
+    ///
+    /// This requires a Dapr runtime that supports
+    /// `TerminateRequest.reason` (protobuf field 5).
+    pub async fn terminate_workflow_with_reason(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            false,
+        )
+        .await
+    }
+
+    /// Terminate a workflow instance with a reason and optionally its children.
+    ///
+    /// When `recursive` is `true`, child workflow instances are terminated
+    /// along with the target instance.
+    pub async fn terminate_workflow_with_reason_recursive(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+        recursive: bool,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            recursive,
+        )
+        .await
+    }
+
+    /// Fetch the reason stored on the first termination event in workflow history.
+    ///
+    /// Returns `Ok(None)` when the workflow has no termination event or the
+    /// first termination event did not record a reason. An explicitly empty
+    /// reason is returned as `Some(String::new())`.
+    pub async fn get_workflow_termination_reason(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason(&self.channel, instance_id).await
+    }
 }
 
 /// Lightweight, cloneable client for scheduling and managing workflow instances.
@@ -451,6 +503,51 @@ impl WorkflowSchedulingClient {
         recursive: bool,
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Terminate a workflow instance and persist a human-readable reason.
+    ///
+    /// The reason is stored on the first `ExecutionTerminated` history event
+    /// and can be read with [`WorkflowSchedulingClient::get_workflow_termination_reason`].
+    pub async fn terminate_workflow_with_reason(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            false,
+        )
+        .await
+    }
+
+    /// Terminate a workflow instance with a reason and optionally its children.
+    pub async fn terminate_workflow_with_reason_recursive(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+        recursive: bool,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            recursive,
+        )
+        .await
+    }
+
+    /// Fetch the reason stored on the first termination event in workflow history.
+    ///
+    /// Returns `Ok(None)` when no termination reason was recorded. An
+    /// explicitly empty reason is returned as `Some(String::new())`.
+    pub async fn get_workflow_termination_reason(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason(&self.channel, instance_id).await
     }
 }
 
