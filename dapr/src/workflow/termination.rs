@@ -47,8 +47,6 @@ struct GetInstanceHistoryResponse {
 
 #[derive(Clone, PartialEq, Message)]
 struct HistoryEvent {
-    #[prost(int32, tag = "1")]
-    event_id: i32,
     // Other history event variants are irrelevant to reason extraction and
     // are safely skipped by Prost as unknown fields.
     #[prost(oneof = "history_event::EventType", tags = "5")]
@@ -166,8 +164,8 @@ mod tests {
     use super::*;
 
     fn termination_event(event_id: i32, reason: Option<&str>) -> HistoryEvent {
+        let _ = event_id;
         HistoryEvent {
-            event_id,
             event_type: Some(history_event::EventType::ExecutionTerminated(
                 ExecutionTerminatedEvent {
                     reason: reason.map(str::to_string),
@@ -194,9 +192,9 @@ mod tests {
             decoded.reason.as_deref(),
             Some("operator requested termination")
         );
-        // The reason field is a length-delimited protobuf field numbered 5
-        // (tag value 42 / 0x2a).
-        assert!(encoded.contains(&0x2a));
+        // Fields are serialized in declaration order: field 1 (instance ID),
+        // field 3 (recursive), then field 5 (reason, tag value 42 / 0x2a).
+        assert_eq!(encoded.get(12), Some(&0x2a));
     }
 
     #[test]
@@ -217,7 +215,6 @@ mod tests {
         let history = GetInstanceHistoryResponse {
             events: vec![
                 HistoryEvent {
-                    event_id: 1,
                     event_type: None,
                 },
                 termination_event(2, Some("operator requested termination")),
@@ -251,11 +248,29 @@ mod tests {
         assert_eq!(first_termination_reason(&history), None);
     }
 
+
+    #[test]
+    fn decodes_reason_from_history_wire_response() {
+        let response = GetInstanceHistoryResponse {
+            events: vec![
+                HistoryEvent { event_type: None },
+                termination_event(2, Some("operator requested termination")),
+            ],
+        };
+
+        let encoded = response.encode_to_vec();
+        let decoded = GetInstanceHistoryResponse::decode(encoded.as_slice()).unwrap();
+
+        assert_eq!(
+            first_termination_reason(&decoded).as_deref(),
+            Some("operator requested termination")
+        );
+    }
+
     #[test]
     fn returns_none_when_history_has_no_termination_event() {
         let history = GetInstanceHistoryResponse {
             events: vec![HistoryEvent {
-                event_id: 1,
                 event_type: None,
             }],
         };
