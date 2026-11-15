@@ -156,10 +156,19 @@ pub(super) async fn get_workflow_termination_reason(
         )
         .await?;
 
-    let response = response.into_inner();
-    let state = response
-        .workflow_state
-        .filter(|_| response.exists)
+    workflow_metadata_termination_reason(response.into_inner(), instance_id)
+}
+
+fn workflow_metadata_termination_reason(
+    response: GetInstanceResponse,
+    instance_id: &str,
+) -> Result<Option<String>> {
+    let GetInstanceResponse {
+        exists,
+        workflow_state,
+    } = response;
+    let state = workflow_state
+        .filter(|_| exists)
         .ok_or_else(|| DurableTaskError::InstanceNotFound {
             instance_id: instance_id.to_string(),
         })?;
@@ -335,6 +344,83 @@ mod tests {
         };
 
         assert_eq!(first_termination_reason(&history), None);
+    }
+
+
+    #[test]
+    fn reads_termination_reason_from_workflow_metadata_field_eighteen() {
+        let response = GetInstanceResponse {
+            exists: true,
+            workflow_state: Some(WorkflowState {
+                termination_reason: Some("operator requested termination".to_string()),
+            }),
+        };
+
+        let encoded = response.encode_to_vec();
+        let decoded = GetInstanceResponse::decode(encoded.as_slice()).unwrap();
+
+        assert_eq!(
+            workflow_metadata_termination_reason(decoded, "order-42").unwrap(),
+            Some("operator requested termination".to_string())
+        );
+    }
+
+    #[test]
+    fn workflow_metadata_preserves_explicit_empty_reason() {
+        let response = GetInstanceResponse {
+            exists: true,
+            workflow_state: Some(WorkflowState {
+                termination_reason: Some(String::new()),
+            }),
+        };
+
+        assert_eq!(
+            workflow_metadata_termination_reason(response, "order-42").unwrap(),
+            Some(String::new())
+        );
+    }
+
+    #[test]
+    fn workflow_metadata_without_reason_returns_none() {
+        let response = GetInstanceResponse {
+            exists: true,
+            workflow_state: Some(WorkflowState {
+                termination_reason: None,
+            }),
+        };
+
+        assert_eq!(
+            workflow_metadata_termination_reason(response, "order-42").unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn workflow_metadata_rejects_missing_instance() {
+        let response = GetInstanceResponse {
+            exists: false,
+            workflow_state: Some(WorkflowState {
+                termination_reason: Some("reason".to_string()),
+            }),
+        };
+
+        assert!(matches!(
+            workflow_metadata_termination_reason(response, "missing"),
+            Err(DurableTaskError::InstanceNotFound { instance_id }) if instance_id == "missing"
+        ));
+    }
+
+    #[test]
+    fn workflow_metadata_rejects_missing_state() {
+        let response = GetInstanceResponse {
+            exists: true,
+            workflow_state: None,
+        };
+
+        assert!(matches!(
+            workflow_metadata_termination_reason(response, "missing"),
+            Err(DurableTaskError::InstanceNotFound { instance_id }) if instance_id == "missing"
+        ));
     }
 
     #[test]
