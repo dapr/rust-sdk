@@ -293,8 +293,8 @@ impl WorkflowClient {
 
     /// Terminate a workflow instance and persist a human-readable reason.
     ///
-    /// The reason is stored on the first `ExecutionTerminated` history event
-    /// and can be read with [`WorkflowClient::get_workflow_termination_reason`].
+    /// The reason is stored in workflow metadata and can also be read from the
+    /// first `ExecutionTerminated` history event.
     ///
     /// This requires a Dapr runtime that supports
     /// `TerminateRequest.reason` (protobuf field 5).
@@ -331,10 +331,9 @@ impl WorkflowClient {
         .await
     }
 
-    /// Fetch the reason stored on the first termination event in workflow history.
+    /// Read the optional termination reason from workflow metadata.
     ///
-    /// Returns `Ok(None)` when the workflow has no termination event or the
-    /// first termination event did not record a reason. An explicitly empty
+    /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
     /// reason is returned as `Some(String::new())`.
     pub async fn get_workflow_termination_reason(
         &mut self,
@@ -518,8 +517,8 @@ impl WorkflowSchedulingClient {
 
     /// Terminate a workflow instance and persist a human-readable reason.
     ///
-    /// The reason is stored on the first `ExecutionTerminated` history event
-    /// and can be read with [`WorkflowSchedulingClient::get_workflow_termination_reason`].
+    /// The reason is stored in workflow metadata and can also be read from the
+    /// first `ExecutionTerminated` history event.
     pub async fn terminate_workflow_with_reason(
         &mut self,
         instance_id: &str,
@@ -550,10 +549,10 @@ impl WorkflowSchedulingClient {
         .await
     }
 
-    /// Fetch the reason stored on the first termination event in workflow history.
+    /// Read the optional termination reason from workflow metadata.
     ///
-    /// Returns `Ok(None)` when no termination reason was recorded. An
-    /// explicitly empty reason is returned as `Some(String::new())`.
+    /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
+    /// reason is returned as `Some(String::new())`.
     pub async fn get_workflow_termination_reason(
         &mut self,
         instance_id: &str,
