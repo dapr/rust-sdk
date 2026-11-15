@@ -56,4 +56,6 @@ dapr run --app-id workflow \
 ## Result
 
 The workflow is scheduled, suspended, resumed, sent an external event, completed,
-purged, then scheduled again, terminated, and purged.
+and purged. It is then scheduled again, terminated with a reason, and the
+example verifies that the reason read from workflow metadata matches the reason
+stored in the execution-terminated history event before purging the instance.
