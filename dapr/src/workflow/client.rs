@@ -342,6 +342,17 @@ impl WorkflowClient {
     ) -> Result<Option<String>> {
         termination::get_workflow_termination_reason(&self.channel, instance_id).await
     }
+
+    /// Fetch the reason from the first `ExecutionTerminated` history event.
+    ///
+    /// Use `get_workflow_termination_reason` for the lighter metadata-backed
+    /// lookup when history inspection is not otherwise needed.
+    pub async fn get_workflow_termination_reason_from_history(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason_from_history(&self.channel, instance_id).await
+    }
 }
 
 /// Lightweight, cloneable client for scheduling and managing workflow instances.
@@ -548,6 +559,17 @@ impl WorkflowSchedulingClient {
         instance_id: &str,
     ) -> Result<Option<String>> {
         termination::get_workflow_termination_reason(&self.channel, instance_id).await
+    }
+
+    /// Fetch the reason from the first `ExecutionTerminated` history event.
+    ///
+    /// Use `get_workflow_termination_reason` for the lighter metadata-backed
+    /// lookup when history inspection is not otherwise needed.
+    pub async fn get_workflow_termination_reason_from_history(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason_from_history(&self.channel, instance_id).await
     }
 }
 
