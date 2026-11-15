@@ -15,6 +15,7 @@ use tower::ServiceExt;
 use dapr_durabletask::api::{DurableTaskError, Result};
 
 const TERMINATE_INSTANCE_PATH: &str = "/TaskHubSidecarService/TerminateInstance";
+const GET_INSTANCE_PATH: &str = "/TaskHubSidecarService/GetInstance";
 const GET_INSTANCE_HISTORY_PATH: &str = "/TaskHubSidecarService/GetInstanceHistory";
 
 #[derive(Clone, PartialEq, Message)]
@@ -33,6 +34,30 @@ struct TerminateInstanceRequest {
 
 #[derive(Clone, Copy, PartialEq, Message)]
 struct TerminateInstanceResponse {}
+
+#[derive(Clone, PartialEq, Message)]
+struct GetInstanceRequest {
+    #[prost(string, tag = "1")]
+    instance_id: String,
+    #[prost(bool, tag = "2")]
+    get_inputs_and_outputs: bool,
+}
+
+#[derive(Clone, PartialEq, Message)]
+struct GetInstanceResponse {
+    #[prost(bool, tag = "1")]
+    exists: bool,
+    #[prost(message, optional, tag = "2")]
+    workflow_state: Option<WorkflowState>,
+}
+
+/// Partial wire view of WorkflowState. Unknown fields are skipped by Prost;
+/// only field 18 is needed to extract the termination reason.
+#[derive(Clone, PartialEq, Message)]
+struct WorkflowState {
+    #[prost(message, optional, tag = "18")]
+    termination_reason: Option<String>,
+}
 
 #[derive(Clone, PartialEq, Message)]
 struct GetInstanceHistoryRequest {
@@ -106,7 +131,44 @@ pub(super) async fn terminate_workflow_with_reason(
     Ok(())
 }
 
+/// Read the reason directly from the workflow's metadata (WorkflowState field 18).
 pub(super) async fn get_workflow_termination_reason(
+    channel: &Channel,
+    instance_id: &str,
+) -> Result<Option<String>> {
+    validate_instance_id(instance_id)?;
+
+    let mut grpc = tonic::client::Grpc::new(channel.clone());
+    grpc.ready().await.map_err(|error| {
+        DurableTaskError::ConnectionFailed(format!(
+            "workflow gRPC client is not ready: {error}"
+        ))
+    })?;
+
+    let response: tonic::Response<GetInstanceResponse> = grpc
+        .unary(
+            Request::new(GetInstanceRequest {
+                instance_id: instance_id.to_string(),
+                get_inputs_and_outputs: false,
+            }),
+            PathAndQuery::from_static(GET_INSTANCE_PATH),
+            tonic_prost::ProstCodec::default(),
+        )
+        .await?;
+
+    let response = response.into_inner();
+    let state = response
+        .workflow_state
+        .filter(|_| response.exists)
+        .ok_or_else(|| DurableTaskError::InstanceNotFound {
+            instance_id: instance_id.to_string(),
+        })?;
+
+    Ok(state.termination_reason)
+}
+
+/// Read the reason from the first ExecutionTerminated event in workflow history.
+pub(super) async fn get_workflow_termination_reason_from_history(
     channel: &Channel,
     instance_id: &str,
 ) -> Result<Option<String>> {
