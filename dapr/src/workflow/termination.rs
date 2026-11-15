@@ -7,8 +7,9 @@
 //! dependency's generated types. Keep the field numbers and RPC paths aligned
 //! with `dapr-durabletask-protobuf`.
 
+use http::uri::PathAndQuery;
 use prost::Message;
-use tonic::{Request, codegen::http::uri::PathAndQuery, transport::Channel};
+use tonic::{Request, transport::Channel};
 use tower::ServiceExt;
 
 use dapr_durabletask::api::{DurableTaskError, Result};
@@ -215,9 +216,7 @@ mod tests {
     fn extracts_first_termination_reason_from_history() {
         let history = GetInstanceHistoryResponse {
             events: vec![
-                HistoryEvent {
-                    event_type: None,
-                },
+                HistoryEvent { event_type: None },
                 termination_event(Some("operator requested termination")),
             ],
         };
@@ -249,7 +248,6 @@ mod tests {
         assert_eq!(first_termination_reason(&history), None);
     }
 
-
     #[test]
     fn decodes_reason_from_history_wire_response() {
         let response = GetInstanceHistoryResponse {
@@ -271,9 +269,7 @@ mod tests {
     #[test]
     fn returns_none_when_history_has_no_termination_event() {
         let history = GetInstanceHistoryResponse {
-            events: vec![HistoryEvent {
-                event_type: None,
-            }],
+            events: vec![HistoryEvent { event_type: None }],
         };
 
         assert_eq!(first_termination_reason(&history), None);
