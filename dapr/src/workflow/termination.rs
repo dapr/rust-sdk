@@ -163,8 +163,7 @@ fn validate_instance_id(instance_id: &str) -> Result<()> {
 mod tests {
     use super::*;
 
-    fn termination_event(event_id: i32, reason: Option<&str>) -> HistoryEvent {
-        let _ = event_id;
+    fn termination_event(reason: Option<&str>) -> HistoryEvent {
         HistoryEvent {
             event_type: Some(history_event::EventType::ExecutionTerminated(
                 ExecutionTerminatedEvent {
@@ -217,7 +216,7 @@ mod tests {
                 HistoryEvent {
                     event_type: None,
                 },
-                termination_event(2, Some("operator requested termination")),
+                termination_event(Some("operator requested termination")),
             ],
         };
 
@@ -230,7 +229,7 @@ mod tests {
     #[test]
     fn returns_empty_string_for_explicitly_empty_reason() {
         let history = GetInstanceHistoryResponse {
-            events: vec![termination_event(1, Some(""))],
+            events: vec![termination_event(Some(""))],
         };
 
         assert_eq!(first_termination_reason(&history).as_deref(), Some(""));
@@ -240,8 +239,8 @@ mod tests {
     fn does_not_fall_through_when_first_termination_has_no_reason() {
         let history = GetInstanceHistoryResponse {
             events: vec![
-                termination_event(1, None),
-                termination_event(2, Some("later reason")),
+                termination_event(None),
+                termination_event(Some("later reason")),
             ],
         };
 
