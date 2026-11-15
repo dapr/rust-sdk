@@ -132,15 +132,17 @@ pub(super) async fn get_workflow_termination_reason(
 }
 
 fn first_termination_reason(history: &GetInstanceHistoryResponse) -> Option<String> {
-    history.events.iter().find_map(|event| match &event.event_type {
-        Some(history_event::EventType::ExecutionTerminated(terminated)) => {
-            // The first termination event is authoritative. Returning its
-            // optional reason (including Some("")) avoids accidentally
-            // reporting a later event's reason for malformed/replayed history.
-            Some(terminated.reason.clone())
+    for event in &history.events {
+        if let Some(history_event::EventType::ExecutionTerminated(terminated)) =
+            &event.event_type
+        {
+            // The first termination event is authoritative, even when its
+            // reason is absent. Do not fall through to a later event.
+            return terminated.reason.clone();
         }
-        _ => None,
-    })?
+    }
+
+    None
 }
 
 fn validate_instance_id(instance_id: &str) -> Result<()> {
@@ -253,7 +255,7 @@ mod tests {
         let response = GetInstanceHistoryResponse {
             events: vec![
                 HistoryEvent { event_type: None },
-                termination_event(2, Some("operator requested termination")),
+                termination_event(Some("operator requested termination")),
             ],
         };
 
