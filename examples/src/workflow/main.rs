@@ -188,12 +188,26 @@ async fn main() -> dapr::workflow::Result<()> {
         .await?
         .ok_or_else(|| {
             WorkflowError::Other(format!(
-                "workflow {id} has no recorded termination reason"
+                "workflow {id} has no recorded termination reason in metadata"
             ))
         })?;
     if recorded_reason != termination_reason {
         return Err(WorkflowError::Other(format!(
-            "expected termination reason {termination_reason:?}, got {recorded_reason:?}"
+            "expected metadata termination reason {termination_reason:?}, got {recorded_reason:?}"
+        )));
+    }
+
+    let history_reason = client
+        .get_workflow_termination_reason_from_history(&id)
+        .await?
+        .ok_or_else(|| {
+            WorkflowError::Other(format!(
+                "workflow {id} has no recorded termination reason in history"
+            ))
+        })?;
+    if history_reason != recorded_reason {
+        return Err(WorkflowError::Other(format!(
+            "termination reason mismatch between metadata ({recorded_reason:?}) and history ({history_reason:?})"
         )));
     }
     println!("workflow terminated with reason: {recorded_reason}");
