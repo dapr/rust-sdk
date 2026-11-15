@@ -159,7 +159,36 @@ let mut client = dapr::Client::new().await?;
 
 ## Workflows
 
-Workflows are available through the default-on `workflow` cargo feature and the `dapr::workflow` module. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
+Workflows are available through the default-on `workflow` cargo feature and
+the `dapr::workflow` module. A running workflow can be terminated with a
+reason using `WorkflowClient::terminate_workflow_with_reason`. The reason is
+stored on the first `ExecutionTerminated` history event and can be retrieved
+with `WorkflowClient::get_workflow_termination_reason`:
+
+```rust,no_run
+use dapr::workflow::WorkflowClient;
+
+# async fn run() -> dapr::workflow::Result<()> {
+let mut client = WorkflowClient::new().await?;
+let instance_id = "order-42";
+let reason = "operator requested termination";
+
+client
+    .terminate_workflow_with_reason(instance_id, reason)
+    .await?;
+client.wait_for_workflow_completion(instance_id).await?;
+
+if let Some(reason) = client
+    .get_workflow_termination_reason(instance_id)
+    .await?
+{
+    println!("Workflow terminated: {reason}");
+}
+# Ok(()) }
+```
+
+The termination-reason APIs require a Dapr runtime that supports the
+`TerminateRequest.reason` protocol field. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
 
 ## Explore more examples
 
