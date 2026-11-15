@@ -61,6 +61,7 @@
 pub mod client;
 pub mod context;
 pub mod options;
+mod termination;
 
 pub use client::{WorkerHandle, WorkflowClient, WorkflowSchedulingClient};
 pub use context::{
