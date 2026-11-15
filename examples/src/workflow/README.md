@@ -36,7 +36,7 @@ expected_stdout_lines:
   - 'stage: 2'
   - 'workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - 'workflow status: Running'
-  - 'workflow terminated'
+  - 'workflow terminated with reason: operator requested termination'
   - 'workflow purged'
   - 'workflow worker successfully shutdown'
 
