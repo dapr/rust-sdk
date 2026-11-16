@@ -118,6 +118,12 @@ pub fn actor(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         return Err(dapr::server::actor::ActorRejection::ActorError(e.to_string()));
                     }
                 };
+                if let Some(lease) = parts
+                    .extensions
+                    .get::<std::sync::Arc<dapr::server::actor::runtime::ActorTurnLease>>()
+                {
+                    lease.allow_reentrancy();
+                }
                 let actor = actor.as_ref();
                 let well_known_actor =
                     unsafe { &*(actor as *const dyn dapr::server::actor::Actor as *const #actor_struct_name) };

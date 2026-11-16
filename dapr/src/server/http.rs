@@ -266,6 +266,10 @@ impl DaprHttpServer {
             .actor_runtime
             .configure_method_routes(protected, rt.clone())
             .await
+            .layer(axum::middleware::from_fn_with_state(
+                rt.clone(),
+                actor_turn_middleware,
+            ))
             .layer(self.app_api_token_layer.clone());
 
         Router::new()
@@ -290,10 +294,62 @@ async fn health_check() -> impl IntoResponse {
 
 async fn registered_actors(State(runtime): State<Arc<ActorRuntime>>) -> impl IntoResponse {
     log::debug!("daprd requested registered actors");
-    let ra = runtime.list_registered_actors().await;
-    let result = super::models::RegisteredActorsResponse { entities: ra };
+    let result = runtime.get_registered_actors_config().await;
 
     Json(result)
+}
+
+async fn actor_turn_middleware(
+    State(runtime): State<Arc<ActorRuntime>>,
+    mut req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    let path = req.uri().path().to_string();
+    let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
+
+    if segments.len() >= 3 && segments[0] == "actors" {
+        let actor_type = segments[1];
+        let actor_id = segments[2];
+
+        let reentrancy_id = req
+            .headers()
+            .get(super::actor::runtime::turn_lock::REENTRANCY_ID_HEADER)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string());
+
+        let is_reentrant_allowed = if req.method() == axum::http::Method::DELETE {
+            false
+        } else {
+            runtime.is_reentrancy_enabled(actor_type).await
+        };
+
+        let active_reentrancy_id = if is_reentrant_allowed {
+            reentrancy_id.as_deref()
+        } else {
+            None
+        };
+
+        let lease = runtime
+            .turn_lock()
+            .acquire(actor_type, actor_id, active_reentrancy_id)
+            .await;
+
+        req.extensions_mut().insert(lease.clone());
+
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        tokio::task::spawn(async move {
+            let _lease = lease;
+            let resp = next.run(req).await;
+            let _ = tx.send(resp);
+        });
+
+        match rx.await {
+            Ok(resp) => resp,
+            Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        }
+    } else {
+        next.run(req).await
+    }
 }
 
 async fn deactivate_actor(

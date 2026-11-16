@@ -3,8 +3,12 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::client::TonicClient;
+pub use crate::server::models::{EntityConfig, ReentrancyConfig, RegisteredActorsResponse};
 
 use super::{Actor, ActorError, ActorFactory, context_client::ActorContextClient};
+
+pub mod turn_lock;
+pub use self::turn_lock::{ActorTurnLease, ActorTurnLock, REENTRANCY_ID_HEADER};
 
 #[derive(Clone)]
 pub struct ActorState {
@@ -83,6 +87,7 @@ pub struct ActorTypeRegistration {
     name: String,
     factory: ActorFactory,
     method_registrations: MethodRegistrationMap,
+    pub reentrancy: Option<ReentrancyConfig>,
 }
 
 impl ActorTypeRegistration {
@@ -94,7 +99,13 @@ impl ActorTypeRegistration {
             name: name.to_string(),
             factory,
             method_registrations: HashMap::new(),
+            reentrancy: None,
         }
+    }
+
+    pub fn with_reentrancy(mut self, reentrancy: ReentrancyConfig) -> Self {
+        self.reentrancy = Some(reentrancy);
+        self
     }
 
     /// Registers a method on the actor type to be exposed to actor clients.
@@ -206,6 +217,7 @@ pub struct ActorRuntime {
 
     registered_actors_types: ActorRegistrationMap,
     active_actors: ActiveActorMap,
+    turn_lock: ActorTurnLock,
 }
 
 impl ActorRuntime {
@@ -214,6 +226,47 @@ impl ActorRuntime {
             dapr_client,
             registered_actors_types: Arc::new(RwLock::new(HashMap::new())),
             active_actors: Arc::new(RwLock::new(HashMap::new())),
+            turn_lock: ActorTurnLock::new(),
+        }
+    }
+
+    pub fn turn_lock(&self) -> &ActorTurnLock {
+        &self.turn_lock
+    }
+
+    pub async fn is_reentrancy_enabled(&self, actor_type: &str) -> bool {
+        let types = self.registered_actors_types.read().await;
+        if let Some(reg) = types.get(actor_type) {
+            reg.reentrancy.as_ref().map(|r| r.enabled).unwrap_or(false)
+        } else {
+            false
+        }
+    }
+
+    pub async fn get_registered_actors_config(&self) -> RegisteredActorsResponse {
+        let types = self.registered_actors_types.read().await;
+        let entities: Vec<String> = types.keys().cloned().collect();
+
+        let mut entities_config = Vec::new();
+        for (name, reg) in types.iter() {
+            if let Some(reentrancy) = &reg.reentrancy {
+                entities_config.push(EntityConfig {
+                    entities: vec![name.clone()],
+                    reentrancy: Some(reentrancy.clone()),
+                });
+            }
+        }
+
+        let entities_config = if entities_config.is_empty() {
+            None
+        } else {
+            Some(entities_config)
+        };
+
+        RegisteredActorsResponse {
+            entities,
+            reentrancy: None,
+            entities_config,
         }
     }
 
