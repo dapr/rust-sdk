@@ -4,5 +4,5 @@ pub use http::DaprHttpServer;
 pub mod actor;
 pub mod appcallbackalpha;
 mod http;
-mod models;
+pub mod models;
 pub mod utils;
