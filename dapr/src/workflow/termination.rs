@@ -19,17 +19,23 @@ const GET_INSTANCE_PATH: &str = "/TaskHubSidecarService/GetInstance";
 const GET_INSTANCE_HISTORY_PATH: &str = "/TaskHubSidecarService/GetInstanceHistory";
 
 #[derive(Clone, PartialEq, Message)]
+struct StringValue {
+    #[prost(string, tag = "1")]
+    value: String,
+}
+
+#[derive(Clone, PartialEq, Message)]
 struct TerminateInstanceRequest {
     #[prost(string, tag = "1")]
     instance_id: String,
     #[prost(message, optional, tag = "2")]
-    output: Option<String>,
+    output: Option<StringValue>,
     #[prost(bool, tag = "3")]
     recursive: bool,
     // Field 4 is the optional TaskRouter. This SDK API targets the local app,
     // so it intentionally leaves the field unset.
     #[prost(message, optional, tag = "5")]
-    reason: Option<String>,
+    reason: Option<StringValue>,
 }
 
 #[derive(Clone, Copy, PartialEq, Message)]
@@ -56,7 +62,7 @@ struct GetInstanceResponse {
 #[derive(Clone, PartialEq, Message)]
 struct WorkflowState {
     #[prost(message, optional, tag = "18")]
-    termination_reason: Option<String>,
+    termination_reason: Option<StringValue>,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -94,7 +100,7 @@ mod history_event {
 struct ExecutionTerminatedEvent {
     // Fields 1 and 2 (input and recurse) are intentionally omitted.
     #[prost(message, optional, tag = "3")]
-    reason: Option<String>,
+    reason: Option<StringValue>,
 }
 
 pub(super) async fn terminate_workflow_with_reason(
@@ -117,7 +123,7 @@ pub(super) async fn terminate_workflow_with_reason(
         output: None,
         recursive,
         // Option<String> preserves presence for an explicitly empty reason.
-        reason: Some(reason),
+        reason: Some(StringValue { value: reason }),
     };
 
     let _: tonic::Response<TerminateInstanceResponse> = grpc
@@ -173,7 +179,7 @@ fn workflow_metadata_termination_reason(
             instance_id: instance_id.to_string(),
         })?;
 
-    Ok(state.termination_reason)
+    Ok(state.termination_reason.map(|reason| reason.value))
 }
 
 /// Read the reason from the first ExecutionTerminated event in workflow history.
@@ -210,7 +216,7 @@ fn first_termination_reason(history: &GetInstanceHistoryResponse) -> Option<Stri
         {
             // The first termination event is authoritative, even when its
             // reason is absent. Do not fall through to a later event.
-            return terminated.reason.clone();
+            return terminated.reason.as_ref().map(|reason| reason.value.clone());
         }
     }
 
@@ -241,7 +247,7 @@ mod tests {
         HistoryEvent {
             event_type: Some(history_event::EventType::ExecutionTerminated(
                 ExecutionTerminatedEvent {
-                    reason: reason.map(str::to_string),
+                    reason: reason.map(|value| StringValue { value: value.to_string() }),
                 },
             )),
         }
@@ -253,7 +259,7 @@ mod tests {
             instance_id: "order-42".to_string(),
             output: None,
             recursive: true,
-            reason: Some("operator requested termination".to_string()),
+            reason: Some(StringValue { value: "operator requested termination".to_string() }),
         };
 
         let encoded = request.encode_to_vec();
@@ -262,7 +268,7 @@ mod tests {
         assert_eq!(decoded.instance_id, "order-42");
         assert!(decoded.recursive);
         assert_eq!(
-            decoded.reason.as_deref(),
+            decoded.reason.as_ref().map(|reason| reason.value.as_str()),
             Some("operator requested termination")
         );
         // Fields are serialized in declaration order: field 1 (instance ID),
@@ -276,11 +282,11 @@ mod tests {
             instance_id: "order-42".to_string(),
             output: None,
             recursive: false,
-            reason: Some(String::new()),
+            reason: Some(StringValue { value: String::new() }),
         };
 
         let decoded = TerminateInstanceRequest::decode(request.encode_to_vec().as_slice()).unwrap();
-        assert_eq!(decoded.reason.as_deref(), Some(""));
+        assert_eq!(decoded.reason.as_ref().map(|reason| reason.value.as_str()), Some(""));
     }
 
     #[test]
@@ -352,7 +358,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some("operator requested termination".to_string()),
+                termination_reason: Some(StringValue { value: "operator requested termination".to_string() }),
             }),
         };
 
@@ -370,7 +376,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some(String::new()),
+                termination_reason: Some(StringValue { value: String::new() }),
             }),
         };
 
@@ -400,7 +406,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: false,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some("reason".to_string()),
+                termination_reason: Some(StringValue { value: "reason".to_string() }),
             }),
         };
 
