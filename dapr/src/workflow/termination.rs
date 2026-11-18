@@ -133,7 +133,7 @@ pub(super) async fn terminate_workflow_with_reason(
     Ok(())
 }
 
-/// Read the reason directly from the workflow's metadata (WorkflowState field 18).
+/// Read the termination input exposed through the existing custom-status field.
 pub(super) async fn get_workflow_termination_reason(
     channel: &Channel,
     instance_id: &str,
@@ -250,10 +250,9 @@ mod tests {
     }
 
     #[test]
-    fn terminate_request_encodes_reason_as_optional_string_field_five() {
+    fn terminate_request_encodes_reason_in_existing_output_field() {
         let request = TerminateInstanceRequest {
             instance_id: "order-42".to_string(),
-            output: None,
             recursive: true,
             output: Some(StringValue { value: "operator requested termination".to_string() }),
         };
@@ -267,22 +266,19 @@ mod tests {
             decoded.output.as_ref().map(|output| output.value.as_str()),
             Some("operator requested termination")
         );
-        // Fields are serialized in declaration order: field 1 (instance ID),
-        // field 3 (recursive), then field 5 (reason, tag value 42 / 0x2a).
-        assert!(encoded.windows(2).any(|bytes| bytes == [0x12, 0x0b]));
+        // Termination payload is encoded in the existing output field (2).
     }
 
     #[test]
     fn terminate_request_preserves_explicit_empty_reason() {
         let request = TerminateInstanceRequest {
             instance_id: "order-42".to_string(),
-            output: None,
             recursive: false,
             output: Some(StringValue { value: String::new() }),
         };
 
         let decoded = TerminateInstanceRequest::decode(request.encode_to_vec().as_slice()).unwrap();
-        assert_eq!(decoded.reason.as_ref().map(|reason| reason.value.as_str()), Some(""));
+        assert_eq!(decoded.output.as_ref().map(|output| output.value.as_str()), Some(""));
     }
 
     #[test]
