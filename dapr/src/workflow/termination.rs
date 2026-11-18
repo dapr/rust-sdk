@@ -346,7 +346,7 @@ mod tests {
 
 
     #[test]
-    fn reads_termination_reason_from_workflow_metadata_field_eighteen() {
+    fn reads_termination_reason_from_existing_custom_status_field_ten() {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
