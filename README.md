@@ -194,8 +194,7 @@ assert_eq!(history_reason, metadata_reason);
 
 The metadata and history getters preserve an explicitly empty reason as
 `Some(String::new())`; `None` means no reason was recorded. These APIs require
-a Dapr runtime that supports `TerminateRequest.reason` and
-`WorkflowState.terminationReason`. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
+a Dapr runtime that supports the optional `TerminateWorkflowRequest.terminateReason` field. The runtime reuses the existing Durable Task termination input and exposes it through workflow custom status. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
 ## Explore more examples
 
 Browse through more examples to understand the SDK better: [View examples](https://github.com/dapr/rust-sdk/tree/main/examples)
