@@ -1,7 +1,6 @@
 //! Wire-compatible workflow termination-reason RPC support.
 //!
-//! The currently published `dapr-durabletask` protobuf crate predates the
-//! `TerminateRequest.reason` and `ExecutionTerminatedEvent.reason` fields.
+//! The implementation reuses the Durable Task termination output/input fields.
 //! These small local message definitions mirror only the fields needed here,
 //! allowing this SDK to send and read the added fields without changing the
 //! dependency's generated types. Keep the field numbers and RPC paths aligned
@@ -34,8 +33,6 @@ struct TerminateInstanceRequest {
     recursive: bool,
     // Field 4 is the optional TaskRouter. This SDK API targets the local app,
     // so it intentionally leaves the field unset.
-    #[prost(message, optional, tag = "5")]
-    reason: Option<StringValue>,
 }
 
 #[derive(Clone, Copy, PartialEq, Message)]
@@ -58,11 +55,11 @@ struct GetInstanceResponse {
 }
 
 /// Partial wire view of WorkflowState. Unknown fields are skipped by Prost;
-/// only field 18 is needed to extract the termination reason.
+/// custom_status uses the existing Durable Task field 10.
 #[derive(Clone, PartialEq, Message)]
 struct WorkflowState {
-    #[prost(message, optional, tag = "18")]
-    termination_reason: Option<StringValue>,
+    #[prost(message, optional, tag = "10")]
+    custom_status: Option<StringValue>,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -98,9 +95,8 @@ mod history_event {
 
 #[derive(Clone, PartialEq, Message)]
 struct ExecutionTerminatedEvent {
-    // Fields 1 and 2 (input and recurse) are intentionally omitted.
-    #[prost(message, optional, tag = "3")]
-    reason: Option<StringValue>,
+    #[prost(message, optional, tag = "1")]
+    input: Option<StringValue>,
 }
 
 pub(super) async fn terminate_workflow_with_reason(
@@ -123,7 +119,7 @@ pub(super) async fn terminate_workflow_with_reason(
         output: None,
         recursive,
         // Option<String> preserves presence for an explicitly empty reason.
-        reason: Some(StringValue { value: reason }),
+        output: Some(StringValue { value: reason }),
     };
 
     let _: tonic::Response<TerminateInstanceResponse> = grpc
@@ -155,7 +151,7 @@ pub(super) async fn get_workflow_termination_reason(
         .unary(
             Request::new(GetInstanceRequest {
                 instance_id: instance_id.to_string(),
-                get_inputs_and_outputs: false,
+                get_inputs_and_outputs: true,
             }),
             PathAndQuery::from_static(GET_INSTANCE_PATH),
             tonic_prost::ProstCodec::default(),
@@ -179,7 +175,7 @@ fn workflow_metadata_termination_reason(
             instance_id: instance_id.to_string(),
         })?;
 
-    Ok(state.termination_reason.map(|reason| reason.value))
+    Ok(state.custom_status.map(|status| status.value))
 }
 
 /// Read the reason from the first ExecutionTerminated event in workflow history.
@@ -216,7 +212,7 @@ fn first_termination_reason(history: &GetInstanceHistoryResponse) -> Option<Stri
         {
             // The first termination event is authoritative, even when its
             // reason is absent. Do not fall through to a later event.
-            return terminated.reason.as_ref().map(|reason| reason.value.clone());
+            return terminated.input.as_ref().map(|input| input.value.clone());
         }
     }
 
@@ -247,7 +243,7 @@ mod tests {
         HistoryEvent {
             event_type: Some(history_event::EventType::ExecutionTerminated(
                 ExecutionTerminatedEvent {
-                    reason: reason.map(|value| StringValue { value: value.to_string() }),
+                    input: reason.map(|value| StringValue { value: value.to_string() }),
                 },
             )),
         }
@@ -259,7 +255,7 @@ mod tests {
             instance_id: "order-42".to_string(),
             output: None,
             recursive: true,
-            reason: Some(StringValue { value: "operator requested termination".to_string() }),
+            output: Some(StringValue { value: "operator requested termination".to_string() }),
         };
 
         let encoded = request.encode_to_vec();
@@ -268,12 +264,12 @@ mod tests {
         assert_eq!(decoded.instance_id, "order-42");
         assert!(decoded.recursive);
         assert_eq!(
-            decoded.reason.as_ref().map(|reason| reason.value.as_str()),
+            decoded.output.as_ref().map(|output| output.value.as_str()),
             Some("operator requested termination")
         );
         // Fields are serialized in declaration order: field 1 (instance ID),
         // field 3 (recursive), then field 5 (reason, tag value 42 / 0x2a).
-        assert_eq!(encoded.get(12), Some(&0x2a));
+        assert!(encoded.windows(2).any(|bytes| bytes == [0x12, 0x0b]));
     }
 
     #[test]
@@ -282,7 +278,7 @@ mod tests {
             instance_id: "order-42".to_string(),
             output: None,
             recursive: false,
-            reason: Some(StringValue { value: String::new() }),
+            output: Some(StringValue { value: String::new() }),
         };
 
         let decoded = TerminateInstanceRequest::decode(request.encode_to_vec().as_slice()).unwrap();
@@ -358,7 +354,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some(StringValue { value: "operator requested termination".to_string() }),
+                custom_status: Some(StringValue { value: "operator requested termination".to_string() }),
             }),
         };
 
@@ -376,7 +372,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some(StringValue { value: String::new() }),
+                custom_status: Some(StringValue { value: String::new() }),
             }),
         };
 
@@ -391,7 +387,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
-                termination_reason: None,
+                custom_status: None,
             }),
         };
 
@@ -406,7 +402,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: false,
             workflow_state: Some(WorkflowState {
-                termination_reason: Some(StringValue { value: "reason".to_string() }),
+                custom_status: Some(StringValue { value: "reason".to_string() }),
             }),
         };
 
