@@ -294,7 +294,8 @@ impl WorkflowClient {
     /// Terminate a workflow instance and persist a human-readable reason.
     ///
     /// The reason is stored as the termination input and exposed through the
-    /// workflow's existing custom-status metadata.
+    /// workflow's existing custom-status metadata. If no reason is supplied,
+    /// the workflow's previously set custom status remains unchanged.
     pub async fn terminate_workflow_with_reason(
         &mut self,
         instance_id: &str,
@@ -328,7 +329,8 @@ impl WorkflowClient {
         .await
     }
 
-    /// Read the termination input exposed through workflow custom status.
+    /// Read the custom status of a terminated workflow. If no termination
+    /// reason was supplied, this may be the custom status set by the workflow.
     ///
     /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
     /// reason is returned as `Some(String::new())`.
