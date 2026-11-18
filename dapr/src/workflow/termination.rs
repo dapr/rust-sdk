@@ -57,6 +57,8 @@ struct GetInstanceResponse {
 /// custom_status uses the existing Durable Task field 10.
 #[derive(Clone, PartialEq, Message)]
 struct WorkflowState {
+    #[prost(enumeration = "i32", tag = "4")]
+    workflow_status: i32,
     #[prost(message, optional, tag = "10")]
     custom_status: Option<StringValue>,
 }
@@ -172,6 +174,10 @@ fn workflow_metadata_termination_reason(
         .ok_or_else(|| DurableTaskError::InstanceNotFound {
             instance_id: instance_id.to_string(),
         })?;
+
+    if state.workflow_status != 5 {
+        return Ok(None);
+    }
 
     Ok(state.custom_status.map(|status| status.value))
 }
@@ -348,6 +354,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
+                workflow_status: 5,
                 custom_status: Some(StringValue { value: "operator requested termination".to_string() }),
             }),
         };
@@ -366,6 +373,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
+                workflow_status: 5,
                 custom_status: Some(StringValue { value: String::new() }),
             }),
         };
@@ -377,10 +385,27 @@ mod tests {
     }
 
     #[test]
+    fn workflow_metadata_does_not_treat_running_custom_status_as_reason() {
+        let response = GetInstanceResponse {
+            exists: true,
+            workflow_state: Some(WorkflowState {
+                workflow_status: 0,
+                custom_status: Some(StringValue { value: "workflow progress".to_string() }),
+            }),
+        };
+
+        assert_eq!(
+            workflow_metadata_termination_reason(response, "order-42").unwrap(),
+            None
+        );
+    }
+
+    #[test]
     fn workflow_metadata_without_reason_returns_none() {
         let response = GetInstanceResponse {
             exists: true,
             workflow_state: Some(WorkflowState {
+                workflow_status: 5,
                 custom_status: None,
             }),
         };
@@ -396,6 +421,7 @@ mod tests {
         let response = GetInstanceResponse {
             exists: false,
             workflow_state: Some(WorkflowState {
+                workflow_status: 5,
                 custom_status: Some(StringValue { value: "reason".to_string() }),
             }),
         };
