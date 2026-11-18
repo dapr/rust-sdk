@@ -331,7 +331,7 @@ impl WorkflowClient {
         .await
     }
 
-    /// Read the optional termination reason from workflow metadata.
+    /// Read the termination input exposed through workflow custom status.
     ///
     /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
     /// reason is returned as `Some(String::new())`.
