@@ -293,11 +293,8 @@ impl WorkflowClient {
 
     /// Terminate a workflow instance and persist a human-readable reason.
     ///
-    /// The reason is stored in workflow metadata and can also be read from the
-    /// first `ExecutionTerminated` history event.
-    ///
-    /// This requires a Dapr runtime that supports
-    /// `TerminateRequest.reason` (protobuf field 5).
+    /// The reason is stored as the termination input and exposed through the
+    /// workflow's existing custom-status metadata.
     pub async fn terminate_workflow_with_reason(
         &mut self,
         instance_id: &str,
@@ -342,10 +339,9 @@ impl WorkflowClient {
         termination::get_workflow_termination_reason(&self.channel, instance_id).await
     }
 
-    /// Fetch the reason from the first `ExecutionTerminated` history event.
+    /// Fetch the termination input from the first `ExecutionTerminated` history event.
     ///
-    /// Use `get_workflow_termination_reason` for the lighter metadata-backed
-    /// lookup when history inspection is not otherwise needed.
+    /// Use `get_workflow_termination_reason` to read the existing custom status.
     pub async fn get_workflow_termination_reason_from_history(
         &mut self,
         instance_id: &str,
