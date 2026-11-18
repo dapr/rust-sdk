@@ -170,8 +170,47 @@ async fn main() -> dapr::workflow::Result<()> {
     let metadata = client.wait_for_workflow_start(&id).await?;
     println!("workflow status: {:?}", metadata.runtime_status);
 
-    client.terminate_workflow(&id).await?;
-    println!("workflow terminated");
+    let termination_reason = "operator requested termination";
+    client
+        .terminate_workflow_with_reason(&id, termination_reason)
+        .await?;
+
+    let terminated = client.wait_for_workflow_completion(&id).await?;
+    if terminated.runtime_status != RuntimeStatus::Terminated {
+        return Err(WorkflowError::Other(format!(
+            "expected workflow {id} to be terminated, got {:?}",
+            terminated.runtime_status
+        )));
+    }
+
+    let recorded_reason = client
+        .get_workflow_termination_reason(&id)
+        .await?
+        .ok_or_else(|| {
+            WorkflowError::Other(format!(
+                "workflow {id} has no recorded termination reason in metadata"
+            ))
+        })?;
+    if recorded_reason != termination_reason {
+        return Err(WorkflowError::Other(format!(
+            "expected metadata termination reason {termination_reason:?}, got {recorded_reason:?}"
+        )));
+    }
+
+    let history_reason = client
+        .get_workflow_termination_reason_from_history(&id)
+        .await?
+        .ok_or_else(|| {
+            WorkflowError::Other(format!(
+                "workflow {id} has no recorded termination reason in history"
+            ))
+        })?;
+    if history_reason != recorded_reason {
+        return Err(WorkflowError::Other(format!(
+            "termination reason mismatch between metadata ({recorded_reason:?}) and history ({history_reason:?})"
+        )));
+    }
+    println!("workflow terminated with reason: {recorded_reason}");
 
     client.purge_workflow_state(&id).await?;
     println!("workflow purged");

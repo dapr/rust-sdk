@@ -36,7 +36,7 @@ expected_stdout_lines:
   - 'stage: 2'
   - 'workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - 'workflow status: Running'
-  - 'workflow terminated'
+  - 'workflow terminated with reason: operator requested termination'
   - 'workflow purged'
   - 'workflow worker successfully shutdown'
 
@@ -56,4 +56,6 @@ dapr run --app-id workflow \
 ## Result
 
 The workflow is scheduled, suspended, resumed, sent an external event, completed,
-purged, then scheduled again, terminated, and purged.
+and purged. It is then scheduled again, terminated with a reason, and the
+example verifies that the reason read from workflow metadata matches the reason
+stored in the execution-terminated history event before purging the instance.

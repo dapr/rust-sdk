@@ -159,8 +159,42 @@ let mut client = dapr::Client::new().await?;
 
 ## Workflows
 
-Workflows are available through the default-on `workflow` cargo feature and the `dapr::workflow` module. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
+Workflows are available through the default-on `workflow` cargo feature and
+the `dapr::workflow` module. A running workflow can be terminated with a
+reason using `WorkflowClient::terminate_workflow_with_reason`. The reason is
+available from workflow metadata through
+`WorkflowClient::get_workflow_termination_reason`, or directly from the first
+`ExecutionTerminated` history event through
+`WorkflowClient::get_workflow_termination_reason_from_history`:
 
+```rust,no_run
+use dapr::workflow::WorkflowClient;
+
+# async fn run() -> dapr::workflow::Result<()> {
+let mut client = WorkflowClient::new().await?;
+let instance_id = "order-42";
+let reason = "operator requested termination";
+
+client
+    .terminate_workflow_with_reason(instance_id, reason)
+    .await?;
+client.wait_for_workflow_completion(instance_id).await?;
+
+let metadata_reason = client
+    .get_workflow_termination_reason(instance_id)
+    .await?;
+let history_reason = client
+    .get_workflow_termination_reason_from_history(instance_id)
+    .await?;
+
+assert_eq!(metadata_reason.as_deref(), Some(reason));
+assert_eq!(history_reason, metadata_reason);
+# Ok(()) }
+```
+
+The metadata and history getters preserve an explicitly empty reason as
+`Some(String::new())`; `None` means no reason was recorded. These APIs require
+a Dapr runtime that supports the optional `TerminateWorkflowRequest.terminateReason` field. The runtime reuses the existing Durable Task termination input and exposes it through workflow custom status. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
 ## Explore more examples
 
 Browse through more examples to understand the SDK better: [View examples](https://github.com/dapr/rust-sdk/tree/main/examples)

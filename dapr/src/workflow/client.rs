@@ -290,6 +290,66 @@ impl WorkflowClient {
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
     }
+
+    /// Terminate a workflow instance and persist a human-readable reason.
+    ///
+    /// The reason is stored as the termination input and exposed through the
+    /// workflow's existing custom-status metadata. If no reason is supplied,
+    /// the workflow's previously set custom status remains unchanged.
+    pub async fn terminate_workflow_with_reason(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            false,
+        )
+        .await
+    }
+
+    /// Terminate a workflow instance with a reason and optionally its children.
+    ///
+    /// When `recursive` is `true`, child workflow instances are terminated
+    /// along with the target instance.
+    pub async fn terminate_workflow_with_reason_recursive(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+        recursive: bool,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            recursive,
+        )
+        .await
+    }
+
+    /// Read the custom status of a terminated workflow. If no termination
+    /// reason was supplied, this may be the custom status set by the workflow.
+    ///
+    /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
+    /// reason is returned as `Some(String::new())`.
+    pub async fn get_workflow_termination_reason(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason(&self.channel, instance_id).await
+    }
+
+    /// Fetch the termination input from the first `ExecutionTerminated` history event.
+    ///
+    /// Use `get_workflow_termination_reason` to read the existing custom status.
+    pub async fn get_workflow_termination_reason_from_history(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason_from_history(&self.channel, instance_id).await
+    }
 }
 
 /// Lightweight, cloneable client for scheduling and managing workflow instances.
@@ -451,6 +511,61 @@ impl WorkflowSchedulingClient {
         recursive: bool,
     ) -> Result<()> {
         terminate_workflow_recursive_impl(&mut self.inner, instance_id, recursive).await
+    }
+
+    /// Terminate a workflow instance and persist a human-readable reason.
+    ///
+    /// The reason is stored in workflow metadata and can also be read from the
+    /// first `ExecutionTerminated` history event.
+    pub async fn terminate_workflow_with_reason(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            false,
+        )
+        .await
+    }
+
+    /// Terminate a workflow instance with a reason and optionally its children.
+    pub async fn terminate_workflow_with_reason_recursive(
+        &mut self,
+        instance_id: &str,
+        reason: impl Into<String>,
+        recursive: bool,
+    ) -> Result<()> {
+        termination::terminate_workflow_with_reason(
+            &self.channel,
+            instance_id,
+            reason.into(),
+            recursive,
+        )
+        .await
+    }
+
+    /// Read the optional termination reason from workflow metadata.
+    ///
+    /// Returns `Ok(None)` when no reason was recorded. An explicitly empty
+    /// reason is returned as `Some(String::new())`.
+    pub async fn get_workflow_termination_reason(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason(&self.channel, instance_id).await
+    }
+
+    /// Fetch the reason from the first `ExecutionTerminated` history event.
+    ///
+    /// Use `get_workflow_termination_reason` to read the existing custom status.
+    pub async fn get_workflow_termination_reason_from_history(
+        &mut self,
+        instance_id: &str,
+    ) -> Result<Option<String>> {
+        termination::get_workflow_termination_reason_from_history(&self.channel, instance_id).await
     }
 }
 
