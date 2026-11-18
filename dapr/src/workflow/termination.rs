@@ -2,9 +2,8 @@
 //!
 //! The implementation reuses the Durable Task termination output/input fields.
 //! These small local message definitions mirror only the fields needed here,
-//! allowing this SDK to send and read the added fields without changing the
-//! dependency's generated types. Keep the field numbers and RPC paths aligned
-//! with `dapr-durabletask-protobuf`.
+//! allowing this SDK to read the existing custom-status and termination-input
+//! fields without changing the dependency's generated types.
 
 use http::uri::PathAndQuery;
 use prost::Message;
@@ -116,9 +115,8 @@ pub(super) async fn terminate_workflow_with_reason(
 
     let request = TerminateInstanceRequest {
         instance_id: instance_id.to_string(),
-        output: None,
         recursive,
-        // Option<String> preserves presence for an explicitly empty reason.
+        // StringValue preserves presence for an explicitly empty reason.
         output: Some(StringValue { value: reason }),
     };
 
@@ -178,7 +176,7 @@ fn workflow_metadata_termination_reason(
     Ok(state.custom_status.map(|status| status.value))
 }
 
-/// Read the reason from the first ExecutionTerminated event in workflow history.
+/// Read the termination input from the first ExecutionTerminated event in workflow history.
 pub(super) async fn get_workflow_termination_reason_from_history(
     channel: &Channel,
     instance_id: &str,
@@ -211,7 +209,7 @@ fn first_termination_reason(history: &GetInstanceHistoryResponse) -> Option<Stri
             &event.event_type
         {
             // The first termination event is authoritative, even when its
-            // reason is absent. Do not fall through to a later event.
+            // input is absent. Do not fall through to a later event.
             return terminated.input.as_ref().map(|input| input.value.clone());
         }
     }
