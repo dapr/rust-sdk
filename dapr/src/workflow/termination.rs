@@ -57,7 +57,7 @@ struct GetInstanceResponse {
 /// custom_status uses the existing Durable Task field 10.
 #[derive(Clone, PartialEq, Message)]
 struct WorkflowState {
-    #[prost(enumeration = "i32", tag = "4")]
+    #[prost(int32, tag = "4")]
     workflow_status: i32,
     #[prost(message, optional, tag = "10")]
     custom_status: Option<StringValue>,
