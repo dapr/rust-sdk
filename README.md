@@ -15,10 +15,12 @@
 [fossa-badge]: https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk.svg?type=shield
 [fossa-url]: https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Frust-sdk?ref=badge_shield
 [discord-badge]: https://img.shields.io/discord/778680217417809931
-[discord-url]: https://discord.com/channels/778680217417809931/778680217417809934
+[discord-url]: https://aka.ms/dapr-discord
 
-Dapr is a portable, event-driven, serverless runtime for building distributed applications across cloud and edge.
+The Rust client for the [Dapr](https://dapr.io) sidecar APIs, with durable workflows in `dapr::workflow`, currently in alpha.
 
+- [Rust SDK documentation](https://docs.dapr.io/developing-applications/sdks/rust/)
+- [Workflow overview](https://docs.dapr.io/developing-applications/building-blocks/workflow/workflow-overview/)
 - [dapr.io](https://dapr.io)
 - [@DaprDev](https://twitter.com/DaprDev)
 
@@ -72,6 +74,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+## Workflows
+
+Write durable workflows in Rust: orchestrations and activities survive
+restarts and resume where they left off, with state kept by the Dapr sidecar.
+They are available through the default-on `workflow` cargo feature and the `dapr::workflow` module. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples, and the [workflow overview](https://docs.dapr.io/developing-applications/building-blocks/workflow/workflow-overview/) for the concepts.
 
 ## Configuration
 
@@ -157,10 +165,6 @@ let mut client = dapr::Client::<dapr::client::TonicClient>::connect(addr).await?
 let mut client = dapr::Client::new().await?;
 ```
 
-## Workflows
-
-Workflows are available through the default-on `workflow` cargo feature and the `dapr::workflow` module. See the [workflow](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow), [workflow-parallel](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-parallel), [workflow-taskexecutionid](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-taskexecutionid), [workflow-sustained](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-sustained), and [workflow-history-propagation](https://github.com/dapr/rust-sdk/tree/main/examples/src/workflow-history-propagation) examples.
-
 ## Explore more examples
 
 Browse through more examples to understand the SDK better: [View examples](https://github.com/dapr/rust-sdk/tree/main/examples)
@@ -184,7 +188,7 @@ To fetch the latest .proto files from Dapr execute the script `update-protos.sh`
 By default, the script fetches the latest proto updates from the master branch of the Dapr repository. If you need to choose a specific release or version, use the -v flag:
 
 ```bash
-./update-protos.sh -v v1.15.0
+./update-protos.sh -v v1.18.0
 ```
 
 You will also need to install [protoc](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation).
